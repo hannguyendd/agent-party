@@ -42,6 +42,17 @@ Take over (owner answers the peer by hand) / Hand back · Fork · Approve/deny t
 
 ## Setup
 
+Quick reference (`make help` lists every target):
+
+| Where | Command |
+|---|---|
+| Hub machine | `make hub HUB_HOST=<lan ip>` · `make hub-token DEVICE="han laptop"` |
+| Each device, once | `make install` · `make env OWNER=han` · save the join token to `node-server/data/bootstrap-token` |
+| Each device | `make serve` (node server + built dashboard on :9100) · `make mesh-node HUB_HOST=<lan ip>` |
+| Development | `make dev` (node server + Vite hot reload on :5173) · `make test` · `make build` |
+
+The steps below show what those targets run.
+
 ### 1. Hub (once, on the always-on machine)
 
 ```sh
