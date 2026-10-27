@@ -1,0 +1,28 @@
+{
+  "roles": [
+    {
+      "name": "mesh:role:node",
+      "allowed_services": [
+        "system://mesh.catalog",
+        "a2a://*"
+      ],
+      "allowed_publish": [
+        "a2a://*"
+      ],
+      "allowed_labels": [
+        "owner=*"
+      ],
+      "allowed_targets": [
+        "*"
+      ]
+    }
+  ],
+  "bindings": [
+    {
+      "role": "mesh:role:node",
+      "members": [
+        "mesh:system:authenticated"
+      ]
+    }
+  ]
+}
