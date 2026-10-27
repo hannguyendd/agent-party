@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* Theme tokens: light by default, dark via prefers-color-scheme. */
+:root {
+  --bg: #f7f7f8;
+  --panel: #ffffff;
+  --panel-2: #f1f1f3;
+  --border: #e2e2e6;
+  --fg: #18181b;
+  --muted: #71717a;
+  --accent: #2563eb;
+  --peer: #f1f1f3;
+  --agent: #e8f0fe;
+  --owner: #fef3c7;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e0e11;
+    --panel: #16161a;
+    --panel-2: #1e1e23;
+    --border: #2a2a31;
+    --fg: #e4e4e7;
+    --muted: #8b8b94;
+    --accent: #60a5fa;
+    --peer: #1e1e23;
+    --agent: #172338;
+    --owner: #3a2e10;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--border);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-peer: var(--peer);
+  --color-agentbg: var(--agent);
+  --color-ownerbg: var(--owner);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html, body, #root { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-size: 13px; }
+
+.input {
+  @apply w-full rounded border border-line bg-panel px-2 py-1 text-[13px] outline-none focus:border-accent;
+}
+.btn {
+  @apply inline-flex items-center gap-1 rounded border border-line bg-panel px-2 py-1 text-xs font-medium hover:bg-panel-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-primary {
+  @apply inline-flex items-center gap-1 rounded border border-transparent bg-accent px-2 py-1 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-danger {
+  @apply inline-flex items-center gap-1 rounded border border-red-500/40 bg-panel px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-500/10 dark:text-red-400 disabled:opacity-50;
+}
