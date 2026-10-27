@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Runtime data (SQLite, mesh identity, tokens)
+node-server/data/
+hub/data/
+.env
+
+# Dashboard
+dashboard/node_modules/
+dashboard/dist/
+
+.DS_Store
