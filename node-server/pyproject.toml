@@ -1,0 +1,36 @@
+[project]
+name = "agentfleet-node"
+version = "0.1.0"
+description = "Agent Mesh node server: runs Claude agents, speaks A2A over Agent Mesh, serves the owner dashboard"
+readme = "README.md"
+authors = [
+    { name = "hannguyendd", email = "han.nguyenex@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "a2a-sdk[http-server]>=1.3.0",
+    "claude-agent-sdk>=0.2.174",
+    "fastapi>=0.162.0",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.16.1",
+    "pyyaml>=6.0.3",
+    "sqlmodel>=0.0.48",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+agentfleet-node = "agentfleet_node.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.1",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
