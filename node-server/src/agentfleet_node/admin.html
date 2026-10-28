@@ -100,6 +100,8 @@
     <h2>Installer <small id="build"></small></h2>
     <p class="note" id="pkg"></p>
     <table><tbody id="platforms"></tbody></table>
+    <p class="note" style="margin-top:8px">To remove the Office from a computer: <code>curl -fsSL http://<span class="host"></span>/uninstall | bash</code>
+      (Windows: <code>irm http://<span class="host"></span>/uninstall.ps1 | iex</code>). Agents and chats are kept unless the person says otherwise.</p>
     <p class="note" style="margin-top:8px">Missing a platform? Put its <code>agentmesh-node</code> binary in
       <code>dist/downloads/</code> under the name shown. Publish a new build with <code>make server</code> (or
       <code>make bundle</code>); every Office then shows <em>Update available</em>.</p>
@@ -178,6 +180,7 @@ async function load() {
   }
   $('amFound').textContent = o.settings.agentmesh_one_found ? `Using ${o.settings.agentmesh_one_found}` : 'Not found: set its full path.'
   if (!loadedExtras) { loadedExtras = true; loadActivity().catch(() => {}); loadLog().catch(() => {}) }
+  document.querySelectorAll('.host').forEach((e) => (e.textContent = o.server))
   $('build').textContent = o.build ? `build ${o.build}` : ''
   $('pkg').innerHTML = o.package ? `Package <code>${esc(o.package)}</code> is ready.` : '<span class="miss">No package yet: run make server (or make bundle).</span>'
   $('platforms').innerHTML = o.platforms.map((p) => `<tr><td>${esc(p.name)}</td><td><code>${esc(p.file)}</code></td><td class="${p.ready ? 'ok' : 'miss'}">${p.ready ? 'ready' : 'missing'}</td></tr>`).join('')

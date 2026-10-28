@@ -491,7 +491,7 @@ class WorldHub:
             await self.broadcast(events)
 
 
-INSTALL_TEMPLATES = {"sh": Path(__file__).with_name("install.sh"), "ps1": Path(__file__).with_name("install.ps1")}
+INSTALL_TEMPLATES = {name: Path(__file__).with_name(name) for name in ("install.sh", "install.ps1", "uninstall.sh", "uninstall.ps1")}
 _SAFE_NAME = re.compile(r"^[A-Za-z0-9._+-]+$")
 
 
@@ -560,12 +560,22 @@ def create_world_app(data_path: Path | None = None, downloads: Path | None = Non
     @app.get("/install", response_class=PlainTextResponse)
     def install(request: Request) -> str:
         """macOS / Linux: curl -fsSL http://<server>:7500/install | bash"""
-        return render("sh", request)
+        return render("install.sh", request)
 
     @app.get("/install.ps1", response_class=PlainTextResponse)
     def install_windows(request: Request) -> str:
         """Windows (PowerShell): irm http://<server>:7500/install.ps1 | iex"""
-        return render("ps1", request)
+        return render("install.ps1", request)
+
+    @app.get("/uninstall", response_class=PlainTextResponse)
+    def uninstall(request: Request) -> str:
+        """macOS / Linux: curl -fsSL http://<server>:7500/uninstall | bash"""
+        return render("uninstall.sh", request)
+
+    @app.get("/uninstall.ps1", response_class=PlainTextResponse)
+    def uninstall_windows(request: Request) -> str:
+        """Windows (PowerShell): irm http://<server>:7500/uninstall.ps1 | iex"""
+        return render("uninstall.ps1", request)
 
     @app.get("/info")
     def info() -> dict[str, Any]:

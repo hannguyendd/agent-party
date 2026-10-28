@@ -52,6 +52,7 @@ if command -v agentmesh-node >/dev/null 2>&1; then
   say "agentmesh-node already installed"
 elif curl -fsSL "$BASE/downloads/agentmesh-node-$OS-$ARCH" -o "$tmp/agentmesh-node" 2>/dev/null; then
   install -m 755 "$tmp/agentmesh-node" "$BIN/agentmesh-node"
+  touch "$HOME_DIR/installed-agentmesh-node"   # so the uninstaller knows it may remove it
   say "Installed agentmesh-node"
 else
   # Not on the office server: take it from the official release instead.
@@ -60,6 +61,7 @@ else
   if curl -fsSL "https://github.com/google/agentmesh/releases/download/$AMVERSION/agentmesh_${rel_os}_${ARCH}.tar.gz" -o "$tmp/am.tar.gz" \
      && tar xzf "$tmp/am.tar.gz" -C "$tmp" agentmesh-node; then
     install -m 755 "$tmp/agentmesh-node" "$BIN/agentmesh-node"
+    touch "$HOME_DIR/installed-agentmesh-node"
     say "Installed agentmesh-node"
   else
     warn "Could not get agentmesh-node for $OS-$ARCH. The Office works, but your agents can't reach other machines yet. Ask your admin."
@@ -111,7 +113,7 @@ fi
 
 URL="http://127.0.0.1:$PORT/?server=$OFFICE"
 say "Done. $TITLE is running at http://127.0.0.1:$PORT"
-echo "    Open it any time from the '$TITLE' shortcut, or run: agentfleet-node   (menu: start, stop, start at login, update)"
+echo "    Open it any time from the '$TITLE' shortcut. To remove it: curl -fsSL $BASE/uninstall | bash"
 if [ -z "${AGENTMESH_NO_OPEN:-}" ]; then
   if [ "$OS" = darwin ]; then open "$URL"; elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$URL" >/dev/null 2>&1 || true; fi
 fi

@@ -291,6 +291,9 @@ def uninstall(purge: bool = False) -> None:
         (Path.home() / ".local" / "share" / "applications" / "agentmesh-office.desktop").unlink(missing_ok=True)
     else:
         _ps("Remove-Item \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\*Office.lnk\",\"$([Environment]::GetFolderPath('Desktop'))\\*Office.lnk\" -ErrorAction SilentlyContinue")
+    if (HOME / "installed-agentmesh-node").exists():  # the installer put it there: take it away too
+        for name in ("agentmesh-node", "agentmesh-node.exe"):
+            (Path.home() / ".local" / "bin" / name).unlink(missing_ok=True)
     if purge:
         shutil.rmtree(HOME, ignore_errors=True)
     uv = shutil.which("uv")

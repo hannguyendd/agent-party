@@ -51,6 +51,7 @@ if (Get-Command agentmesh-node -ErrorAction SilentlyContinue) {
 } else {
   try {
     Invoke-WebRequest "$Base/downloads/agentmesh-node-windows-$Arch.exe" -OutFile (Join-Path $Bin 'agentmesh-node.exe') -UseBasicParsing
+    New-Item -ItemType File -Force (Join-Path $HomeDir 'installed-agentmesh-node') | Out-Null
     Say 'Installed agentmesh-node'
   } catch {
     # Not on the office server: take it from the official release instead.
@@ -61,6 +62,7 @@ if (Get-Command agentmesh-node -ErrorAction SilentlyContinue) {
       Invoke-WebRequest "https://github.com/google/agentmesh/releases/download/$AmVersion/agentmesh_Windows_$RelArch.zip" -OutFile $Zip -UseBasicParsing
       Expand-Archive $Zip -DestinationPath (Join-Path $Tmp 'am') -Force
       Copy-Item (Join-Path $Tmp 'am\agentmesh-node.exe') (Join-Path $Bin 'agentmesh-node.exe') -Force
+      New-Item -ItemType File -Force (Join-Path $HomeDir 'installed-agentmesh-node') | Out-Null
       Say 'Installed agentmesh-node'
     } catch {
       Warn "Could not get agentmesh-node for windows-$Arch. The Office works, but your agents can't reach other machines yet. Ask your admin."
@@ -101,5 +103,5 @@ foreach ($Dir in @("$env:APPDATA\Microsoft\Windows\Start Menu\Programs", [Enviro
 
 $Url = "http://127.0.0.1:$Port/?server=$Office"
 Say "Done. $Title is running at http://127.0.0.1:$Port"
-Write-Host "    Open it any time from the '$Title' shortcut, or run: agentfleet-node   (menu: start, stop, start at sign-in, update)"
+Write-Host "    Open it any time from the '$Title' shortcut. To remove it: irm $Base/uninstall.ps1 | iex"
 if (-not $env:AGENTMESH_NO_OPEN) { Start-Process $Url }

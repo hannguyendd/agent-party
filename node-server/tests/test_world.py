@@ -270,3 +270,12 @@ async def test_node_audit_rows_reach_the_office_event_log_without_words(node_fac
             await wait_for(lambda: any(r["kind"] == "outbound_message" and r.get("agent") == "han/dev" for r in log.rows))
             await wait_for(lambda: any(r["kind"] == "inbound_message" and r.get("agent") == "bob/qa" for r in log.rows))
             assert "John Doe" not in json.dumps(log.rows)
+
+
+def test_world_serves_the_uninstallers(tmp_path):
+    from fastapi.testclient import TestClient
+
+    c = TestClient(create_world_app(tmp_path / "world.json", tmp_path))
+    sh = c.get("/uninstall", headers={"host": "10.0.0.5:7500"}).text
+    assert "agentfleet-node uninstall" in sh and "__" not in sh.split("set -uo", 1)[1][:200]
+    assert "Unregister-ScheduledTask" in c.get("/uninstall.ps1").text
