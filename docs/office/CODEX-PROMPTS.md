@@ -259,7 +259,7 @@ Gather, Stardew Valley, Animal Crossing, League of Legends, Dota, Overwatch or a
    - Row 2 (8-11): walk up, back view.
    - Row 3 (12-15): sit facing down, sit facing left, sit facing up, standing and waving one hand.
    - Row 4 (16-19): sitting and typing facing down (2 frames), standing idle breathing facing down (2 frames).
-   Feet (or the ghost's hem) touch logical y=70 in every frame; the last pixel row (y=71) stays transparent.
+   Feet (or the slime's base) touch logical y=70 in every frame; the last pixel row (y=71) stays transparent.
    One scale per character for all its poses; seated poses are naturally shorter. Same face, colours and
    proportions in every frame. Walk frames and the two typing frames must really differ (not duplicates).
 2. dashboard/public/office/characters/<id>-portrait.png for each id: 32x48 px, transparent, the character standing
