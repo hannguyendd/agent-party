@@ -20,6 +20,19 @@ def test_release_installers_need_no_server(tmp_path):
     assert installer.main(["--wheel", "nope.whl", "--out", str(out), "--amversion", "v1"]) == 2
 
 
+def test_installer_adds_codex_extra(tmp_path):
+    """Hosts that have Codex get the node with its Codex extra (spec: Packaging); others get the plain wheel."""
+    out = tmp_path / "rel"
+    installer.main(["--wheel", "agentfleet_node-0.4.0-py3-none-any.whl", "--out", str(out), "--amversion", "v1"])
+    sh = (out / "install.sh").read_text()
+    assert "command -v codex" in sh and '"$HOME/.codex/auth.json"' in sh
+    assert '"$tmp/$WHEEL[codex]"' in sh
+    ps = (out / "install.ps1").read_text()
+    assert "Get-Command codex" in ps and "auth.json" in ps
+    assert '"$WheelPath[codex]"' in ps
+    assert subprocess.run(["bash", "-n", str(out / "install.sh")]).returncode == 0
+
+
 def test_installer_reads_the_server_flag(tmp_path):
     """`bash -s -- --server host:7500` sets where downloads go first and what the setup form prefills."""
     out = tmp_path / "r"

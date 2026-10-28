@@ -61,7 +61,13 @@ elif [ -n "$GITHUB" ] && { say "Downloading from GitHub (${GITHUB#https://github
 else
   die "Could not download the node package from ${BASE:-the office server}${GITHUB:+ or GitHub}. Check this computer can open ${BASE:-$GITHUB} in a browser; if not, ask IT to allow it."
 fi
-uv tool install --force --reinstall --python 3.12 "$tmp/$WHEEL" >/dev/null
+# Hosts with Codex also get Codex agent support (the SDK and its pinned CLI, a large download); others don't.
+if command -v codex >/dev/null 2>&1 || [ -f "$HOME/.codex/auth.json" ]; then
+  say "Codex found: including Codex agent support"
+  uv tool install --force --reinstall --python 3.12 "$tmp/$WHEEL[codex]" >/dev/null
+else
+  uv tool install --force --reinstall --python 3.12 "$tmp/$WHEEL" >/dev/null
+fi
 NODE="$(command -v agentfleet-node || echo "$BIN/agentfleet-node")"
 [ -x "$NODE" ] || die "agentfleet-node was not installed"
 

@@ -20,11 +20,57 @@ export interface AgentIn {
   model: string | null
   /** Before messaging another agent on its own: go ahead, or ask the owner first. */
   contact_policy?: 'auto' | 'ask'
+  /** Which SDK runs the agent. Set when creating it; the node rejects a change (422). Omit on edits. */
+  runtime?: AgentRuntime
+  /** Codex agents only; omitted keys get the defaults. */
+  runtime_options?: Partial<CodexOptions>
+}
+
+export type AgentRuntime = 'claude' | 'codex'
+
+export interface CodexOptions {
+  /** A hard limit: an approval never lets a command leave it. An accepted Assignment raises read_only to
+   * workspace_write for that conversation only. */
+  sandbox: 'read_only' | 'workspace_write'
+  network: boolean
+  web_search: boolean
 }
 
 export interface Agent extends AgentIn {
+  runtime: AgentRuntime
+  /** {} for Claude agents. */
+  runtime_options: CodexOptions | Record<string, never>
   enabled: boolean
   created_at: string
+}
+
+/**
+ * Codex on this machine (GET /api/setup → codex). Offer the Codex runtime only when `usable`; show it disabled
+ * when `installed && !logged_in`; offer "Set up Codex agents" (POST /api/codex/setup) when `logged_in &&
+ * !sdk_installed`.
+ *
+ * Hint texts for the front-end team (spec: docs/superpowers/specs/2026-10-28-codex-runtime-design.md):
+ *
+ * - Not signed in: "Run `codex login` to use Codex agents"
+ * - Codex picked / a Codex agent's settings: "Uses your Codex setup. This agent loads your `~/.codex` settings and
+ *   `AGENTS.md`, and the project's `AGENTS.md`, in every conversation with other agents. Your personal MCP servers,
+ *   saved Codex approvals and hooks are turned off; the Office approves. Its threads appear in the Codex app; read
+ *   them there, but reply here in the Office, where approvals apply."
+ * - binary === 'bundled': "Your Codex (x.y.z) is older than this node supports; agents use the bundled Codex 0.163.0."
+ * - newer_than_tested: "Your Codex (x.y.z) is newer than the version this node was tested with."
+ * - auth_mode === 'api_key': "Billed to your OpenAI API key, not your ChatGPT subscription."
+ */
+export interface CodexStatus {
+  installed: boolean
+  path: string
+  version: string | null
+  logged_in: boolean
+  auth_mode: '' | 'chatgpt' | 'api_key' | 'other'
+  compatible: boolean
+  newer_than_tested: boolean
+  binary: 'own' | 'bundled'
+  sdk_installed: boolean
+  usable: boolean
 }
 
 export interface MeshStatus {
@@ -65,6 +111,7 @@ export interface SetupState {
   mesh_node: MeshProcess
   /** Claude Code on this machine (agents run on it); logged_in is read from where it keeps its login. */
   claude?: { installed: boolean; path: string; logged_in: boolean }
+  codex?: CodexStatus
 }
 
 /** A file the owner attaches to a message, base64-encoded. */
@@ -378,6 +425,8 @@ export const api = {
   setPresence: (online: boolean) => req<{ online: boolean }>('POST', '/api/presence', { online }),
   updateInfo: () => req<{ installed: boolean; build: string; latest: string | null; available: boolean }>('GET', '/api/update'),
   startUpdate: () => req<{ status: string }>('POST', '/api/update'),
+  /** Re-runs the installer, which adds Codex support on a host that has Codex; the node restarts. */
+  setupCodex: () => req<{ status: string }>('POST', '/api/codex/setup'),
 
   approvals: () => req<Approval[]>('GET', '/api/approvals'),
   decide: (id: string, allow: boolean, reason = '') =>

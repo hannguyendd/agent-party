@@ -36,6 +36,8 @@ def _add_missing_columns(engine: Engine) -> None:
                 if col.name in have:
                     continue
                 default = col.default.arg if col.default is not None and not callable(col.default.arg) else None
+                if default is None and col.server_default is not None:  # e.g. a JSON column's "{}"
+                    default = col.server_default.arg
                 ddl = col.type.compile(engine.dialect)
                 literal = "" if default is None else f" DEFAULT {int(default) if isinstance(default, bool) else repr(str(default))}"
                 conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN "{col.name}" {ddl}{literal}'))

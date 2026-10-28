@@ -49,7 +49,13 @@ if (-not $Got -and $GitHub) {
   try { Invoke-WebRequest "$GitHub/$Wheel" -OutFile $WheelPath -UseBasicParsing; $Got = $true } catch {}
 }
 if (-not $Got) { Die "Could not download the node package. Check this computer can open $(if ($Base) { $Base } else { $GitHub }) in a browser; if not, ask IT to allow it." }
-uv tool install --force --reinstall --python 3.12 $WheelPath | Out-Null
+# Hosts with Codex also get Codex agent support (the SDK and its pinned CLI, a large download); others don't.
+if ((Get-Command codex -ErrorAction SilentlyContinue) -or (Test-Path (Join-Path $HOME '.codex\auth.json'))) {
+  Say 'Codex found: including Codex agent support'
+  uv tool install --force --reinstall --python 3.12 "$WheelPath[codex]" | Out-Null
+} else {
+  uv tool install --force --reinstall --python 3.12 $WheelPath | Out-Null
+}
 $Node = (Get-Command agentfleet-node -ErrorAction SilentlyContinue).Source
 if (-not $Node) { $Node = Join-Path $Bin 'agentfleet-node.exe' }
 if (-not (Test-Path $Node)) { Die 'agentfleet-node was not installed' }

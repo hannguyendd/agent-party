@@ -127,8 +127,8 @@ doctor: ## Why other computers can't reach this office server: address, firewall
 
 install: install-node install-dashboard ## Install all dependencies
 
-install-node: ## Install node-server Python deps (uv)
-	cd $(NODE_DIR) && uv sync
+install-node: ## Install node-server Python deps (uv), with the optional Codex support
+	cd $(NODE_DIR) && uv sync --extra codex
 
 install-dashboard: ## Install dashboard deps (bun)
 	cd $(DASH_DIR) && bun install

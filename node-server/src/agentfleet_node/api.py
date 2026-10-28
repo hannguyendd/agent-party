@@ -15,7 +15,8 @@ from fastapi import APIRouter, HTTPException, Request, WebSocket
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from agentfleet_node.models import DEFAULT_ALLOWED_TOOLS, Agent, Direction
+from agentfleet_node.models import CODEX_DEFAULT_ALLOWED_TOOLS, DEFAULT_ALLOWED_TOOLS, Agent, Direction
+from agentfleet_node.runtimes.codex import codex_status, runtime_options
 from agentfleet_node.files import FileRejected, file_ref, save_to_inbox
 from agentfleet_node.mesh import AgentOffline
 from agentfleet_node.naming import InvalidAgentId, owner_of, validate_agent_id
@@ -42,11 +43,15 @@ class AgentIn(BaseModel):
     skills: list[SkillIn] = Field(default_factory=list)
     working_dir: str
     setting_sources: list[str] = Field(default_factory=lambda: ["project"])
-    allowed_tools: list[str] = Field(default_factory=lambda: list(DEFAULT_ALLOWED_TOOLS))
+    # None: the runtime's default list (Codex agents can't be asked before reads, so theirs has no "Read").
+    allowed_tools: list[str] | None = None
     denied_tools: list[str] = Field(default_factory=list)
     system_prompt: str = ""
     model: str | None = None
     contact_policy: Literal["auto", "ask"] = "auto"
+    # None on an edit keeps the stored runtime; a new agent defaults to "claude". Never changes once saved.
+    runtime: Literal["claude", "codex"] | None = None
+    runtime_options: dict[str, Any] | None = None
 
 
 class TextIn(BaseModel):
@@ -159,6 +164,7 @@ def _setup_view(node) -> dict[str, Any]:
         "agents": len([a for a in node.store.list_agents() if a.enabled]),
         "mesh_node": node.meshproc.status(),
         "claude": claude_status(s.claude_cli_path),
+        "codex": codex_status(),
     }
 
 
@@ -281,9 +287,27 @@ async def upsert_agent(body: AgentIn, request: Request) -> dict[str, Any]:
     wd = Path(body.working_dir).expanduser()
     if not wd.is_dir():
         raise HTTPException(422, f"working directory does not exist: {wd}")
+    stored = node.store.get_agent(body.id)
+    runtime = body.runtime or (stored.runtime if stored else "claude")
+    if stored and runtime != stored.runtime:
+        raise HTTPException(422, f"runtime can't change ({stored.runtime}); create a new agent to use {runtime}")
+    options: dict[str, Any] = {}
+    if runtime == "codex":
+        if not stored and not codex_status()["usable"]:
+            raise HTTPException(422, "Codex isn't set up on this computer (installed, signed in, Codex support installed)")
+        try:
+            options = runtime_options(body.runtime_options if body.runtime_options is not None else (stored.runtime_options if stored else None))
+        except ValueError as e:
+            raise HTTPException(422, str(e)) from None
+    elif body.runtime_options:
+        raise HTTPException(422, "runtime options apply to Codex agents only")
     data = body.model_dump()
     data["working_dir"] = str(wd.resolve())
     data["skills"] = [s.model_dump() for s in body.skills]
+    data["runtime"], data["runtime_options"] = runtime, options
+    if body.allowed_tools is None:
+        data["allowed_tools"] = list(stored.allowed_tools) if stored else list(
+            CODEX_DEFAULT_ALLOWED_TOOLS if runtime == "codex" else DEFAULT_ALLOWED_TOOLS)
     agent = node.store.save_agent(Agent(**data, enabled=True))
     node.store.audit("agent_saved", agent_id=agent.id, contact_policy=agent.contact_policy, tools=len(agent.allowed_tools))
     node.gateway.invalidate(agent.id)
@@ -460,7 +484,10 @@ async def manual_reply(conv_id: str, body: TextIn, request: Request) -> dict[str
 @router.post("/conversations/{conv_id}/fork")
 async def fork(conv_id: str, request: Request) -> dict[str, str]:
     node = _node(request)
-    _conv_or_404(node, conv_id)
+    conv = _conv_or_404(node, conv_id)
+    agent = node.store.get_agent(conv.agent_id)
+    if agent and agent.runtime != "claude":
+        raise HTTPException(409, "fork isn't available for Codex agents yet")
     try:
         new_id = await node.sessions.fork(conv_id)
     except ValueError as e:
@@ -794,6 +821,20 @@ async def start_update(request: Request) -> dict[str, str]:
 
     if not service.installed():
         raise HTTPException(409, "this node runs from a repo checkout; update it with git pull")
+    if not service.update(detached=True):
+        raise HTTPException(409, "no office server configured yet")
+    return {"status": "updating"}
+
+
+@router.post("/codex/setup")
+async def setup_codex(request: Request) -> dict[str, str]:
+    """Codex is here but the node lacks its Codex support: re-run the installer, which adds it on hosts with Codex."""
+    from agentfleet_node import service
+
+    if not codex_status()["installed"]:
+        raise HTTPException(409, "Codex isn't installed on this computer")
+    if not service.installed():
+        raise HTTPException(409, "this node runs from a repo checkout; run `uv sync --extra codex`")
     if not service.update(detached=True):
         raise HTTPException(409, "no office server configured yet")
     return {"status": "updating"}

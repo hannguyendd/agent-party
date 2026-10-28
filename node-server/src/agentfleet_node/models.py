@@ -17,6 +17,8 @@ def new_id() -> str:
 
 # Read-only by default; the CLI has no Glob/Grep, so searching goes through plain Bash commands.
 DEFAULT_ALLOWED_TOOLS = ("Read", "Bash(ls*)", "Bash(rg *)", "Bash(grep *)", "Bash(git status*)", "Bash(git log*)", "Bash(git diff*)")
+# Codex can't be asked before reading files, so a Codex agent's list holds shell rules only.
+CODEX_DEFAULT_ALLOWED_TOOLS = tuple(t for t in DEFAULT_ALLOWED_TOOLS if t.startswith("Bash("))
 
 
 class Direction(StrEnum):
@@ -70,6 +72,10 @@ class Agent(SQLModel, table=True):
     model: str | None = None
     # Before this agent messages another agent on its own: "auto" (go ahead) or "ask" (owner approves each one).
     contact_policy: str = "auto"
+    # Which SDK runs this agent's sessions: "claude" or "codex". Chosen at creation, never changed (ADR 0004).
+    runtime: str = "claude"
+    # Codex only: sandbox ("read_only" | "workspace_write"), network, web_search (runtimes.codex.CODEX_OPTION_DEFAULTS).
+    runtime_options: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON, server_default="{}"))
     enabled: bool = True
     created_at: datetime = Field(default_factory=utcnow)
 
