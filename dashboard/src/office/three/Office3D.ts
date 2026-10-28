@@ -12,6 +12,7 @@ import { distance, findPath, nearestFree } from '../pathfind'
 import { resolveTargets } from '../placement'
 import { REACH, type OfficeRenderer, type PeerClick, type SceneCallbacks, type SceneData } from '../renderer'
 import { ownerHue } from '../skins'
+import { disposeLook, inkMaterial, toon, wantsOutline } from './look'
 
 // Camera: orthographic, looking down ~49°, turned in quarter steps.
 const ELEVATION = 0.86
@@ -112,6 +113,7 @@ export class Office3D implements OfficeRenderer {
   private raycaster = new THREE.Raycaster()
   private listeners: [EventTarget, string, EventListener][] = []
   private keys = new Set<string>()
+  private lostTimer = 0
   private doors: { root: THREE.Object3D; mixer: THREE.AnimationMixer; clips: THREE.AnimationClip[]; at: THREE.Vector2; open: boolean }[] = []
 
   private host: HTMLElement
@@ -119,7 +121,8 @@ export class Office3D implements OfficeRenderer {
   constructor(host: HTMLElement) {
     this.host = host
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2))
+    // Retina at full resolution plus a big shadow map is more than integrated GPUs keep up with.
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5))
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     this.renderer.setClearColor(0xe6ddd8)
@@ -137,7 +140,7 @@ export class Office3D implements OfficeRenderer {
     const sun = new THREE.DirectionalLight(0xfff1e0, 2.3)
     sun.position.set(-30, 60, 34)
     sun.castShadow = true
-    sun.shadow.mapSize.set(4096, 4096)
+    sun.shadow.mapSize.set(2048, 2048)
     Object.assign(sun.shadow.camera, { left: -38, right: 38, top: 38, bottom: -38, near: 1, far: 200 })
     sun.shadow.bias = -0.0004
     sun.shadow.normalBias = 0.03
@@ -153,6 +156,12 @@ export class Office3D implements OfficeRenderer {
     this.observer.observe(host)
     this.resize()
     this.listen()
+    // The GPU can drop the context (driver reset, too many contexts, sleep). three restores it by itself when the
+    // browser allows; if it stays lost, hand over to the 2D look instead of leaving a blank map.
+    this.on(canvas, 'webglcontextlost', () => {
+      this.lostTimer = window.setTimeout(() => this.onError?.('the graphics card dropped the 3D view.'), 3000)
+    })
+    this.on(canvas, 'webglcontextrestored', () => window.clearTimeout(this.lostTimer))
     this.renderer.setAnimationLoop(() => this.frame())
     void this.load().catch((e: unknown) => this.onError?.(e instanceof Error ? e.message : String(e)))
   }
@@ -184,6 +193,12 @@ export class Office3D implements OfficeRenderer {
         const url = this.urls[id]
         if (!url) return // a placement naming a model the manifest lacks: skip it rather than fail the room
         const gltf = await loader.loadAsync(url)
+        gltf.scene.traverse((o) => {
+          if (o instanceof THREE.Mesh) {
+            o.userData.model = id
+            o.material = toon(o.material as THREE.Material)
+          }
+        })
         gltf.scene.updateMatrixWorld(true)
         this.models.set(id, gltf)
       }),
@@ -219,8 +234,22 @@ export class Office3D implements OfficeRenderer {
     root.traverse((o) => {
       if (o instanceof THREE.Mesh) o.castShadow = o.receiveShadow = true
     })
+    this.outline(root, p.model)
     this.scene.add(root)
     this.doors.push({ root, mixer: new THREE.AnimationMixer(root), clips: gltf.animations, at: new THREE.Vector2(p.x, p.z), open: false })
+  }
+
+  /** Outline every mesh of a cloned model (characters, doors) with an ink child sharing its geometry. */
+  private outline(root: THREE.Object3D, model: string) {
+    const meshes: THREE.Mesh[] = []
+    root.traverse((o) => {
+      if (o instanceof THREE.Mesh && wantsOutline(model, o.material as THREE.Material)) meshes.push(o)
+    })
+    for (const m of meshes) {
+      const ink = new THREE.Mesh(m.geometry, inkMaterial())
+      ink.userData.ink = true
+      m.add(ink)
+    }
   }
 
   private updateDoors(dt: number) {
@@ -269,6 +298,11 @@ export class Office3D implements OfficeRenderer {
       im.castShadow = shadows
       im.receiveShadow = true
       parent.add(im)
+      if (wantsOutline(model, o.material as THREE.Material)) {
+        const ink = new THREE.InstancedMesh(o.geometry, inkMaterial(), ps.length)
+        ink.instanceMatrix = im.instanceMatrix
+        parent.add(ink)
+      }
     })
   }
 
@@ -323,6 +357,7 @@ export class Office3D implements OfficeRenderer {
         o.receiveShadow = true
       }
     })
+    this.outline(root, skin)
     const color = new THREE.Color().setHSL(ownerHue(a.owner) / 360, 0.7, 0.5)
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.34, 0.44, 32), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false }))
     ring.rotation.x = -Math.PI / 2
@@ -1033,6 +1068,7 @@ export class Office3D implements OfficeRenderer {
   destroy() {
     this.disposed = true
     this.callbacks = null
+    window.clearTimeout(this.lostTimer)
     this.renderer.setAnimationLoop(null)
     this.observer.disconnect()
     for (const [t, type, fn] of this.listeners) t.removeEventListener(type, fn)
@@ -1047,7 +1083,10 @@ export class Office3D implements OfficeRenderer {
         }
       }
     })
+    disposeLook()
     this.renderer.dispose()
+    // Give the context back now: browsers keep only a few, and the Office remounts on every visit.
+    this.renderer.forceContextLoss()
     this.renderer.domElement.remove()
     this.overlay.remove()
   }
