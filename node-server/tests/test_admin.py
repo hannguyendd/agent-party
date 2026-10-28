@@ -117,3 +117,12 @@ def test_admin_event_log_traces_what_happened_but_never_words(tmp_path, monkeypa
     again = create_world_app(tmp_path / "world" / "world.json", None, "", None, 7400)
     assert len(again.state.hub.state.events.rows) == len(w.events.rows)
     assert c.get("/admin/api/log").status_code == 200
+
+
+def test_the_token_is_found_whatever_else_the_hub_prints():
+    from agentfleet_node.admin import parse_token
+
+    assert parse_token("bt_abc123XYZ0987654") == "bt_abc123XYZ0987654"
+    assert parse_token("Created bootstrap token\nToken: bt_Q7x9demoTOKEN42abc\nExpires: 2026-11-04T10:00:00Z\n") == "bt_Q7x9demoTOKEN42abc"
+    assert parse_token("ID: 3f2a8c1e-1b2c-4d5e-8f90-1234567890ab\nbootstrap token = Zk9xQ2ZsT3B6aXJ3MWVhcQ\nmax usages: 1\n2026-11-04 10:00:00") == "Zk9xQ2ZsT3B6aXJ3MWVhcQ"
+    assert parse_token("ok\nexpires 2026-11-04T10:00:00Z") is None

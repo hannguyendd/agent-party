@@ -87,6 +87,7 @@
       <div class="kv"><b>macOS / Linux</b><code id="rMac"></code><button data-copy="rMac">Copy</button></div>
       <div class="kv"><b>Windows</b><code id="rWin"></code><button data-copy="rWin">Copy</button></div>
       <div><button class="primary" id="copyMsg">Copy message to send</button> <span class="note" id="copied"></span></div>
+      <details><summary class="note">The hub's answer (to double-check the token)</summary><pre class="log" id="rRaw"></pre></details>
     </div>
   </section>
 
@@ -253,6 +254,7 @@ $('inviteForm').addEventListener('submit', async (e) => {
   try {
     const r = await call('/admin/api/invites', { device })
     $('rToken').textContent = r.token; $('rMac').textContent = r.mac; $('rWin').textContent = r.windows; message = r.message
+    $('rRaw').textContent = r.raw || ''
     $('result').hidden = false; $('copied').textContent = ''; $('device').value = ''
     await load()
   } catch (err) { $('inviteErr').textContent = err.message } finally { $('inviteBtn').disabled = false }

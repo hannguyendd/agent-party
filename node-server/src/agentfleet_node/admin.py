@@ -12,6 +12,7 @@ the rest of v1.
 import hashlib
 import hmac
 import json
+import re
 import secrets
 import shutil
 import subprocess
@@ -125,7 +126,24 @@ class AdminConfig:
         self.invites_file.write_text(json.dumps(rows[:200], indent=2))
 
 
-def mint_token(cfg: AdminConfig, device: str) -> str:
+_LABELLED = re.compile(r"\btoken\b[^:=\n]*[:=]\s*(\S+)", re.I)
+_TOKENISH = re.compile(r"^[A-Za-z0-9_.~+/=-]{10,}$")
+_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}")
+
+
+def parse_token(output: str) -> str | None:
+    """The join token in `agentmesh-one token create` output. It may print more than the token (an id, an expiry
+    date...), so: a value labelled "token", else the longest token-looking word that is not a date or an id label."""
+    for m in _LABELLED.finditer(output):
+        v = m.group(1).strip("\"'`,")
+        if _TOKENISH.match(v) and not _DATE.match(v):
+            return v
+    words = [w.strip("\"'`,") for w in output.split()]
+    candidates = [w for w in words if _TOKENISH.match(w) and not _DATE.match(w) and not re.fullmatch(r"[0-9a-f-]{36}", w)]
+    return max(candidates, key=len) if candidates else None
+
+
+def mint_token(cfg: AdminConfig, device: str) -> tuple[str, str]:
     """One single-use join token from the hub (same call as hub/mint-token.sh)."""
     problem = cfg.invite_problem()
     if problem:
@@ -141,10 +159,10 @@ def mint_token(cfg: AdminConfig, device: str) -> str:
         raise HTTPException(504, "the hub did not answer in time") from None
     if out.returncode != 0:
         raise HTTPException(502, f"the hub refused: {(out.stderr or out.stdout).strip()[-300:]}")
-    lines = [ln.strip() for ln in out.stdout.splitlines() if ln.strip()]
-    if not lines:
-        raise HTTPException(502, "the hub returned no token")
-    return lines[-1].split()[-1]  # the token is the last word printed
+    token = parse_token(out.stdout)
+    if not token:
+        raise HTTPException(502, f"could not find the token in the hub's answer: {out.stdout.strip()[-300:]}")
+    return token, out.stdout.strip()
 
 
 def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
@@ -239,7 +257,7 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
     def invite(body: InviteIn, request: Request) -> dict[str, Any]:
         need_admin(request)
         device = body.device.strip()
-        token = mint_token(cfg, device)
+        token, raw = mint_token(cfg, device)
         cfg.record(device, token)
         hub.state.events.record("invite_created", "admin", device=device)
         host = request.headers.get("host", "")
@@ -252,6 +270,6 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
             f"2. Run this once:\n   macOS / Linux (Terminal): {mac}\n   Windows (PowerShell): {win}\n"
             f"3. On the page that opens, enter your name and this join token (single use):\n   {token}\n"
         )
-        return {"device": device, "token": token, "mac": mac, "windows": win, "message": message}
+        return {"device": device, "token": token, "mac": mac, "windows": win, "message": message, "raw": raw}
 
     return r
