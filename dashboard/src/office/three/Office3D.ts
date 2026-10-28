@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { OfficeAgent } from '../../api'
 import { COLS, DESKS, ROWS, SPAWN, deskTagSpot, walkable, type Facing, type Point } from '../layout'
-import { fetchManifest, loadMapData, type Models3d } from '../mapData'
+import { fetchManifest, fetchModels3d, loadMapData, type Models3d } from '../mapData'
 import { distance, findPath, nearestFree } from '../pathfind'
 import { resolveTargets } from '../placement'
 import { REACH, type OfficeRenderer, type PeerClick, type SceneCallbacks, type SceneData } from '../renderer'
@@ -173,7 +173,7 @@ export class Office3D implements OfficeRenderer {
 
   private async load() {
     const manifest = await fetchManifest()
-    const m3 = manifest.models3d
+    const m3 = await fetchModels3d(manifest)
     if (!m3) throw new Error('The 3D look is not available yet (no models3d in the office manifest).')
     await loadMapData(manifest)
     this.urls = { ...m3.kit, ...m3.props, ...m3.characters }

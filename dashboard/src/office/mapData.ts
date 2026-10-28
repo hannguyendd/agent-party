@@ -8,7 +8,8 @@ export interface Manifest {
   objects?: Record<string, string>
   map?: Record<string, string>
   ui?: Record<string, string>
-  models3d?: Models3d
+  /** The 3D art: inline, or the path of a models3d.json the art pipeline keeps up to date. */
+  models3d?: Models3d | string
 }
 
 /** The manifest's 3D section (Codex, docs/office/CODEX-PROMPTS-3D.md). Paths are relative to the page. */
@@ -18,6 +19,18 @@ export interface Models3d {
   characters: Record<string, string>
   props: Record<string, string>
   kit: Record<string, string>
+}
+
+/** The 3D art to draw. `?art3d=<name>` (design work) loads a variant from office/3d-variants/<name>/ instead of the
+ *  manifest's, so different furniture sets can be compared in the real Office. */
+export async function fetchModels3d(manifest: Manifest): Promise<Models3d | null> {
+  const variant = new URLSearchParams(location.search).get('art3d')
+  const ref = variant && /^[a-z0-9-]+$/.test(variant) ? `office/3d-variants/${variant}/models3d.json` : manifest.models3d
+  if (!ref) return null
+  if (typeof ref !== 'string') return ref
+  const res = await fetch(ref)
+  if (!res.ok) throw new Error(`${ref}: ${res.status}`)
+  return (await res.json()) as Models3d
 }
 
 export async function fetchManifest(): Promise<Manifest> {
