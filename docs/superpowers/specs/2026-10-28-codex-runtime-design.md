@@ -344,3 +344,22 @@ Shapes: command approval params have `command` (a string like `/bin/zsh -lc 'ls;
 `fileChange` item's `changes[].path`). The SDK's default approval handler accepts everything, so a handler is
 mandatory, and it runs on the SDK's single stdout reader thread. Codex threads started by the node are saved in
 `~/.codex/sessions` (they show in the Codex app). `CODEX_MIN` stays 0.163.0 (only that version was tested).
+
+### Owner decisions after the prototype (2026-10-28)
+
+- **Saved Codex rules: allow and warn.** Allow rules in `~/.codex/rules` (and a project's `.codex/rules`) still let
+  a command run without an Office approval. The hint adds: "Commands you saved as always allowed in Codex also run
+  here without asking." The node never writes rules (it never answers `acceptWithExecpolicyAmendment`).
+- **Sandbox: run as designed, known issue.** `read_only` / `workspace_write` and the Assignment raise stay as
+  specified. Known issue, to solve later: an approved command runs outside the file sandbox (checks 5); only the
+  network setting holds for approved commands. The approval card is the real gate for files, as with Claude agents.
+- From the findings (Claude's calls): `approvalPolicy="untrusted"`, `approvalsReviewer="user"`, personal MCP
+  servers disabled one by one, `features.apps=false`, `features.hooks=false`, mesh `tool_timeout_sec` = turn +
+  approval timeouts; mesh tool elicitations accepted by the handler (the node's route enforces the policy), every
+  other elicitation declined.
+
+## Known issues
+
+- Approved Codex commands are not confined by the file sandbox (prototype check 5). Owner: solve later.
+- Saved Codex allow rules skip Office approvals (prototype check 2). Owner: allowed, with a warning.
+- `features.hooks=false` could not be observed working (prototype check 2).
