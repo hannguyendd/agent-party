@@ -6,7 +6,8 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 
 ## Files
 
-- `index.html`: the whole page (styles and page script inline). Two layers:
+- `index.html`: markup only; `style.css`: all styles; `app.js`: the page around the demo, in five parts with a
+  comment each (`stars`, `pageLayout`, `welcome`, `mapControls`, `officeLife`). The page has two layers:
   - the **intro** (`#intro`): logo, the name "Party Agent" dropping in letter by letter, **Come in**, a parade of
     walking characters. Come in (click anywhere or any key) shrinks the name to the middle and turns it into the
     loader (`.intro.loading`); when the office is ready the letters fly off (`.intro.done`) and the intro hides.
@@ -35,8 +36,8 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 
 ## Rules
 
-- **No build step.** Plain HTML/CSS/JS (old-browser-safe in `index.html` and `office.js`; `office3d.js` is a
-  modern ES module); fonts from Google Fonts. The only library is three.js, pinned in the import map, 3D only.
+- **No build step.** Plain HTML/CSS/JS (old-browser-safe in `app.js` and `office.js`; `office3d.js` is a modern
+  ES module); fonts from Google Fonts. The only library is three.js, pinned in the import map, 3D only.
   `oxlint` does not cover this folder, so check the console in a browser.
 - **Art paths are named directly** (the one exception to "code reads the manifest", see the root CLAUDE.md):
   `office/map/{background.png,collision.png,seats.json}`, `office/characters48/*.png` (48x72 sheets, 4 columns x 5
@@ -45,7 +46,9 @@ product: nothing here talks to a node, the mesh or the world server, and every a
   `dashboard/public/office`; if the page needs another folder, add it there too.
 - **Keys belong to the intro until the office shows**: `office.controls(view)` is attached on reveal, so WASD on
   the welcome screen enters instead of spawning the character.
-- **The map always fits between the chip bar and the bottom bar**: the page script `layout()` sizes the left
+- **Per-frame code writes the DOM only when a value changed** (the 2D actors, the 3D labels, the stats). Keep it
+  that way; the canvas is resized only on resize, not every frame.
+- **The map always fits between the chip bar and the bottom bar**: `pageLayout()` in `app.js` sizes the left
   column from the height (ResizeObserver on the main area and both bars); CSS (`.mapfit`, container units) does
   the rest. Don't size the map anywhere else.
 - **3D needs the 3D office art.** `scripts/build-site.sh` copies `dashboard/public/office/3d` when it exists and

@@ -58,30 +58,63 @@
     return 'Typing very seriously';
   };
 
-  // A* over the tile grid, 8 directions, no cutting corners.
+  // A small binary min-heap of tile indexes keyed by f-score, for A*.
+  function Heap() { this.items = []; this.keys = []; }
+  Heap.prototype.push = function (item, key) {
+    var a = this.items, k = this.keys, i = a.length;
+    a.push(item); k.push(key);
+    while (i > 0) {
+      var p = (i - 1) >> 1;
+      if (k[p] <= key) break;
+      a[i] = a[p]; k[i] = k[p]; i = p;
+    }
+    a[i] = item; k[i] = key;
+  };
+  Heap.prototype.pop = function () {
+    var a = this.items, k = this.keys, top = a[0], item = a.pop(), key = k.pop(), n = a.length, i = 0;
+    if (n) {
+      for (;;) {
+        var l = 2 * i + 1, r = l + 1, m = i;
+        var mk = key;
+        if (l < n && k[l] < mk) { m = l; mk = k[l]; }
+        if (r < n && k[r] < mk) { m = r; mk = k[r]; }
+        if (m === i) break;
+        a[i] = a[m]; k[i] = k[m]; i = m;
+      }
+      a[i] = item; k[i] = key;
+    }
+    return top;
+  };
+
+  // A* over the tile grid, 8 directions, no cutting corners. Returns tile centres from the step after the start
+  // to the goal, or null when the goal can't be reached.
   officeSim.prototype.find = function (sx, sy, tx, ty) {
-    var self = this, N = COLS * ROWS, g = new Float32Array(N).fill(1e9), from = new Int32Array(N).fill(-1), closed = new Uint8Array(N);
-    var start = sy * COLS + sx, goal = ty * COLS + tx, open = [start]; g[start] = 0;
-    var h = function (i) { var dx = Math.abs(i % COLS - tx), dy = Math.abs((i / COLS | 0) - ty); return Math.max(dx, dy) + 0.41 * Math.min(dx, dy); };
-    while (open.length) {
-      var bi = 0; for (var k = 1; k < open.length; k++) if (g[open[k]] + h(open[k]) < g[open[bi]] + h(open[bi])) bi = k;
-      var cur = open.splice(bi, 1)[0];
+    var N = COLS * ROWS, g = new Float32Array(N).fill(Infinity), from = new Int32Array(N).fill(-1), closed = new Uint8Array(N);
+    var start = sy * COLS + sx, goal = ty * COLS + tx, open = new Heap();
+    var h = function (x, y) { var dx = Math.abs(x - tx), dy = Math.abs(y - ty); return Math.max(dx, dy) + 0.41 * Math.min(dx, dy); };
+    g[start] = 0;
+    open.push(start, h(sx, sy));
+    while (open.items.length) {
+      var cur = open.pop();
       if (cur === goal) break;
+      if (closed[cur]) continue; // a stale heap entry
       closed[cur] = 1;
-      var cx = cur % COLS, cy = cur / COLS | 0;
+      var cx = cur % COLS, cy = (cur / COLS) | 0;
       for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
         if (!dx && !dy) continue;
         var nx = cx + dx, ny = cy + dy;
-        if (!self.ok(nx, ny)) continue;
-        if (dx && dy && (!self.ok(cx + dx, cy) || !self.ok(cx, cy + dy))) continue;
-        var ni = ny * COLS + nx; if (closed[ni]) continue;
+        if (!this.ok(nx, ny)) continue;
+        if (dx && dy && (!this.ok(cx + dx, cy) || !this.ok(cx, cy + dy))) continue;
+        var ni = ny * COLS + nx;
+        if (closed[ni]) continue;
         var ng = g[cur] + (dx && dy ? 1.41 : 1);
-        if (ng < g[ni]) { if (g[ni] === 1e9) open.push(ni); g[ni] = ng; from[ni] = cur; }
+        if (ng < g[ni]) { g[ni] = ng; from[ni] = cur; open.push(ni, ng + h(nx, ny)); }
       }
     }
     if (from[goal] === -1 && goal !== start) return null;
-    var out = []; for (var i = goal; i !== -1 && i !== start; i = from[i]) out.unshift([i % COLS + 0.5, (i / COLS | 0) + 0.5]);
-    return out;
+    var out = [];
+    for (var i = goal; i !== -1 && i !== start; i = from[i]) out.push([i % COLS + 0.5, ((i / COLS) | 0) + 0.5]);
+    return out.reverse();
   };
   officeSim.prototype.nearestOpen = function (x, y) {
     for (var r = 0; r < 8; r++) for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++) if (this.ok(x + dx, y + dy)) return [x + dx, y + dy];
@@ -272,24 +305,29 @@
     if (x < 0 || y < 0 || x >= 1 || y >= 1) return null;
     return [Math.floor(x * COLS), Math.floor(y * ROWS)];
   };
+  // Called every frame; each actor remembers what it last wrote, so only real changes touch the DOM.
+  var ROW_FOR = { down: 0, left: 1, right: 1, up: 2 };
   mapView.prototype.draw = function (t) {
-    var all = this.sim.all, rowFor = { down: 0, left: 1, right: 1, up: 2 };
+    var all = this.sim.all;
     for (var i = 0; i < all.length; i++) {
       var a = all[i], o = this.actors[i];
       var fx = a.x * TILE, fy = a.y * TILE + 10;
-      o.el.style.left = ((fx - 24) / MAP_W * 100) + '%';
-      o.el.style.top = ((fy - 71) / MAP_H * 100) + '%';
-      o.el.style.zIndex = Math.round(fy);
-      if (a.isPlayer) o.el.hidden = !a.active;
+      var left = ((fx - 24) / MAP_W * 100).toFixed(3), top = ((fy - 71) / MAP_H * 100).toFixed(3);
+      if (left !== o.left) { o.left = left; o.el.style.left = left + '%'; }
+      if (top !== o.top) { o.top = top; o.el.style.top = top + '%'; o.el.style.zIndex = Math.round(fy); }
+      if (a.isPlayer && o.hidden !== !a.active) { o.hidden = !a.active; o.el.hidden = o.hidden; }
       var col = 0, row = 0, flip = a.face === 'right';
-      o.el.classList.toggle('lift', a.mode === 'talk' || !!a.hiWith);
-      if (a.mode === 'walk' && !a.withPlayer) { col = Math.floor(t * 8) % 4; row = rowFor[a.face]; }
+      if (a.mode === 'walk' && !a.withPlayer) { col = Math.floor(t * 8) % 4; row = ROW_FOR[a.face]; }
       else if (a.mode === 'sit') { row = 3; col = a.face === 'down' ? 0 : a.face === 'up' ? 2 : 1; }
       else if (a.mode === 'stand' && !a.isPlayer && !a.withPlayer) { row = 4; col = 2 + Math.floor(t * 1.5 + i) % 2; flip = false; }
-      else { row = rowFor[a.face]; col = 0; }
-      o.sp.style.backgroundPosition = (col / 3 * 100) + '% ' + (row / 4 * 100) + '%';
-      o.sp.style.transform = flip ? 'scaleX(-1)' : '';
-      o.bb.classList.toggle('on', a.bubble);
+      else { row = ROW_FOR[a.face]; }
+      var frame = row * 4 + col;
+      if (frame !== o.frame) { o.frame = frame; o.sp.style.backgroundPosition = (col / 3 * 100) + '% ' + (row / 4 * 100) + '%'; }
+      if (flip !== o.flip) { o.flip = flip; o.sp.style.transform = flip ? 'scaleX(-1)' : ''; }
+      var lift = a.mode === 'talk' || !!a.hiWith;
+      if (lift !== o.lift) { o.lift = lift; o.el.classList.toggle('lift', lift); }
+      var bubble = !!a.bubble;
+      if (bubble !== o.bubble) { o.bubble = bubble; o.bb.classList.toggle('on', bubble); }
     }
   };
 

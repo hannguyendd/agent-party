@@ -24,6 +24,18 @@ const css = `
 
 function modelUrl(name, dirs) { return BASE + dirs[name] + '/' + name + '.glb'; }
 
+// fetch + JSON with two retries (static hosts sometimes drop a request in a burst).
+async function fetchJson(url) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) return await r.json();
+      if (r.status === 404 || attempt >= 2) throw new Error(url + ': HTTP ' + r.status);
+    } catch (e) { if (attempt >= 2) throw e; }
+    await new Promise((ok) => setTimeout(ok, 300 * (attempt + 1)));
+  }
+}
+
 // Load many files a few at a time, retrying once; a file that still fails comes back as null.
 async function loadAll(loader, urls, onEach, limit = 6) {
   const out = new Array(urls.length).fill(null);
@@ -73,7 +85,7 @@ export async function mount(host, office, opts) {
   host.appendChild(root);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75)); // sharp enough, and much cheaper than 2x+ on big screens
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -104,12 +116,12 @@ export async function mount(host, office, opts) {
   scene.add(sun, sun.target);
 
   // ---- load the layout and every model it names ----
-  const layout = await (await fetch(BASE + 'layout3d.json')).json();
+  const layout = await fetchJson(BASE + 'layout3d.json');
   const loader = new GLTFLoader();
   const dirs = {};
   const want = new Set(layout.objects.map((o) => o.model).concat(layout.walls.map((w) => w.model)));
   // Furniture lives in props/, walls and floors in kit/; models.json (written by scripts/build-site.sh) says which.
-  const index = await (await fetch(BASE + 'models.json')).json();
+  const index = await fetchJson(BASE + 'models.json');
   ['props', 'kit'].forEach((d) => (index[d] || []).forEach((n) => { if (!dirs[n]) dirs[n] = d; }));
   const names = [...want].filter((n) => dirs[n] || console.warn('3D model missing:', n));
   const skinsAll = [...new Set(sim.all.map((a) => a.skin))];
@@ -183,9 +195,17 @@ export async function mount(host, office, opts) {
   // ---- fit the whole office in the frame ----
   const corners = [];
   for (const x of [0, 56]) for (const y of [0, 2.5]) for (const z of [0, 36]) corners.push(new THREE.Vector3(x, y, z));
+  // size: the canvas size in px, measured on resize only (reading layout every frame is costly).
+  const size = { w: 1, h: 1 };
+  function resize() {
+    size.w = host.clientWidth || 1; size.h = host.clientHeight || 1;
+    renderer.setSize(size.w, size.h, false);
+    labels.style.setProperty('--tag', Math.max(9, Math.min(13, size.w / 95)) + 'px');
+    fit();
+  }
+  // Frame the whole office for the current rotation (cheap: no canvas resize).
   function fit() {
-    const w = host.clientWidth || 1, h = host.clientHeight || 1, aspect = w / h;
-    renderer.setSize(w, h, false);
+    const aspect = size.w / size.h;
     let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
     place(false); // frame the whole office from the unpanned camera
     const inv = cam.matrixWorldInverse.clone();
@@ -196,11 +216,9 @@ export async function mount(host, office, opts) {
     const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
     Object.assign(cam, { left: cx - halfW, right: cx + halfW, top: cy + halfH, bottom: cy - halfH });
     cam.updateProjectionMatrix();
-    labels.style.setProperty('--tag', Math.max(9, Math.min(13, w / 95)) + 'px');
   }
-  fit();
-  const ro = 'ResizeObserver' in window ? new ResizeObserver(fit) : null;
-  if (ro) ro.observe(host); else addEventListener('resize', fit);
+  resize();
+  if ('ResizeObserver' in window) new ResizeObserver(resize).observe(host); else addEventListener('resize', resize);
 
   // ---- the floor under the pointer; click walks there, drag pans, wheel zooms ----
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -275,12 +293,14 @@ export async function mount(host, office, opts) {
         const k = Math.min(1, dt * 5);
         shift((me.x - target.x - pan.x) * k, (me.y - target.z - pan.z) * k);
       }
-      const w = host.clientWidth, h = host.clientHeight;
+      const w = size.w, h = size.h;
       actors.forEach((act) => {
-        const a = act.a;
-        act.obj.visible = !a.isPlayer || a.active;
-        if (!act.obj.visible) { act.tag.style.display = 'none'; act.bub.classList.remove('on'); return; }
-        act.tag.style.display = '';
+        const a = act.a, shown = !a.isPlayer || a.active;
+        if (shown !== act.shown) {
+          act.shown = shown; act.obj.visible = shown; act.tag.style.display = shown ? '' : 'none';
+          if (!shown) act.bub.classList.remove('on');
+        }
+        if (!shown) return;
         act.obj.position.set(a.x, 0, a.y);
         // turn smoothly toward where the agent faces
         let want = FACE[a.face] != null ? FACE[a.face] : act.yaw;
@@ -290,14 +310,18 @@ export async function mount(host, office, opts) {
         play(act, clipFor(a));
         act.mixer.update(dt);
         v.set(a.x, act.height + 0.15, a.y).project(cam);
-        const sx = (v.x + 1) / 2 * w, sy = (1 - v.y) / 2 * h;
-        act.tag.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -100%)`;
-        act.bub.style.transform = `translate(${sx}px, ${sy - 22}px) translate(-50%, -100%)`;
-        act.bub.classList.toggle('on', !!a.bubble);
+        const sx = Math.round((v.x + 1) / 2 * w), sy = Math.round((1 - v.y) / 2 * h);
+        if (sx !== act.sx || sy !== act.sy) {
+          act.sx = sx; act.sy = sy;
+          act.tag.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -100%)`;
+          act.bub.style.transform = `translate(${sx}px, ${sy - 22}px) translate(-50%, -100%)`;
+        }
+        const bubble = !!a.bubble;
+        if (bubble !== act.bubble) { act.bubble = bubble; act.bub.classList.toggle('on', bubble); }
       });
       renderer.render(scene, cam);
     },
-    setActive(on) { active = on; root.hidden = !on; if (!on) sim.inputTurn = 0; if (on) { last = performance.now(); fit(); } },
+    setActive(on) { active = on; root.hidden = !on; if (!on) sim.inputTurn = 0; if (on) { last = performance.now(); resize(); } },
     zoomBy(f) { const c = center(); zoomAt(f, c[0], c[1]); },
     resetZoom() { cam.zoom = 1; cam.updateProjectionMatrix(); pan.set(0, 0, 0); azGoal = AZ + Math.round((az - AZ) / (2 * Math.PI)) * 2 * Math.PI; place(); },
     setFollow(on) { follow = on; },
