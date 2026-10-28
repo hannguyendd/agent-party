@@ -5,7 +5,7 @@
 set -euo pipefail
 VERSION=${1:?version, e.g. 0.4.2}
 OUT=${2:?output folder}
-REPO=${3:-${AGENTFLEET_RELEASE_REPO:-hannguyendd/internal-agent-fleet}}
+REPO=${3:-${AGENTFLEET_RELEASE_REPO:-hannguyendd/agent-party}}
 WHEEL="agentfleet_node-$VERSION-py3-none-any.whl"
 BASE="https://github.com/$REPO/releases/download/v$VERSION"
 mkdir -p "$OUT"

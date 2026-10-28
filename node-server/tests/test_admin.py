@@ -137,7 +137,7 @@ def test_invites_carry_the_github_commands_for_the_served_version(tmp_path, monk
     c = TestClient(admin_app(tmp_path))
     c.post("/admin/api/login", json={"key": (tmp_path / "world" / "admin-key").read_text().strip()})
     inv = c.post("/admin/api/invites", json={"device": "Bob's PC"}, headers={"host": "10.0.0.5:7500"}).json()
-    base = "https://github.com/hannguyendd/internal-agent-fleet/releases/download/v0.4.2"
+    base = "https://github.com/hannguyendd/agent-party/releases/download/v0.4.2"
     assert inv["mac_github"] == f"curl -fsSL {base}/install.sh | bash -s -- --server 10.0.0.5:7500"
     assert inv["windows_github"] == f"$env:AGENTMESH_SERVER='10.0.0.5:7500'; irm {base}/install.ps1 | iex"
     assert inv["mac_github"] in inv["message"] and "Office server: 10.0.0.5:7500" in inv["message"]

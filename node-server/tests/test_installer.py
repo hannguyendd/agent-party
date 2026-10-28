@@ -13,8 +13,8 @@ def test_release_installers_need_no_server(tmp_path):
     assert installer.main(["--wheel", "agentfleet_node-0.4.0-py3-none-any.whl", "--out", str(out), "--amversion", "v0.1.0-rc.10"]) == 0
     sh = (out / "install.sh").read_text()
     assert 'SERVER=""' in sh and 'WHEEL="agentfleet_node-0.4.0-py3-none-any.whl"' in sh
-    assert 'GITHUB="https://github.com/hannguyendd/internal-agent-fleet/releases/download/v0.4.0"' in sh
-    assert "$GitHub = 'https://github.com/hannguyendd/internal-agent-fleet/releases/download/v0.4.0'" in (out / "install.ps1").read_text()
+    assert 'GITHUB="https://github.com/hannguyendd/agent-party/releases/download/v0.4.0"' in sh
+    assert "$GitHub = 'https://github.com/hannguyendd/agent-party/releases/download/v0.4.0'" in (out / "install.ps1").read_text()
     assert {p.name for p in out.iterdir()} == {"install.sh", "install.ps1", "uninstall.sh", "uninstall.ps1"}
     assert subprocess.run(["bash", "-n", str(out / "install.sh")]).returncode == 0
     assert installer.main(["--wheel", "nope.whl", "--out", str(out), "--amversion", "v1"]) == 2

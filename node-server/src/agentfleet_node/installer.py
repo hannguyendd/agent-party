@@ -15,7 +15,7 @@ from pathlib import Path
 
 TEMPLATES = {name: Path(__file__).with_name(name) for name in ("install.sh", "install.ps1", "uninstall.sh", "uninstall.ps1")}
 # Where releases are published (public repo). Overridable for forks: AGENTFLEET_RELEASE_REPO=owner/repo.
-DEFAULT_REPO = "hannguyendd/internal-agent-fleet"
+DEFAULT_REPO = "hannguyendd/agent-party"
 _WHEEL = re.compile(r"^agentfleet_node-(?P<version>[0-9][0-9A-Za-z.+-]*)-py3-none-any\.whl$")
 
 
