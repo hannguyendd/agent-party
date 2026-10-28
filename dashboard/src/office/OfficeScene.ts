@@ -574,8 +574,9 @@ export class OfficeScene extends Phaser.Scene {
       if (at.kind === 'desk') {
         const deskId = deskOf(a.owner)
         const i = byOwner.get(a.owner)!.indexOf(a.agent_id)
-        if (deskId) {
-          const desk = DESK_BY_ID[deskId]
+        // A desk the world knows but this map lacks (a newer office server, an older seats.json) counts as no desk.
+        const desk = deskId ? DESK_BY_ID[deskId] : undefined
+        if (desk) {
           const slot = [desk.seat, ...desk.extras][i]
           p = slot && free(slot.x, slot.y) ? slot : nearestFree(desk.seat, free)
         } else {
