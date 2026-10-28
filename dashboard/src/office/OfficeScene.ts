@@ -78,12 +78,17 @@ interface DeskTag {
   text: Phaser.GameObjects.Text
   look: string
 }
+// Desk tags sit on the floor behind the chair. Most are faint text, like a label painted on the floor (`chip: false`);
+// my own desk and desks I can pick right now get a chip so they stand out.
 const TAG_LOOK = {
-  free: { fill: 0xfefaf2, stroke: 0x48506c, color: '#48506c' },
-  taken: { fill: 0x9dd6b7, stroke: 0x2f6b52, color: '#1f3b2f' },
-  mine: { fill: 0xf4b592, stroke: 0x8a4a2c, color: '#4a2412' },
-  pick: { fill: 0xd9f2c9, stroke: 0x70a65b, color: '#2f5a22' },
+  free: { fill: 0xfefaf2, stroke: 0x48506c, color: '#48506c', chip: false, alpha: 0.45 },
+  taken: { fill: 0x9dd6b7, stroke: 0x2f6b52, color: '#2f5a44', chip: false, alpha: 0.7 },
+  mine: { fill: 0xf4b592, stroke: 0x8a4a2c, color: '#4a2412', chip: true, alpha: 1 },
+  pick: { fill: 0xd9f2c9, stroke: 0x70a65b, color: '#2f5a22', chip: true, alpha: 1 },
 }
+// From the seat, one tile away from the desk: the floor behind the chair.
+// Side desks' chairs are drawn wider than a tile, so their tag sits a bit further out.
+const BEHIND: Record<string, Point> = { right: { x: -1.7, y: 0 }, left: { x: 1.7, y: 0 }, down: { x: 0, y: -1 }, up: { x: 0, y: 1 } }
 
 interface AgentSprite {
   id: string
@@ -247,14 +252,16 @@ export class OfficeScene extends Phaser.Scene {
       renderRoom(this)
     }
     for (const d of DESKS) {
-      const t = d.table
+      const back = BEHIND[d.seat.face] ?? { x: 0, y: 1 }
+      const at = { x: (d.seat.x + back.x + 0.5) * TILE, y: (d.seat.y + back.y + 0.5) * TILE }
       const text = crisp(
         this.add
           .text(0, 0, d.id, { fontFamily: 'Nunito, ui-sans-serif, system-ui', fontStyle: '800', fontSize: '11px', color: '#48506c', resolution: TEXT_RES })
           .setOrigin(0.5, 0.5),
       )
       const bg = this.add.graphics()
-      const box = this.add.container((t.x + t.w / 2) * TILE, t.y * TILE - 2, [bg, text]).setDepth(HUD_DEPTH - 1)
+      // Under the agents (they walk over it), above the map plate.
+      const box = this.add.container(at.x, at.y, [bg, text]).setDepth(-50)
       this.deskLabels.set(d.id, { box, bg, text, look: '' })
     }
   }
@@ -903,11 +910,13 @@ export class OfficeScene extends Phaser.Scene {
     if (!force && tag.look === look && tag.bg.getData('w') === tag.text.width) return
     const style = TAG_LOOK[look as keyof typeof TAG_LOOK] ?? TAG_LOOK.free
     tag.look = look
-    tag.text.setColor(style.color)
+    tag.text.setColor(style.color).setAlpha(style.alpha)
     crisp(tag.text).updateText()
     const w = Math.ceil(tag.text.width) + 12
     const h = Math.ceil(tag.text.height) + 4
     tag.bg.clear()
+    tag.bg.setData('w', tag.text.width)
+    if (!style.chip) return
     tag.bg.fillStyle(0x2c283c, 0.25).fillRoundedRect(-w / 2, -h / 2 + 2, w, h, 4) // hard drop shadow
     tag.bg.fillStyle(style.fill, 1).fillRoundedRect(-w / 2, -h / 2, w, h, 4)
     tag.bg.lineStyle(1.5, style.stroke, 1).strokeRoundedRect(-w / 2, -h / 2, w, h, 4)

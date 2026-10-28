@@ -142,7 +142,7 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
       </header>
 
       {conv.party_id && <PartyBar state={state} conv={conv} onRecap={() => void recap()} />}
-      <RecapList state={state} convId={conv.id} />
+      <RecapList state={state} convId={conv.id} onRetry={() => void recap()} />
 
       {conv.mode === 'manual' && (
         <div className="o-conv-banner">

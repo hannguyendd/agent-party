@@ -13,7 +13,7 @@ import { Icon } from './Icon'
 
 const rank = (c: { status: string }) => (NEEDS_YOU.includes(c.status as never) ? 0 : c.status === 'running' ? 1 : 2)
 
-type ChatTab = 'private' | 'outgoing' | 'incoming'
+export type ChatTab = 'private' | 'outgoing' | 'incoming'
 const CHAT_TABS: { id: ChatTab; icon: string; label: string; empty: string }[] = [
   { id: 'private', icon: '🔒', label: 'Private', empty: 'No private chats yet. Select one of your agents and press Message.' },
   { id: 'outgoing', icon: '↗', label: 'Outgoing', empty: "Nothing yet. Your agents' questions and tasks to other agents show up here." },
@@ -23,15 +23,19 @@ const CHAT_TABS: { id: ChatTab; icon: string; label: string; empty: string }[] =
 const tabOf = (c: { direction: string; kind?: string }): ChatTab =>
   c.kind === 'party' ? 'outgoing' : c.kind === 'party_share' ? 'incoming' : c.direction === 'local' ? 'private' : c.direction === 'outbound' ? 'outgoing' : 'incoming'
 
-export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string; onOpen: (id: string) => void }) {
+/** `tab` lives in the parent so it survives opening a chat and coming back; null = pick the one that needs me. */
+export function ChatsList({ state, me, onOpen, tab: chosen, onTab }: {
+  state: LiveState; me: string; onOpen: (id: string) => void; tab: ChatTab | null; onTab: (t: ChatTab) => void
+}) {
   const [q, setQ] = useState('')
   const [searching, setSearching] = useState(false)
   const seenMap = useSeen()
   const needle = q.trim().toLowerCase()
   const mineConvs = Object.values(state.conversations).filter((c) => c.agent_id.startsWith(`${me}/`))
   const isUnread = (c: (typeof mineConvs)[number]) => !!c.last_preview && (seenMap[c.id] ?? '') < c.updated_at
-  // Open on the tab that needs attention, else Private; the owner can switch freely afterwards.
-  const [tab, setTab] = useState<ChatTab>(() => tabOf(mineConvs.find((c) => NEEDS_YOU.includes(c.status)) ?? { direction: 'local' }))
+  // First visit: open on the tab that needs attention, else Private. After that, the owner's choice sticks.
+  const tab = chosen ?? tabOf(mineConvs.find((c) => NEEDS_YOU.includes(c.status)) ?? { direction: 'local' })
+  const setTab = onTab
   const counts = Object.fromEntries(
     CHAT_TABS.map((t) => {
       const inTab = mineConvs.filter((c) => tabOf(c) === t.id)
@@ -98,23 +102,24 @@ export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string;
             const sender = c.last_role === 'peer' ? peer?.name : c.last_role === 'owner' ? 'You' : mine.name
             // Only states worth attention get a chip; idle/done rows stay quiet.
             const loud = st.tone === 'run' || st.tone === 'wait' || st.tone === 'err'
-            const kind =
-              c.kind === 'party'
-                ? { icon: '🎉', label: 'Party you host' }
-                : c.kind === 'party_share'
-                  ? { icon: '📜', label: 'Shared Party (read only)' }
-                  : c.kind === 'assignment'
+            // Every conversation of a Party (the one I host, my agent's talk with a Host, a shared copy) reads as one.
+            const party = c.party_id ? (state.office?.parties ?? []).find((p) => p.party_id === c.party_id) : undefined
+            const inParty = !!c.party_id
+            const kind = inParty
+              ? { icon: '🎉', label: c.kind === 'party' ? 'Party you host' : c.kind === 'party_share' ? 'Shared Party (read only)' : 'Your agent in a Party' }
+              : c.kind === 'assignment'
                 ? { icon: '📋', label: 'Assignment' }
                 : c.kind === 'inquiry'
                   ? { icon: '🔎', label: 'Question' }
                   : !peer
                     ? { icon: '🔒', label: 'Private chat with your agent' }
                     : { icon: '💬', label: 'Conversation' }
+            // Faces: the Host's party shows everyone in it (up to three), otherwise me and the peer.
+            const faces = c.kind === 'party' && party ? [party.host, ...party.members].slice(0, 3).map((id) => who(state, id)) : [mine, ...(peer ? [peer] : [])]
             return (
-              <button key={c.id} className={`o-chat-row is-${st.tone} ${unread ? 'is-unread' : ''}`} onClick={() => onOpen(c.id)}>
-                <span className={`o-chat-faces ${peer ? 'is-pair' : ''}`}>
-                  <Avatar w={mine} size={30} />
-                  {peer && <Avatar w={peer} size={30} />}
+              <button key={c.id} className={`o-chat-row is-${st.tone} ${unread ? 'is-unread' : ''} ${inParty ? 'is-party' : ''}`} onClick={() => onOpen(c.id)}>
+                <span className={`o-chat-faces ${faces.length > 1 ? 'is-pair' : ''}`}>
+                  {faces.map((f) => <Avatar key={f.id} w={f} size={faces.length > 2 ? 24 : 30} />)}
                 </span>
                 <span className="o-chat-main">
                   <span className="o-chat-top">
@@ -122,14 +127,22 @@ export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string;
                       {kind.icon}
                     </span>
                     <strong>
-                      {mine.name}
-                      {peer && (
-                        <em>
-                          {' '}
-                          {c.direction === 'inbound' ? '←' : '→'} {peer.name}
-                        </em>
+                      {c.kind === 'party' ? (
+                        <>Party<em> · {c.title || mine.name}</em></>
+                      ) : (
+                        <>
+                          {mine.name}
+                          {peer && (
+                            <em>
+                              {' '}
+                              {c.direction === 'inbound' ? '←' : '→'} {peer.name}
+                            </em>
+                          )}
+                        </>
                       )}
                     </strong>
+                    {inParty && c.kind !== 'party' && <span className="o-chip is-party">Party</span>}
+                    {inParty && !party && <span className="o-chip is-done">ended</span>}
                     {loud && <span className={`o-chip is-${st.tone}`}>{st.label}</span>}
                     <time>{timeAgo(c.updated_at)}</time>
                     {unread && <i className="o-unread" aria-label="new messages" />}

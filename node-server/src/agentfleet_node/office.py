@@ -75,6 +75,7 @@ class WorldClient:
                 async with connect(self.settings.world_url, open_timeout=5) as ws:
                     self._ws = ws
                     attempt = 0
+                    log.info("connected to the world server")
                     await self._send_raw({"op": "hello", "owner": self.settings.owner})
                     await self._resync()
                     async for raw in ws:
@@ -85,7 +86,7 @@ class WorldClient:
             except asyncio.CancelledError:
                 raise
             except Exception as e:  # world server down or unreachable: keep retrying
-                log.debug("world link failed: %s", e)
+                log.info("world link failed: %s", e)
             finally:
                 self._ws = None
                 if self.connected:

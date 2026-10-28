@@ -7,7 +7,7 @@ import { errMsg, timeAgo } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
 
-export function RecapList({ state, convId }: { state: LiveState; convId: string }) {
+export function RecapList({ state, convId, onRetry }: { state: LiveState; convId: string; onRetry: () => void }) {
   const [loaded, setLoaded] = useState<Recap[]>([])
   const [open, setOpen] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
@@ -32,6 +32,9 @@ export function RecapList({ state, convId }: { state: LiveState; convId: string 
               <span>{r.status === 'working' ? 'writing…' : r.status === 'error' ? 'failed' : timeAgo(r.created_at)}</span>
               {r.shared && <span className="o-chip is-kind">shared</span>}
             </button>
+            {r.status === 'error' && r === rows[0] && (
+              <button className="o-recap-retry" onClick={onRetry}>Try again</button>
+            )}
             {expanded && r.status !== 'working' && (
               <div className="o-recap-body">
                 <pre>{r.body}</pre>

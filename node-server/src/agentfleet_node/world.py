@@ -138,6 +138,7 @@ class WorldState:
                 cur.name = name
                 events.append({"type": "agent", "agent": asdict(cur)})
         for gone in owned - new:
+            log.info("%s no longer publishes %s", owner, gone)
             events += self.remove_agent(gone)
         return events, new
 
@@ -429,6 +430,7 @@ class WorldHub:
             for agent_id in owned:
                 if self.publisher.get(agent_id) is ws:
                     del self.publisher[agent_id]
+                    log.info("%s left: its node's socket closed", agent_id)
                     events += self.state.remove_agent(agent_id)
             events += self.state.owner_connected(owner, -1)
             await self.broadcast(events)

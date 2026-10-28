@@ -911,3 +911,28 @@ a.o-file:hover { border-color: var(--o-line); }
   .o-party-cand.is-on { background: #22322b; border-color: #3f6f55; }
   .o-recap { background: #2c2639; border-color: #4b4063; }
 }
+
+/* compact conversation header: chips sit under the name, beside the avatar (not a full-width second row) */
+.o-conv-head { grid-template-areas: 'back faces title actions' 'back faces sub actions'; row-gap: 2px; padding: 8px 10px; column-gap: 8px; }
+.o-conv-head > .o-icon-btn, .o-conv-faces, .o-conv-actions { align-self: center; }
+.o-conv-title { align-self: end; }
+.o-conv-head > .o-conv-sub { align-self: start; gap: 4px; }
+.o-conv-sub .o-chip { font-size: 10.5px; padding: 0 6px; line-height: 16px; }
+.o-conv-faces .o-avatar { width: 30px !important; height: 30px !important; }
+.o-conv-title strong { font-size: 15px; -webkit-line-clamp: 1; }
+
+/* slim party bar + recap rows */
+.o-party-bar { padding: 5px 10px; gap: 6px; }
+.o-party-bar.is-ended { font-size: 12px; }
+.o-party-bar .o-mini-btn { padding: 1px 8px; font-size: 11.5px; }
+.o-recaps { padding: 5px 10px; gap: 4px; }
+.o-recap-head { padding: 3px 8px; }
+.o-recap-head strong { font-size: 12px; }
+.o-recap-retry { margin-left: 4px; font-size: 11.5px; font-weight: 800; color: var(--o-coral); cursor: pointer; }
+.o-recap-retry:hover { text-decoration: underline; }
+.o-chip.is-party { background: #fbe7b4; color: #6b4a08; border-color: #e7c36a; }
+.o-chat-row.is-party:not(.is-run):not(.is-wait):not(.is-err)::before { background: #e7c36a; }
+.o-recap { display: flex; flex-wrap: wrap; align-items: center; }
+.o-recap-head { flex: 1; width: auto; }
+.o-recap-retry { margin-right: 8px; }
+.o-recap-body { flex-basis: 100%; }

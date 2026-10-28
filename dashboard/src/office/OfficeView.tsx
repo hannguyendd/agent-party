@@ -15,7 +15,7 @@ import { PartyPanel } from './PartyPanel'
 import { markSeen } from './seen'
 import { ACTIVE_STATUSES } from './status'
 import { who } from './people'
-import { ApprovalsList, ChatsList } from './SideLists'
+import { ApprovalsList, ChatsList, type ChatTab } from './SideLists'
 import { PeerMenu } from './PeerMenu'
 import { Onboarding, type OnboardingStep } from './Onboarding'
 import { ApprovalCard } from '../components/ApprovalCard'
@@ -101,6 +101,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   const [newChat, setNewChat] = useState<string | null>(null)
   // A Party being gathered around one of my agents (its Host), before it starts.
   const [newParty, setNewParty] = useState<string | null>(null)
+  const [chatTab, setChatTab] = useState<ChatTab | null>(null)
   useEffect(() => { if (view.side) setSide(view.side) }, [view.side])
   const [notifyPerm, setNotifyPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'denied'))
   const incoming = Object.values(state.approvals).filter(a => a.status === 'pending' && a.tool_name === 'Assignment')
@@ -354,7 +355,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
 
         </>}
 
-        {side === 'chats' && <ChatsList state={state} me={me} onOpen={openChat} />}
+        {side === 'chats' && <ChatsList state={state} me={me} onOpen={openChat} tab={chatTab} onTab={setChatTab} />}
         {side === 'approvals' && <ApprovalsList approvals={pendingApprovals} state={state} onOpen={openChat} />}
         </>}
       </aside>
