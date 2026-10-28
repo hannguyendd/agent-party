@@ -6,7 +6,7 @@ export type IconName =
   | 'inject' | 'inquiry' | 'assignment' | 'party' | 'recap' | 'host' | 'desk' | 'back'
   | 'notifications-on' | 'online' | 'away'
 
-export function Icon({ name, size = 16, className, label }: { name: IconName; size?: number; className?: string; label?: string }) {
+export function Icon({ name, size = 16, className, label }: { name: IconName; size?: 16 | 32; className?: string; label?: string }) {
   return (
     <img
       src={`office/ui/${name}.png`}

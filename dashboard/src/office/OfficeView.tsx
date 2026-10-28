@@ -199,9 +199,9 @@ export default function OfficeView({ state, go, clearError, openConv, setOpenCon
           </div>
         )}
         <div className="office-zoom" aria-label="Zoom">
-          <button className="o-btn" aria-label="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}><Icon name="zoom-out" /></button>
-          <button className="o-btn" aria-label="Fit office" onClick={() => sceneRef.current?.fitCamera()}><Icon name="fit" /></button>
-          <button className="o-btn" aria-label="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}><Icon name="zoom-in" /></button>
+          <button className="o-btn" aria-label="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}>−</button>
+          <button className="o-btn" aria-label="Fit office" onClick={() => sceneRef.current?.fitCamera()}><Icon name="fit" size={32} /></button>
+          <button className="o-btn" aria-label="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}>+</button>
         </div>
         {peer && agents.some(a => a.agent_id === peer.agentId) && (
           <PeerMenu

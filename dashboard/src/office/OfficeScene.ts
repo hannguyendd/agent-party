@@ -642,6 +642,31 @@ export class OfficeScene extends Phaser.Scene {
       this.scaleOverlay(s)
       this.animate(s, moving)
     }
+    this.declutterLabels()
+  }
+
+  /** Agents standing close together would print their names on top of each other: lift the later one(s). */
+  private declutterLabels() {
+    const placed: { x: number; y: number; w: number; h: number }[] = []
+    const list = [...this.sprites.values()].filter((s) => s.label.visible).sort((a, b) => b.feet.y - a.feet.y)
+    for (const s of list) {
+      const k = s.label.scaleX
+      const w = s.label.width * k
+      const h = s.label.height * k
+      let y = s.hud.y + s.label.y
+      for (let tries = 0; tries < 6; tries++) {
+        const hit = placed.find((p) => Math.abs(p.x - s.hud.x) < (p.w + w) / 2 + 2 && Math.abs(p.y - y) < (p.h + h) / 2 + 1)
+        if (!hit) break
+        y = hit.y - (hit.h + h) / 2 - 2
+      }
+      const lift = y - (s.hud.y + s.label.y)
+      if (lift) {
+        s.label.y += lift
+        s.icon.y += lift
+        s.bubbleBox.y += lift
+      }
+      placed.push({ x: s.hud.x, y, w, h })
+    }
   }
 
   /** Proximity: when the one agent I'm controlling stands still within reach of someone else's agent, offer
