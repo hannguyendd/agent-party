@@ -77,7 +77,10 @@ Quick reference (`make help` lists every target):
 | Developer machine | `make setup` once, then `make up` (runs from the repo) |
 | Development | `make dev` (node server + Vite hot reload on :5173) · `make test` · `make build` |
 
-**Admin page** (`/admin` on the world server): create an invite per computer (a single-use join token from the
+**Admin page** (`/admin` on the world server): an **event log** (who did what and when: nodes connecting,
+online/offline, agents arriving, desks, Parties, conversation statuses, messages sent and received with their size,
+assignments and approvals decided, recaps, invites; never what was said; filter by person, agent or event), the
+server's own log, server settings (organization name, hub folder, agentmesh-one path, admin key), and: create an invite per computer (a single-use join token from the
 hub, the install commands and a ready-to-send message), see who is online with which agents and desks, and check
 that the installer has a package and an agentmesh-node for each platform. It opens without a key on the server
 itself; from elsewhere it asks for the admin key, printed by `make server` and saved as `node-server/data/admin-key`.

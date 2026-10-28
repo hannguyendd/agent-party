@@ -265,6 +265,7 @@ async def upsert_agent(body: AgentIn, request: Request) -> dict[str, Any]:
     data["working_dir"] = str(wd.resolve())
     data["skills"] = [s.model_dump() for s in body.skills]
     agent = node.store.save_agent(Agent(**data, enabled=True))
+    node.store.audit("agent_saved", agent_id=agent.id, contact_policy=agent.contact_policy, tools=len(agent.allowed_tools))
     node.gateway.invalidate(agent.id)
     node.directory.sync_node_config()
     await _republish(node)
@@ -277,6 +278,7 @@ async def delete_agent(agent_id: str, request: Request) -> dict[str, str]:
     if node.store.get_agent(agent_id) is None:
         raise HTTPException(404, "no such agent")
     node.store.delete_agent(agent_id)
+    node.store.audit("agent_deleted", agent_id=agent_id)
     node.gateway.invalidate(agent_id)
     node.directory.sync_node_config()
     await _republish(node)

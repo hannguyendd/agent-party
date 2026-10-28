@@ -62,6 +62,12 @@ def main() -> None:
 
         from agentfleet_node.world import create_world_app
 
+        # Also keep a log file next to the world data, for the admin page.
+        Path(args.data).parent.mkdir(parents=True, exist_ok=True)
+        fh = logging.FileHandler(Path(args.data).parent / "world.log")
+        fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+        logging.getLogger().addHandler(fh)
+        logging.getLogger("uvicorn.access").addHandler(fh)
         app = create_world_app(Path(args.data), Path(args.downloads), args.org, Path(args.hub_data), args.hub_port, args.agentmesh_one)
         print(f"Admin page: http://<this machine>:{args.port}/admin   (admin key: {app.state.admin.key})", flush=True)
         if problem := app.state.admin.invite_problem():

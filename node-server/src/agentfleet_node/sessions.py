@@ -480,6 +480,7 @@ class SessionManager:
 
     async def request_approval(self, w: SessionWorker, tool_name: str, tool_input: dict[str, Any]):
         appr = self.store.create_approval(w.conv_id, tool_name, tool_input)
+        self.store.audit("approval_requested", agent_id=w.agent.id, peer_agent_id=tool_input.get("to"), tool=tool_name)
         self.store.set_status(w.conv_id, ConversationStatus.AWAITING_APPROVAL)
         if w.status_hook:
             await w.status_hook(f"waiting for owner approval to use {tool_name}")
@@ -488,6 +489,7 @@ class SessionManager:
             allow, reason = await asyncio.wait_for(fut, self.settings.approval_timeout_s)
         except TimeoutError:
             self.store.decide_approval(appr.id, ApprovalStatus.TIMED_OUT, "no decision before timeout")
+            self.store.audit("approval_decided", agent_id=w.agent.id, tool=tool_name, outcome="timed_out")
             allow, reason = False, "Owner approval timed out."
         finally:
             self._approvals.pop(appr.id, None)
@@ -524,7 +526,10 @@ class SessionManager:
         fut = self._approvals.get(approval_id)
         if fut is None or fut.done():
             return False
-        self.store.decide_approval(approval_id, ApprovalStatus.ALLOWED if allow else ApprovalStatus.DENIED, reason)
+        appr = self.store.decide_approval(approval_id, ApprovalStatus.ALLOWED if allow else ApprovalStatus.DENIED, reason)
+        conv = self.store.get_conversation(appr.conversation_id)
+        self.store.audit("approval_decided", agent_id=conv.agent_id if conv else None, tool=appr.tool_name,
+                         outcome="allowed" if allow else "denied")
         fut.set_result((allow, reason))
         return True
 

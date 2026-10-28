@@ -42,6 +42,7 @@ class Presence:
             self.path.write_text(json.dumps({"online": online}))
         except OSError:
             log.warning("could not save presence to %s", self.path)
+        self.node.store.audit("went_online" if online else "went_offline")
         await self.apply()
         self.node.bus.publish({"type": "presence", "online": online})
         log.info("owner is now %s", "online" if online else "offline")

@@ -65,6 +65,7 @@ class Store:
     def __init__(self, db: Database, bus: EventBus):
         self.db = db
         self.bus = bus
+        self.audit_listeners: list = []  # (event, agent_id, peer_agent_id, detail) -> None
 
     # agents
 
@@ -263,6 +264,13 @@ class Store:
 
     def audit(self, event: str, **fields: Any) -> None:
         top = {k: fields.pop(k, None) for k in ("agent_id", "peer_agent_id", "context_id", "task_id")}
+        detail = redact(fields)
         with self.db.session() as s:
-            s.add(AuditLog(event=event, detail=redact(fields), **top))
+            s.add(AuditLog(event=event, detail=detail, **top))
             s.commit()
+        # The office server's event log gets the same metadata (office.WorldClient forwards it).
+        for listener in self.audit_listeners:
+            try:
+                listener(event, top.get("agent_id"), top.get("peer_agent_id"), detail)
+            except Exception:
+                log.debug("audit listener failed", exc_info=True)

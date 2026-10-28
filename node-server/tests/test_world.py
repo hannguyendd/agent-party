@@ -253,3 +253,20 @@ def test_new_skins_can_be_picked_and_defaults_never_move():
     assert w.default_skin("kien/dev") == old[sum(map(ord, "kien/dev")) % 8]
     w.set_skin("kien", "kien/dev", "dragon")
     assert w.agents["kien/dev"].skin == "dragon"
+
+
+async def test_node_audit_rows_reach_the_office_event_log_without_words(node_factory, tmp_path):
+    async with RunningWorld(tmp_path) as world:
+        a = node_factory("han", world_url=world.url, os_notifications=False)
+        b = node_factory("bob", world_url=world.url, os_notifications=False)
+        a.settings.static_peers = {"bob": b.url}
+        b.settings.static_peers = {"han": a.url}
+        async with a, b:
+            await add_agent(a, "han/dev")
+            await add_agent(b, "bob/qa")
+            await wait_for(lambda: a.node.world.connected and b.node.world.connected)
+            await a.node.outbound.send("han/dev", "bob/qa", "patient John Doe, room 12")
+            log = world.hub.state.events
+            await wait_for(lambda: any(r["kind"] == "outbound_message" and r.get("agent") == "han/dev" for r in log.rows))
+            await wait_for(lambda: any(r["kind"] == "inbound_message" and r.get("agent") == "bob/qa" for r in log.rows))
+            assert "John Doe" not in json.dumps(log.rows)

@@ -74,6 +74,10 @@ class WorldState:
         self.connected: dict[str, int] = {}  # owner -> connected nodes
         self.parties: dict[str, PartyState] = {}
         self.usage: dict[str, dict] = {}  # owner -> Claude plan usage per window (numbers only)
+        # What happened, who and when (never words), for the admin page (eventlog.py).
+        from agentfleet_node.eventlog import EventLog
+
+        self.events = EventLog(data_path.parent / "events.jsonl" if data_path else None)
         self._load()
 
     # persistence: only desk claims and skins survive a restart
@@ -118,12 +122,14 @@ class WorldState:
 
     def owner_connected(self, owner: str, delta: int) -> list[dict]:
         self.connected[owner] = max(0, self.connected.get(owner, 0) + delta)
+        self.events.record("node_connected" if delta > 0 else "node_disconnected", owner)
         return [{"type": "owners", "owners": self.owners_view()}]
 
     def set_present(self, owner: str, before: bool, now: bool) -> list[dict]:
         if before == now:
             return []
         self.present[owner] = max(0, self.present.get(owner, 0) + (1 if now else -1))
+        self.events.record("dashboard_opened" if now else "dashboard_closed", owner)
         return [{"type": "owners", "owners": self.owners_view()}]
 
     def sync_agents(self, owner: str, rows: list[dict], owned: set[str]) -> tuple[list[dict], set[str]]:
@@ -143,6 +149,7 @@ class WorldState:
             if cur is None:
                 cur = self.agents[agent_id] = AgentState(agent_id, owner, name, self.default_skin(agent_id))
                 events.append({"type": "agent", "agent": asdict(cur), "entered": True})
+                self.events.record("agent_joined", owner, agent=agent_id)
             elif cur.name != name:
                 cur.name = name
                 events.append({"type": "agent", "agent": asdict(cur)})
@@ -152,8 +159,10 @@ class WorldState:
         return events, new
 
     def remove_agent(self, agent_id: str) -> list[dict]:
-        if self.agents.pop(agent_id, None) is None:
+        gone = self.agents.pop(agent_id, None)
+        if gone is None:
             return []
+        self.events.record("agent_left", gone.owner, agent=agent_id)
         events: list[dict] = [{"type": "agent_left", "agent_id": agent_id}]
         # The Host dropping offline ends its Party; a member dropping offline just leaves it.
         for p in list(self.parties.values()):
@@ -180,6 +189,7 @@ class WorldState:
                 del self.desks[d]
         self.desks[desk] = owner
         self._save()
+        self.events.record("desk_claimed", owner, desk=desk)
         return [{"type": "desks", "desks": self.desks}]
 
     def set_skin(self, owner: str, agent_id: str, skin: str) -> list[dict]:
@@ -188,6 +198,7 @@ class WorldState:
             raise ValueError(f"no skin {skin!r}")
         self.skins[agent_id] = skin
         self._save()
+        self.events.record("look_changed", owner, agent=agent_id, skin=skin)
         a = self.agents.get(agent_id)
         if a is None:
             return []
@@ -219,6 +230,8 @@ class WorldState:
                 peer = None
         was = a.activity
         a.activity = {"peer": peer, "status": status, "direction": direction} if active else None
+        if (was or {}).get("status") != status or (was or {}).get("peer") != peer:
+            self.events.record("conversation", owner, agent=agent_id, peer=peer, status=status, direction=direction)
         if direction == "outbound" and peer and peer in self.agents and self.party_of(agent_id) is None:
             if active:
                 # It decided to talk to someone: it walks over, even if its owner had parked it somewhere.
@@ -248,6 +261,7 @@ class WorldState:
             if self.party_of(a):
                 raise ValueError(f"{a} is already in a Party")
         p = self.parties[party_id] = PartyState(party_id, host, members, kind)
+        self.events.record("party_opened", owner, agent=host, party=party_id, members=len(members), party_kind=kind)
         return [self._party_event(p), *self._gather(p, members)]
 
     def invite(self, owner: str, party_id: str, agent_id: str) -> list[dict]:
@@ -258,6 +272,7 @@ class WorldState:
         if self.party_of(agent_id):
             raise ValueError(f"{agent_id} is already in a Party")
         p.members.append(agent_id)
+        self.events.record("party_invited", owner, agent=agent_id, party=party_id)
         return [self._party_event(p, joined=agent_id), *self._gather(p, [agent_id])]
 
     def leave(self, owner: str, party_id: str, agent_id: str) -> list[dict]:
@@ -267,6 +282,7 @@ class WorldState:
         if p is None or agent_id not in p.members:
             raise ValueError(f"{agent_id} is not a member of that Party")
         p.members.remove(agent_id)
+        self.events.record("party_left", owner, agent=agent_id, party=party_id)
         return [self._party_event(p, left=agent_id), *self._send_home([agent_id])]
 
     def hand_off(self, owner: str, party_id: str, new_host: str) -> list[dict]:
@@ -278,6 +294,7 @@ class WorldState:
         if new_host not in p.members:
             raise ValueError(f"{new_host} is not a member of that Party")
         old = p.host
+        self.events.record("party_handed_off", owner, agent=old, peer=new_host, party=party_id)
         p.members.remove(new_host)
         p.host = new_host
         a = self.agents[new_host]
@@ -302,6 +319,7 @@ class WorldState:
 
     def _end_party(self, p: PartyState, reason: str) -> list[dict]:
         self.parties.pop(p.party_id, None)
+        self.events.record("party_ended", owner_of(p.host), agent=p.host, party=p.party_id, why=reason)
         return [{"type": "party_ended", "party_id": p.party_id, "host": p.host, "members": p.members, "reason": reason},
                 *self._send_home(p.members)]
 
@@ -386,6 +404,7 @@ class WorldHub:
         owned: set[str] = set()
         present = False
         self.clients.add(ws)
+        log.info("%s's node connected", owner)
         await self.broadcast(self.state.owner_connected(owner, +1))
         await ws.send_json(self.state.snapshot())
         try:
@@ -415,8 +434,21 @@ class WorldHub:
                     elif op == "usage":
                         from agentfleet_node.usage import clean
 
+                        before = {w: v.get("status") for w, v in self.state.usage.get(owner, {}).items()}
                         self.state.usage[owner] = clean(msg.get("usage"))
+                        for w, v in self.state.usage[owner].items():
+                            if v.get("status") == "rejected" and before.get(w) != "rejected":
+                                self.state.events.record("plan_limit_hit", owner, window=w)
                         events = [{"type": "usage", "owner": owner, "usage": self.state.usage[owner]}]
+                    elif op == "audit":
+                        # A node's own audit row (already metadata only; sanitized again by the event log).
+                        detail = msg.get("detail") if isinstance(msg.get("detail"), dict) else {}
+                        agent = str(msg.get("agent_id") or "")
+                        if agent and owner_of(agent) != owner:
+                            raise PermissionError(f"{owner} cannot report for {agent}")
+                        self.state.events.record(str(msg.get("event", "node_event")), owner, agent=agent or None,
+                                                 peer=msg.get("peer_agent_id"), source="node", **detail)
+                        events = []
                     elif op == "party_open":
                         events = self.state.open_party(
                             owner, str(msg.get("party_id", "")), str(msg.get("host", "")),
@@ -455,6 +487,7 @@ class WorldHub:
                     log.info("%s left: its node's socket closed", agent_id)
                     events += self.state.remove_agent(agent_id)
             events += self.state.owner_connected(owner, -1)
+            log.info("%s's node disconnected", owner)
             await self.broadcast(events)
 
 

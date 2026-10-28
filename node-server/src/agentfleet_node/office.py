@@ -32,6 +32,7 @@ class WorldClient:
         self.connected = False
         self.mirror: dict[str, Any] = {"org": "", "desks": {}, "owners": {}, "agents": {}, "parties": {}, "usage": {}, "desk_ids": [], "skins": []}
         self.usage = None  # usage.UsageTracker; its numbers go to the world on every (re)connect
+        store.audit_listeners.append(self._forward_audit)
         # Called with each Party event from the world (party.PartyService reacts to joins, hand-offs, endings).
         self.party_listeners: list[Callable[[dict[str, Any]], None]] = []
         self._ws: ClientConnection | None = None
@@ -95,6 +96,11 @@ class WorldClient:
                     self.bus.publish({"type": "office", "event": {"type": "link", "connected": False}})
             attempt += 1
             await asyncio.sleep(min(15.0, 0.5 * 2**attempt))
+
+    def _forward_audit(self, event: str, agent_id: str | None, peer: str | None, detail: dict) -> None:
+        """The node's audit rows (metadata only, see store.redact) go to the office server's event log."""
+        if self.enabled and self._ws is not None:
+            self._spawn_send({"op": "audit", "event": event, "agent_id": agent_id, "peer_agent_id": peer, "detail": detail})
 
     def send_usage(self, usage: dict) -> None:
         """Plan usage as numbers only (fraction used, reset time per window): no content."""

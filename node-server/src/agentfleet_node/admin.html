@@ -50,6 +50,13 @@
   .ok { color: var(--mint-ink); font-weight: 800; } .miss { color: var(--coral); font-weight: 800; }
   .empty { color: var(--muted); font-size: 13px; }
   #login { max-width: 360px; margin: 80px auto; }
+  .scroll { max-height: 420px; overflow: auto; }
+  select { width: 100%; padding: 8px 10px; font: inherit; border: 2px solid var(--line); border-radius: 6px; background: #fff; }
+  td.details { color: var(--muted); font-size: 12px; }
+  pre.log { max-height: 320px; overflow: auto; padding: 10px; border-radius: 6px; background: #2c283c; color: #fdf3e6;
+    font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .st-running, .st-awaiting_approval, .st-awaiting_owner { color: var(--mint-ink); font-weight: 800; }
+  .st-error { color: var(--coral); font-weight: 800; }
   @media (max-width: 760px) { main { grid-template-columns: 1fr; } .kv { grid-template-columns: 1fr auto; } .kv b { grid-column: 1 / -1; } }
 </style>
 </head>
@@ -98,6 +105,21 @@
   </section>
 
   <section class="card wide">
+    <h2>Events <small>what happened, who and when; words never reach this server</small></h2>
+    <div class="row" style="margin-bottom:8px">
+      <div><input id="actWho" placeholder="Person or agent, e.g. Kien or Han/be" /></div>
+      <div style="flex:0 0 220px"><select id="actKind"><option value="">All events</option></select></div>
+      <button id="actRefresh">Refresh</button></div>
+    <div class="scroll"><table><thead><tr><th>When</th><th>Who</th><th>Event</th><th>Agent</th><th>With</th><th>Details</th></tr></thead><tbody id="activity"></tbody></table></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Server log <small id="logPath"></small></h2>
+    <pre class="log" id="serverLog"></pre>
+    <div style="margin-top:8px"><button id="logRefresh">Refresh</button></div>
+  </section>
+
+  <section class="card wide">
     <h2>Server settings <small>saved on this server; make server needs no parameters</small></h2>
     <form id="settingsForm" class="settings">
       <div><label for="org">Organization name</label><input id="org" maxlength="60" placeholder="e.g. Taggle" />
@@ -124,6 +146,7 @@
 <script>
 const $ = (id) => document.getElementById(id)
 let message = ''
+let loadedExtras = false
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
 
 async function call(path, body) {
@@ -153,12 +176,55 @@ async function load() {
     $('org').value = o.settings.org; $('hubData').value = o.settings.hub_data; $('amOne').value = o.settings.agentmesh_one
   }
   $('amFound').textContent = o.settings.agentmesh_one_found ? `Using ${o.settings.agentmesh_one_found}` : 'Not found: set its full path.'
+  if (!loadedExtras) { loadedExtras = true; loadActivity().catch(() => {}); loadLog().catch(() => {}) }
   $('build').textContent = o.build ? `build ${o.build}` : ''
   $('pkg').innerHTML = o.package ? `Package <code>${esc(o.package)}</code> is ready.` : '<span class="miss">No package yet: run make server (or make bundle).</span>'
   $('platforms').innerHTML = o.platforms.map((p) => `<tr><td>${esc(p.name)}</td><td><code>${esc(p.file)}</code></td><td class="${p.ready ? 'ok' : 'miss'}">${p.ready ? 'ready' : 'missing'}</td></tr>`).join('')
   $('invites').innerHTML = o.invites.length ? o.invites.map((i) => `<tr><td>${esc(i.device)}</td><td>${new Date(i.created * 1000).toLocaleString()}</td><td><code>${esc(i.hint)}</code></td></tr>`).join('')
     : '<tr><td colspan="3" class="empty">No invites yet.</td></tr>'
 }
+
+const STATUS = { running: 'talking', awaiting_approval: 'waiting for approval', awaiting_owner: 'waiting for owner',
+  idle: 'finished', done: 'finished', error: 'error', interrupted: 'stopped' }
+const KIND = {
+  node_connected: 'node connected', node_disconnected: 'node disconnected', dashboard_opened: 'opened the Office',
+  dashboard_closed: 'closed the Office', went_online: 'went online', went_offline: 'went offline',
+  agent_joined: 'agent arrived', agent_left: 'agent left', agent_saved: 'agent saved', agent_deleted: 'agent deleted',
+  desk_claimed: 'took a desk', look_changed: 'changed a look', conversation: 'conversation',
+  inbound_message: 'message received', inbound_reply: 'reply sent', outbound_message: 'message sent', outbound_reply: 'reply received',
+  assignment_decided: 'assignment decided', approval_requested: 'approval asked', approval_decided: 'approval decided',
+  owner_attached_files: 'attached files', recap_written: 'recap written', party_opened: 'party opened', party_invited: 'invited to party',
+  party_left: 'left party', party_handed_off: 'party handed off', party_ended: 'party ended', party_update: 'party shared',
+  party_update_received: 'party share received', party_handoff: 'party hand-off', topic: 'title shared', plan_limit_hit: 'Claude limit hit',
+  invite_created: 'invite created', settings_changed: 'settings changed', admin_key_changed: 'admin key changed', setup_saved: 'joined the team',
+}
+const SKIP = new Set(['at', 'kind', 'owner', 'agent', 'peer', 'source'])
+async function loadActivity() {
+  const who = $('actWho').value.trim(), kind = $('actKind').value
+  const r = await call('/admin/api/events?limit=400' + (who ? '&who=' + encodeURIComponent(who) : '') + (kind ? '&kind=' + kind : ''))
+  const sel = $('actKind'), keep = sel.value
+  sel.innerHTML = '<option value="">All events</option>' + r.kinds.map((k) => `<option value="${esc(k)}">${esc(KIND[k] || k)}</option>`).join('')
+  sel.value = keep
+  $('activity').innerHTML = r.rows.length ? r.rows.map((e) => {
+    const label = e.kind === 'conversation' ? `conversation ${STATUS[e.status] || e.status}` : (KIND[e.kind] || e.kind)
+    const arrow = e.direction === 'inbound' ? '← ' : e.direction === 'outbound' ? '→ ' : ''
+    const details = Object.entries(e).filter(([k]) => !SKIP.has(k) && !(e.kind === 'conversation' && (k === 'status' || k === 'direction')))
+      .map(([k, v]) => `${esc(k)}=${esc(v)}`).join(' · ')
+    return `<tr><td>${new Date(e.at * 1000).toLocaleString()}</td><td>${esc(e.owner || '')}</td>
+      <td class="${e.kind === 'conversation' ? 'st-' + esc(e.status) : ''}">${esc(label)}</td><td>${esc(e.agent || '')}</td>
+      <td>${e.peer ? arrow + esc(e.peer) : ''}</td><td class="details">${details}</td></tr>`
+  }).join('') : '<tr><td colspan="6" class="empty">Nothing yet.</td></tr>'
+}
+$('actKind').addEventListener('change', () => void loadActivity())
+async function loadLog() {
+  const r = await call('/admin/api/log?lines=300')
+  $('logPath').textContent = r.path
+  $('serverLog').textContent = r.lines.join('\n') || '(empty)'
+  $('serverLog').scrollTop = $('serverLog').scrollHeight
+}
+$('actRefresh').addEventListener('click', () => void loadActivity())
+$('actWho').addEventListener('keydown', (e) => { if (e.key === 'Enter') void loadActivity() })
+$('logRefresh').addEventListener('click', () => void loadLog())
 
 $('settingsForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('settingsNote').textContent = ''

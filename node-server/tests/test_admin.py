@@ -91,3 +91,29 @@ def test_settings_from_the_admin_page_are_kept_and_the_org_reaches_every_office(
     assert c.get("/admin/api/overview").json()["locked"] is False
     other = TestClient(app)
     assert other.post("/admin/api/login", json={"key": key}).status_code == 401
+
+
+def test_admin_event_log_traces_what_happened_but_never_words(tmp_path, monkeypatch):
+    fake_agentmesh_one(tmp_path, monkeypatch)
+    app = admin_app(tmp_path)
+    w = app.state.hub.state
+    w.sync_agents("kien", [{"agent_id": "kien/wabi", "name": "WABI"}], set())
+    w.sync_agents("han", [{"agent_id": "han/be", "name": "Backend"}], set())
+    w.activity("kien", "kien/wabi", "han/be", "running", "outbound")
+    w.activity("kien", "kien/wabi", "han/be", "idle", "outbound")
+    w.claim_desk("kien", "D3")
+    # A node's audit row: content-like fields are dropped even if a node sent them.
+    w.events.record("outbound_message", "kien", agent="kien/wabi", peer="han/be", chars=42, text="secret", message="x")
+    c = TestClient(app)
+    c.post("/admin/api/login", json={"key": (tmp_path / "world" / "admin-key").read_text().strip()})
+    r = c.get("/admin/api/events?who=han/be").json()
+    kinds = [e["kind"] for e in r["rows"]]
+    assert kinds[:3] == ["outbound_message", "conversation", "conversation"] and "agent_joined" in kinds
+    sent = r["rows"][0]
+    assert sent["chars"] == 42 and "text" not in sent and "message" not in sent
+    assert {"desk_claimed", "agent_joined", "conversation"} <= set(r["kinds"])
+    assert c.get("/admin/api/events?kind=desk_claimed").json()["rows"][0]["desk"] == "D3"
+    # Kept across a restart.
+    again = create_world_app(tmp_path / "world" / "world.json", None, "", None, 7400)
+    assert len(again.state.hub.state.events.rows) == len(w.events.rows)
+    assert c.get("/admin/api/log").status_code == 200

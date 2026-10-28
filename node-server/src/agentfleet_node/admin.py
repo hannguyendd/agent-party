@@ -194,6 +194,24 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
             "invites": cfg.invites()[:50],
         }
 
+    @r.get("/admin/api/events")
+    def events(request: Request, limit: int = 300, who: str = "", kind: str = "") -> dict[str, Any]:
+        """The event log (eventlog.py): what happened, who and when; never words."""
+        need_admin(request)
+        kinds = sorted({r.get("kind", "") for r in hub.state.events.rows})
+        return {"rows": hub.state.events.query(who, kind, limit), "kinds": kinds}
+
+    @r.get("/admin/api/log")
+    def server_log(request: Request, lines: int = 200) -> dict[str, Any]:
+        """The end of this office server's own log (connections, errors)."""
+        need_admin(request)
+        path = cfg.data_dir / "world.log"
+        try:
+            text = path.read_text(errors="replace").splitlines()[-max(1, min(lines, 2000)):]
+        except OSError:
+            text = []
+        return {"path": str(path), "lines": text}
+
     @r.post("/admin/api/settings")
     async def settings(body: SettingsIn, request: Request) -> dict[str, Any]:
         """Organization name (every Office shows "<org> Office" at once), hub data folder, agentmesh-one path."""
@@ -202,6 +220,7 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
         cfg.hub_data = Path(body.hub_data.strip()).expanduser().resolve() if body.hub_data.strip() else cfg.hub_data
         cfg.agentmesh_one = body.agentmesh_one.strip() or None
         cfg.save_settings(org=org, hub_data=str(cfg.hub_data or ""), agentmesh_one=cfg.agentmesh_one or "")
+        hub.state.events.record("settings_changed", "admin", org=org, hub_data=str(cfg.hub_data or ""))
         if org != hub.state.org:
             hub.state.org = org
             await hub.broadcast([{"type": "org", "org": org}])
@@ -212,6 +231,7 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
         """A new admin key; this browser stays signed in, others must enter the new one."""
         need_admin(request)
         cfg.set_key(body.key)
+        hub.state.events.record("admin_key_changed", "admin")
         response.set_cookie(COOKIE, cfg.cookie_value(), httponly=True, samesite="strict", max_age=30 * 24 * 3600)
         return {"ok": True}
 
@@ -221,6 +241,7 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
         device = body.device.strip()
         token = mint_token(cfg, device)
         cfg.record(device, token)
+        hub.state.events.record("invite_created", "admin", device=device)
         host = request.headers.get("host", "")
         title = f"{hub.state.org} Office" if hub.state.org else "the Office"
         mac = f"curl -fsSL http://{host}/install | bash"
