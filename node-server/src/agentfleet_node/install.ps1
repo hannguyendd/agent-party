@@ -66,9 +66,11 @@ uv tool update-shell 2>$null | Out-Null   # puts the tool folder on PATH for new
 $Auto = $env:AGENTMESH_AUTOSTART
 if (-not $env:AGENTMESH_UPDATE -and -not $Auto) {
   $Answer = Read-Host "Start $Title automatically when you sign in? [y/N]"
-  if ($Answer -match '^[yY]') { $Auto = 'on' }
+  $Auto = if ($Answer -match '^[yY]') { 'on' } else { 'off' }
 }
-if ($Auto -eq 'on') { & $Node autostart on | Out-Null } else { & $Node restart | Out-Null }
+if ($Auto -eq 'on') { & $Node autostart on | Out-Null }
+elseif ($Auto -eq 'off') { & $Node autostart off | Out-Null; & $Node restart | Out-Null }   # a "no" also undoes an earlier install's
+else { & $Node restart | Out-Null }
 
 $Ready = $false
 for ($i = 0; $i -lt 40; $i++) {

@@ -63,10 +63,13 @@ uv tool update-shell >/dev/null 2>&1 || true   # puts ~/.local/bin on PATH for n
 if [ -z "${AGENTMESH_UPDATE:-}" ] && [ -z "${AGENTMESH_AUTOSTART:-}" ] && { : </dev/tty; } 2>/dev/null; then
   printf '\033[1;36m?? \033[0m Start %s automatically when you log in? [y/N] ' "$TITLE" >/dev/tty
   read -r answer </dev/tty || answer=""
-  case "$answer" in [yY]*) AGENTMESH_AUTOSTART=on ;; esac
+  case "$answer" in [yY]*) AGENTMESH_AUTOSTART=on ;; *) AGENTMESH_AUTOSTART=off ;; esac
 fi
 if [ "${AGENTMESH_AUTOSTART:-}" = on ]; then
   "$NODE" autostart on
+elif [ "${AGENTMESH_AUTOSTART:-}" = off ]; then
+  "$NODE" autostart off >/dev/null   # a "no" also turns off start-at-login set up by an earlier install
+  "$NODE" restart >/dev/null
 else
   "$NODE" restart >/dev/null   # in the background, for this session (or under start-at-login if it was on)
 fi

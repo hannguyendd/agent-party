@@ -205,8 +205,9 @@ def set_autostart(on: bool) -> bool:
             LINUX_UNIT.unlink(missing_ok=True)
         else:
             _ps(f"Unregister-ScheduledTask -TaskName {WIN_TASK} -Confirm:$false -ErrorAction SilentlyContinue")
-        if was_running and not running():
-            start()  # leaving start-at-login doesn't stop today's session
+        if was_running:
+            _wait(False, 8)  # unloading the login service stops the node it ran: wait, then keep today's session
+            start()
         return True
     stop()
     env = node_env()
