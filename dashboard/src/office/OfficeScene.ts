@@ -720,6 +720,31 @@ export class OfficeScene extends Phaser.Scene {
   // My agents that have been away from the entrance since they came in (walking out of it doesn't count).
   private awayFromDoor = new Set<string>()
   private doorStillMs = 0
+  /** My agent sent to the door by clicking it: the "Heading home?" popup opens as soon as it gets there. */
+  private doorIntent: string | null = null
+
+  /** The entrance door and the floor just in front of it (the door art sits on the wall above the spawn tile). */
+  private isDoor(t: Point): boolean {
+    return Math.abs(t.x - SPAWN.x) <= 1 && t.y >= SPAWN.y - 2 && t.y <= SPAWN.y
+  }
+
+  /** Clicked the door: walk my selected agent (or my first one) there; the popup follows on arrival. */
+  private goToDoor() {
+    const mineIds = [...this.sprites.values()].filter((s) => this.isMine(s.id) && !s.leaving).map((s) => s.id).sort()
+    const id = this.selected.size === 1 && this.isMine([...this.selected][0]) ? [...this.selected][0] : mineIds[0]
+    const s = id ? this.sprites.get(id) : undefined
+    if (!s) return
+    if (!this.selected.has(s.id) || this.selected.size !== 1) {
+      this.selected.clear()
+      this.selected.add(s.id)
+      this.refreshSelection()
+    }
+    this.doorIntent = s.id
+    const here = tileOf(posOf(s))
+    if (Math.hypot(here.x - SPAWN.x, here.y - SPAWN.y) <= 1.6) return // already there: checkDoor opens it
+    const p = nearestFree(SPAWN, (x, y) => findPath(here, { x, y }).length > 0)
+    if (p) this.moveSelectedTo(p)
+  }
 
   private checkDoor(delta: number, mine: AgentSprite | undefined) {
     if (!mine) {
@@ -734,6 +759,13 @@ export class OfficeScene extends Phaser.Scene {
       return
     }
     const still = !mine.path.length && mine.body.velocity.length() < 12
+    if (this.doorIntent === mine.id && tiles <= 1.6 && still) {
+      this.doorIntent = null
+      this.awayFromDoor.delete(mine.id)
+      this.doorStillMs = 0
+      this.callbacks?.onDoor?.(mine.id)
+      return
+    }
     if (tiles <= 1.6 && still && this.awayFromDoor.has(mine.id)) {
       this.doorStillMs += delta
       if (this.doorStillMs >= 500) {
@@ -1070,6 +1102,12 @@ export class OfficeScene extends Phaser.Scene {
         else if (desk && owner && owner !== this.data_.me) this.callbacks?.onDeskTaken(desk, owner)
         return
       }
+      if (this.isDoor(tile)) {
+        this.goToDoor()
+        return
+      }
+      // Any other click is a new destination: forget a pending trip to the door.
+      this.doorIntent = null
       this.moveSelectedTo(tile)
     })
     this.input.on('wheel', (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
@@ -1103,6 +1141,13 @@ export class OfficeScene extends Phaser.Scene {
     if (this.data_.pickingDesk) {
       const desk = this.deskAt(t)
       canvas.style.cursor = desk && !this.data_.desks[desk] ? 'pointer' : 'default'
+      return
+    }
+    if (this.isDoor(t) && [...this.sprites.keys()].some((id) => this.isMine(id))) {
+      canvas.style.cursor = 'pointer'
+      this.hover.lineStyle(2, 0xf5a524, 0.95).fillStyle(0xf5a524, 0.18)
+      this.hover.fillRoundedRect((SPAWN.x - 1) * TILE + 2, (SPAWN.y - 2) * TILE + 2, 3 * TILE - 4, 3 * TILE - 4, 8)
+        .strokeRoundedRect((SPAWN.x - 1) * TILE + 2, (SPAWN.y - 2) * TILE + 2, 3 * TILE - 4, 3 * TILE - 4, 8)
       return
     }
     if (!this.selected.size || t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) {

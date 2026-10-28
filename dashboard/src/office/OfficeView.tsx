@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type Phaser from 'phaser'
 import { api, type OfficeAgent, type OfficeTarget } from '../api'
 import type { LiveState } from '../useLiveState'
@@ -9,6 +9,8 @@ import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
 import { OfficeDock } from './OfficeDock'
+import { useOfficeCommand, type OfficeCommand } from './commands'
+import { doingFor, elapsed, useNow } from './live'
 import { SkinPicker } from './SkinPicker'
 import { DeskPicker } from './DeskPicker'
 import { notificationTarget } from './nav'
@@ -82,6 +84,32 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
   }, [sceneRef])
   useEffect(() => { sceneRef.current?.setSceneData(data) }, [data, sceneRef])
   useEffect(() => { if (sceneRef.current) sceneRef.current.callbacks = callbacks }, [callbacks, sceneRef])
+  // Map keys work wherever the focus is (after clicking an agent in the side column, a button…), except while
+  // typing: the map takes the focus and gets the key that moved it there.
+  useEffect(() => {
+    const MAP_KEYS = new Set(['w', 'a', 's', 'd', 'e', 'h', 'f', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'])
+    let lastG = 0
+    const onKey = (e: KeyboardEvent) => {
+      const el = host.current
+      const k = e.key.toLowerCase()
+      if (k === 'g') lastG = Date.now()
+      if (!el || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || !MAP_KEYS.has(k)) return
+      const active = document.activeElement as HTMLElement | null
+      if (!active || el.contains(active)) return
+      if (active.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) return
+      if (active.closest('[role="dialog"]')) return // popups keep their keys
+      if (k === 'h' && Date.now() - lastG < 1200) return // "G then H" opens History
+      e.preventDefault()
+      el.focus({ preventScroll: true })
+      // Phaser reads keyCode, which a constructed KeyboardEvent leaves at 0: set it by hand.
+      const copy = new KeyboardEvent('keydown', { key: e.key, code: e.code, bubbles: true, cancelable: true })
+      Object.defineProperty(copy, 'keyCode', { get: () => e.keyCode })
+      Object.defineProperty(copy, 'which', { get: () => e.keyCode })
+      el.dispatchEvent(copy)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
   return <div ref={host} className="office-canvas" tabIndex={0} role="region" aria-label="Office. Select your agent, then use WASD or arrow keys, or click the floor to walk. H returns to desk, F follows, Escape deselects." />
 }
 
@@ -127,6 +155,17 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   const canAct = isPreview || !!office?.connected
   const mine = agents.filter(a => a.owner === me).sort((a, b) => a.name.localeCompare(b.name))
   const picked = agents.find(a => a.agent_id === selected[0])
+  // Quick search / shortcuts: message an agent, add one, find a colleague's agent on the map.
+  const pickedId = picked?.agent_id
+  useOfficeCommand(useCallback((c: OfficeCommand) => {
+    if (c.type === 'new-agent') { setSide('agents'); setQuickAgent(true) }
+    else if (c.type === 'message') {
+      const id = c.agentId ?? pickedId
+      if (!id) { setNotice('Select one of your agents first, then press M.'); return }
+      sceneRef.current?.selectOnly([id])
+      setSide('agents'); setPeer(null); setOpenConv(null); setNewParty(null); setNewChat(id)
+    } else if (c.type === 'find') { sceneRef.current?.follow(c.agentId) }
+  }, [pickedId, setOpenConv]))
   // Newest conversation per agent of mine (active ones first), for "open chat".
   const latestConv = (agentId: string) => {
     const rows = Object.values(state.conversations).filter(c => c.agent_id === agentId)
@@ -226,6 +265,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
 
   const presentOwners = Object.entries(office?.owners ?? {}).filter(([, o]) => o.present).map(([name]) => name).sort()
   const activeChats = Object.values(state.conversations).filter(c => c.agent_id.startsWith(`${me}/`) && ACTIVE_STATUSES.includes(c.status)).length
+  // Ticks once a second while one of my agents is working (elapsed timers on tiles and the dock).
+  const now = useNow(Object.keys(state.doing).length > 0)
   const statusText = (a: OfficeAgent) =>
     a.activity && ['running', 'awaiting_approval', 'awaiting_owner'].includes(a.activity.status) ? 'In a conversation' : a.at.kind === 'desk' ? 'At desk' : 'Wandering'
 
@@ -304,6 +345,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         me={me}
         ownDesk={ownDesk}
         presentOwners={presentOwners}
+        now={now}
         activeChats={activeChats}
         waiting={pendingApprovals.length}
         onChats={() => { setOpenConv(null); setSide('chats') }}
@@ -372,12 +414,15 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           {!mine.length && <p className="office-empty">{hasAgents ? 'Your agents appear here once the office connects.' : 'No agents yet. Press + New to create one.'}</p>}
           <div className="ag-tiles">{mine.map(a => {
             const busyNow = !!a.activity && ACTIVE_STATUSES.includes(a.activity.status)
+            const work = doingFor(state, a.agent_id)
             const on = selected.includes(a.agent_id)
             return (
               <div key={a.agent_id} className={`ag-tile ${on ? 'is-selected' : ''}`}>
                 <button className="ag-tile-main" aria-pressed={on} onClick={() => sceneRef.current?.selectOnly([a.agent_id])} title={statusText(a)}>
                   <img src={`office/characters/${a.skin}-portrait.png`} alt="" width="32" height="48" />
-                  <span><strong>{a.name}</strong><small><i className={busyNow ? 'is-busy' : ''} />{statusText(a)}</small></span>
+                  <span><strong>{a.name}</strong>{work
+                    ? <small className="is-live"><i className="is-busy" />{work.doing.step} · {elapsed(work.doing.since, now)}</small>
+                    : <small><i className={busyNow ? 'is-busy' : ''} />{statusText(a)}</small>}</span>
                 </button>
                 <span className="ag-tile-tools">
                   <button className={looks?.agentId === a.agent_id ? 'is-on' : ''} onClick={e => { const el = e.currentTarget; setLooks(l => (l?.agentId === a.agent_id ? null : { agentId: a.agent_id, anchor: el })) }} title="Change look" aria-label={`Change ${a.name}'s look`} aria-expanded={looks?.agentId === a.agent_id}>👕</button>

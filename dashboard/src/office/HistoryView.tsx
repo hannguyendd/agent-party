@@ -33,7 +33,7 @@ const kindOf = (c: Conversation): Kind =>
 export default function HistoryView({ state, view, go, openConv, setOpenConv }: {
   state: LiveState; view: View; go: (v: View) => void; openConv: string | null; setOpenConv: (id: string | null) => void
 }) {
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(view.kind === 'history' ? view.q ?? '' : '')
   const [kind, setKind] = useState<Kind>('all')
   const [agent, setAgent] = useState('')
   const [range, setRange] = useState<Range>('all')

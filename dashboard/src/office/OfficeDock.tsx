@@ -10,6 +10,7 @@ import { Avatar } from './OfficeChat'
 import { useNotificationText, who } from './people'
 import { ownerCss } from './skins'
 import { ACTIVE_STATUSES, STATUS } from './status'
+import { costLine, doingFor, elapsed } from './live'
 
 interface Props {
   state: LiveState
@@ -17,6 +18,7 @@ interface Props {
   me: string
   ownDesk?: string
   presentOwners: string[]
+  now: number
   activeChats: number
   waiting: number
   onChats: () => void
@@ -42,7 +44,12 @@ export function OfficeDock(p: Props) {
       return true
     })
   const noteText = useNotificationText(p.state)
-  const recent = p.state.notifications.slice(0, 8)
+  // Notifications and colleagues coming and going, one list, newest first.
+  type Row = { id: string; at: number; text: string; unread: boolean; n?: AppNotification; owner?: string }
+  const recent: Row[] = [
+    ...p.state.notifications.slice(0, 8).map((n) => ({ id: n.id, at: Date.parse(n.created_at), text: noteText(n), unread: !n.read, n })),
+    ...p.state.presenceLog.map((e) => ({ id: `${e.owner}-${e.at}`, at: e.at, text: `${e.owner} ${e.present ? 'came online' : 'went offline'}`, unread: false, owner: e.owner })),
+  ].sort((a, b) => b.at - a.at).slice(0, 10)
   const myConv = (agentId: string): Conversation | undefined =>
     Object.values(p.state.conversations)
       .filter((c) => c.agent_id === agentId && ACTIVE_STATUSES.includes(c.status))
@@ -85,7 +92,8 @@ export function OfficeDock(p: Props) {
               const mine = a.owner === p.me
               const peer = a.activity?.peer ? who(p.state, a.activity.peer) : null
               const st = STATUS[a.activity!.status]
-              const conv = mine ? myConv(a.agent_id) : undefined
+              const work = mine ? doingFor(p.state, a.agent_id) : null
+              const conv = work?.conv ?? (mine ? myConv(a.agent_id) : undefined)
               const arrow = a.activity?.direction === 'inbound' ? '←' : '→'
               return (
                 <li key={a.agent_id}>
@@ -100,7 +108,9 @@ export function OfficeDock(p: Props) {
                     </span>
                     <span className="dock-talk-main">
                       <strong>{a.name}{peer ? ` ${arrow} ${peer.name}` : ' ↔ you'}</strong>
-                      <small>{st.label}{!mine && ` · ${a.owner}'s agent`}</small>
+                      {work
+                        ? <small className="is-live">{work.doing.step} · {elapsed(work.doing.since, p.now)}{costLine(work.conv) && ` · ${costLine(work.conv)}`}</small>
+                        : <small>{st.label}{!mine && ` · ${a.owner}'s agent`}</small>}
                     </span>
                   </button>
                 </li>
@@ -112,11 +122,12 @@ export function OfficeDock(p: Props) {
           <div className="dock-recent">
             <h4>Recently</h4>
             <ul>
-              {recent.map((n) => (
-                <li key={n.id}>
-                  <button className={n.read ? '' : 'is-unread'} onClick={() => p.onNotification(n)}>
-                    <span>{noteText(n)}</span>
-                    <time>{timeAgo(n.created_at)}</time>
+              {recent.map((r) => (
+                <li key={r.id}>
+                  <button className={`${r.unread ? 'is-unread' : ''} ${r.owner ? 'is-presence' : ''}`} onClick={() => (r.n ? p.onNotification(r.n) : undefined)} disabled={!r.n}>
+                    {r.owner && <i style={{ background: ownerCss(r.owner) }} />}
+                    <span>{r.text}</span>
+                    <time>{timeAgo(new Date(r.at).toISOString())}</time>
                   </button>
                 </li>
               ))}

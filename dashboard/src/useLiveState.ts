@@ -25,6 +25,33 @@ export interface LiveState {
   online: boolean | null
   /** The bell's history, newest first. */
   notifications: AppNotification[]
+  /** What each running conversation of mine is doing right now (live only): step label and when the run began. */
+  doing: Record<string, Doing>
+  /** Colleagues coming online / going offline while this page is open, newest first (live only). */
+  presenceLog: { owner: string; present: boolean; at: number }[]
+}
+
+export interface Doing {
+  /** "Thinking", "Writing", "Running Bash", "Messaging han/be"… */
+  step: string
+  /** When this run started (ms), for the elapsed timer. */
+  since: number
+}
+
+/** The step a message puts a running conversation in. */
+function stepOf(m: Message): string | null {
+  if (m.kind === 'tool_use') {
+    if (m.content === 'ToolSearch') return null
+    if (m.content.startsWith('mcp__mesh__')) {
+      const to = typeof m.data.input === 'object' && m.data.input ? (m.data.input as Record<string, unknown>).to ?? (m.data.input as Record<string, unknown>).agent_id : null
+      const tool = m.content.slice('mcp__mesh__'.length).replace(/_/g, ' ')
+      return typeof to === 'string' ? `Messaging ${to}` : tool.charAt(0).toUpperCase() + tool.slice(1)
+    }
+    return `Running ${m.content}`
+  }
+  if (m.kind === 'tool_result' || (m.kind === 'text' && m.role !== 'agent')) return 'Thinking'
+  if (m.kind === 'text' && m.role === 'agent') return 'Thinking'
+  return null
 }
 
 type Action =
@@ -50,6 +77,8 @@ const initial: LiveState = {
   usage: null,
   online: null,
   notifications: [],
+  doing: {},
+  presenceLog: [],
 }
 
 const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]))
@@ -83,6 +112,9 @@ function reducer(s: LiveState, a: Action): LiveState {
         agents: byId(a.agents),
         conversations: byId(a.conversations),
         approvals: { ...kept, ...byId(a.approvals) },
+        // Runs already going when the page opened (or reconnected): time them from their last update.
+        doing: Object.fromEntries(a.conversations.filter((c) => c.status === 'running')
+          .map((c) => [c.id, s.doing[c.id] ?? { step: 'Thinking', since: Date.parse(c.updated_at) }])),
       }
     }
     case 'detail':
@@ -115,17 +147,26 @@ function applyEvent(s: LiveState, e: LiveEvent): LiveState {
       // WS rows don't carry awaiting_owner; the owner gate is open exactly while status is awaiting_owner.
       const conv: Conversation = { ...c, awaiting_owner: c.awaiting_owner ?? c.status === 'awaiting_owner' }
       const partial = conv.status === 'running' ? s.partial : omit(s.partial, conv.id)
-      return { ...s, conversations: { ...s.conversations, [conv.id]: conv }, partial }
+      const doing = conv.status === 'running'
+        ? (s.doing[conv.id] ? s.doing : { ...s.doing, [conv.id]: { step: 'Thinking', since: Date.now() } })
+        : omit(s.doing, conv.id)
+      return { ...s, conversations: { ...s.conversations, [conv.id]: conv }, partial, doing }
     }
     case 'message': {
       const id = e.conversation_id
       const list = s.messages[id]
       const messages = list ? { ...s.messages, [id]: mergeMessages(list, [e.message]) } : s.messages
       const partial = e.message.role === 'agent' ? omit(s.partial, id) : s.partial
-      return { ...s, messages, partial }
+      const step = stepOf(e.message)
+      const cur = s.doing[id]
+      const doing = cur && step && cur.step !== step ? { ...s.doing, [id]: { ...cur, step } } : s.doing
+      return { ...s, messages, partial, doing }
     }
-    case 'delta':
-      return { ...s, partial: { ...s.partial, [e.conversation_id]: (s.partial[e.conversation_id] ?? '') + e.text } }
+    case 'delta': {
+      const cur = s.doing[e.conversation_id]
+      const doing = cur && cur.step !== 'Writing' ? { ...s.doing, [e.conversation_id]: { ...cur, step: 'Writing' } } : s.doing
+      return { ...s, partial: { ...s.partial, [e.conversation_id]: (s.partial[e.conversation_id] ?? '') + e.text }, doing }
+    }
     case 'approval':
       return { ...s, approvals: { ...s.approvals, [e.approval.id]: e.approval } }
     case 'office':
@@ -162,8 +203,15 @@ function applyWorld(s: LiveState, e: WorldEvent): LiveState {
       return { ...s, office: { ...o, parties: (o.parties ?? []).filter((p) => p.party_id !== e.party_id) } }
     case 'desks':
       return { ...s, office: { ...o, desks: e.desks } }
-    case 'owners':
-      return { ...s, office: { ...o, owners: e.owners } }
+    case 'owners': {
+      // Only changes count: someone who was here (present) and left, or arrived.
+      const was = (name: string) => !!o.owners[name]?.present
+      const names = new Set([...Object.keys(o.owners), ...Object.keys(e.owners)])
+      const changes = [...names]
+        .filter((n) => n !== s.node?.owner && was(n) !== !!e.owners[n]?.present)
+        .map((n) => ({ owner: n, present: !!e.owners[n]?.present, at: Date.now() }))
+      return { ...s, office: { ...o, owners: e.owners }, presenceLog: changes.length ? [...changes, ...s.presenceLog].slice(0, 20) : s.presenceLog }
+    }
     case 'agent': {
       // Update in place: a new look or status must not move the agent to the end of every list.
       const known = o.agents.some((a) => a.agent_id === e.agent.agent_id)

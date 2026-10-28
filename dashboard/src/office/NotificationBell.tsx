@@ -1,7 +1,8 @@
 // The bell: every notification the node recorded (approvals, assignments, replies, questions, errors, recaps),
 // newest first, plus a toast in the corner when one arrives live. Clicking one opens its conversation.
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useOfficeCommand, type OfficeCommand } from './commands'
 import { api, type AppNotification } from '../api'
 import { timeAgo } from '../components/format'
 import type { LiveState } from '../useLiveState'
@@ -31,6 +32,7 @@ export function NotificationBell({ state, onOpen, onApprovals }: { state: LiveSt
   const pending = Object.values(state.approvals).filter((a) => a.status === 'pending').length
   const shown = rows.filter((n) => (filter === 'unread' ? !n.read : filter === 'needs' ? KIND[n.kind]?.tone === 'warn' : true))
   const wrap = useRef<HTMLDivElement>(null)
+  useOfficeCommand(useCallback((c: OfficeCommand) => { if (c.type === 'bell') setOpen((v) => !v) }, []))
   useEffect(() => {
     if (!open) return
     const close = (e: MouseEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false) }
@@ -80,8 +82,8 @@ export function NotificationBell({ state, onOpen, onApprovals }: { state: LiveSt
             {shown.map((n) => {
               const k = KIND[n.kind] ?? KIND.inbound
               return (
-                <li key={n.id}>
-                  <button className={`office-note tone-${k.tone} ${n.read ? '' : 'is-unread'}`} onClick={() => pick(n)}>
+                <li key={n.id} className={`office-note tone-${k.tone} ${n.read ? '' : 'is-unread'}`}>
+                  <button className="office-note-main" onClick={() => pick(n)}>
                     <i className="office-note-icon"><Icon name={k.icon} /></i>
                     <span>
                       <strong>{text(n)}</strong>
@@ -90,19 +92,40 @@ export function NotificationBell({ state, onOpen, onApprovals }: { state: LiveSt
                     </span>
                     {!n.read && <b className="office-note-dot" aria-label="unread" />}
                   </button>
+                  <QuickDecision state={state} n={n} />
                 </li>
               )
             })}
           </ul>
         </div>
       )}
-      <NotificationToasts rows={rows} text={text} onOpen={pick} />
+      <NotificationToasts state={state} rows={rows} text={text} onOpen={pick} />
     </div>
   )
 }
 
+/** Allow / Deny (Accept / Decline for an Assignment) right on the notification, while its approval is pending. */
+function QuickDecision({ state, n }: { state: LiveState; n: AppNotification }) {
+  const [busy, setBusy] = useState(false)
+  if (n.kind !== 'approval' && n.kind !== 'assignment') return null
+  const pending = Object.values(state.approvals).find((a) => a.conversation_id === n.conversation_id && a.status === 'pending')
+  if (!pending) return null
+  const assignment = n.kind === 'assignment'
+  const decide = (allow: boolean) => {
+    setBusy(true)
+    void api.decide(pending.id, allow).then(() => api.readNotifications([n.id])).catch(() => {}).finally(() => setBusy(false))
+  }
+  return (
+    <span className="note-decide" onClick={(e) => e.stopPropagation()}>
+      <button className="is-yes" disabled={busy} onClick={() => decide(true)}>{assignment ? 'Accept' : 'Allow'}</button>
+      <button className="is-no" disabled={busy} onClick={() => decide(false)}>{assignment ? 'Decline' : 'Deny'}</button>
+      {!assignment && <code title={JSON.stringify(pending.tool_input)}>{pending.tool_name.replace(/^mcp__mesh__/, '')}</code>}
+    </span>
+  )
+}
+
 /** Live toasts: only notifications that arrive while the page is open (never the history loaded at start). */
-function NotificationToasts({ rows, text, onOpen }: { rows: AppNotification[]; text: (n: AppNotification) => string; onOpen: (n: AppNotification) => void }) {
+function NotificationToasts({ state, rows, text, onOpen }: { state: LiveState; rows: AppNotification[]; text: (n: AppNotification) => string; onOpen: (n: AppNotification) => void }) {
   // Anything created before the page opened is history, even when it arrives with the first fetch.
   const [opened] = useState(() => Date.now() - 2000)
   const seen = useRef(new Set<string>())
@@ -131,6 +154,7 @@ function NotificationToasts({ rows, text, onOpen }: { rows: AppNotification[]; t
                 {n.body && <small>{plainPreview(n.body, () => null)}</small>}
               </span>
             </button>
+            <QuickDecision state={state} n={n} />
             <button className="note-toast-x" aria-label="Dismiss" onClick={() => setToasts((t) => t.filter((x) => x.id !== n.id))}><Icon name="close" /></button>
           </div>
         )

@@ -107,7 +107,21 @@ Open the **Office shortcut** or http://127.0.0.1:9100 (bookmark it). Nothing els
 
 - **Talk to your agent**: select it → **Message**. Type `@` to point it at a colleague's agent.
 - **Ask a colleague's agent**: click their character; yours walks over, then **Ask** or **Assign work**.
-- **Approvals**: the bell (top right) shows what waits for you.
+- **Notifications**: the bell (top right) keeps every notification: replies, questions, approvals, assignments,
+  errors, recaps. Approvals and assignments can be allowed / accepted right from the bell or the pop-up. The browser
+  tab shows the unread count, e.g. "(3) Taggle Office".
+- **History** (top bar): every past conversation. Search finds words inside messages too; filter by type, agent or
+  date; open one to read it in full, copy it or export it as Markdown.
+- **Under the map**: what's happening now (who is talking to whom; your own agents also show what they're doing and
+  for how long), plus recent notifications and colleagues coming online.
+- **Your agents** (side column): 👕 changes an agent's look, ⚙ opens its settings; the **Desk** pill opens a small map
+  to pick your desk.
+- **Going home**: click the entrance door on the map; your agent walks there and asks whether to go offline.
+- **Sound** (🔊 in the top bar): sound effects when a task is done, something needs you, a new chat starts or an error
+  happens; optional background music. Both have their own volume and are remembered by this browser.
+- **Keyboard**: ⌘K / Ctrl+K searches agents, chats and actions. `N` notifications, `M` message the selected agent,
+  `G` then `O` / `H` / `S` for Office / History / Settings, `?` lists them. WASD / arrows walk the selected agent
+  whenever you're not typing.
 - **Permissions** (agent card): *Read only* / *Can edit files* / *Full access*; "Ask me before it contacts others".
 - **Claude usage** (agent card): how much of your Claude plan's 5-hour and weekly limits is used.
 

@@ -10,6 +10,7 @@ import { agentNames, who, type Who } from './people'
 import { plainPreview } from './render-md'
 import { useSeen } from './seen'
 import { NEEDS_YOU, STATUS } from './status'
+import { costLine, elapsed, useNow } from './live'
 import { Icon } from './Icon'
 
 const rank = (c: { status: string }) => (NEEDS_YOU.includes(c.status as never) ? 0 : c.status === 'running' ? 1 : 2)
@@ -148,6 +149,8 @@ type Row = { c: Conversation; mine: Who; peer: Who | null }
 /** One line per conversation: who, what state needs my eyes, the latest line. Quiet unless something is going on. */
 function ChatRow({ c, mine, peer, state, unread, talks, onOpen }: Row & { state: LiveState; unread: boolean; talks?: number; onOpen: (id: string) => void }) {
   const st = STATUS[c.status]
+  const work = state.doing[c.id]
+  const now = useNow(!!work)
   const loud = st.tone === 'run' || st.tone === 'wait' || st.tone === 'err'
   const party = c.party_id ? (state.office?.parties ?? []).find((p) => p.party_id === c.party_id) : undefined
   const hosting = c.kind === 'party'
@@ -170,7 +173,9 @@ function ChatRow({ c, mine, peer, state, unread, talks, onOpen }: Row & { state:
           <strong>
             {hosting ? <>🎉 {plainPreview(c.title, nameOf) || 'Party'}</> : topicOf(c, nameOf) || <>{mine.name}{peer && <em> {c.direction === 'inbound' ? '←' : '→'} {peer.name}</em>}</>}
           </strong>
-          {loud && <span className={`o-crow-state is-${st.tone}`}>{st.label}</span>}
+          {work
+            ? <span className="o-crow-state is-run" title={costLine(c)}>{work.step} · {elapsed(work.since, now)}</span>
+            : loud && <span className={`o-crow-state is-${st.tone}`}>{st.label}</span>}
           <time>{timeAgo(c.updated_at)}</time>
           {unread && <i className="o-unread" aria-label="new messages" />}
         </span>

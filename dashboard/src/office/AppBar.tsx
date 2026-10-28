@@ -8,6 +8,7 @@ import type { View } from '../App'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
 import { NotificationBell } from './NotificationBell'
+import { SoundMenu } from './SoundMenu'
 import { notificationTarget } from './nav'
 import { ownerCss } from './skins'
 
@@ -149,6 +150,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
           <i />
           {healthy ? 'Online' : !core ? (state.connected ? 'Office offline' : 'Reconnecting') : mesh?.config_dirty ? 'Restart mesh' : 'Mesh offline'}
         </button>
+        <SoundMenu />
         <NotificationBell state={state} onOpen={(n) => go(notificationTarget(n))} onApprovals={onApprovals ?? (() => go({ kind: 'office', side: 'approvals' }))} />
         <AccountMenu owner={owner} active={view.kind === 'settings'} onSettings={() => go({ kind: 'settings' })} />
       </div>

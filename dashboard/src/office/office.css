@@ -1517,3 +1517,82 @@ button.dock-pill:hover { border-color: var(--o-line); }
 .desk-legend .is-free { background: var(--o-ok); }
 .desk-legend .is-mine { background: var(--o-bar-2); }
 .desk-legend .is-taken { background: #e7e3ee; border: 1.5px solid #b9b4c8; }
+
+/* live step + timer ("Running Bash · 0:42") */
+.ag-tile small.is-live, .dock-talk-main small.is-live { color: var(--o-ok-ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+.o-crow-state { font-variant-numeric: tabular-nums; }
+
+/* Allow / Deny right on a notification */
+.office-note { display: flex; flex-direction: column; gap: 4px; padding: 0; }
+.office-note-main { width: 100%; display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; text-align: left; cursor: pointer; border-radius: 8px; background: none; }
+.office-note > .note-decide { margin: -2px 10px 8px 50px; }
+.office-note-main > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.note-toast { flex-wrap: wrap; }
+.note-toast > .note-decide { order: 3; flex-basis: 100%; padding-left: 40px; }
+.note-decide { display: flex; align-items: center; gap: 6px; }
+.note-decide button { padding: 3px 12px; font-size: 12px; font-weight: 800; border-radius: 6px; border: 2px solid; cursor: pointer; }
+.note-decide .is-yes { background: var(--o-accent); border-color: var(--o-accent-deep); color: #fff; }
+.note-decide .is-no { background: var(--o-panel); border-color: var(--o-err); color: var(--o-err-ink); }
+.note-decide button:disabled { opacity: .5; cursor: wait; }
+.note-decide code { margin-left: 4px; font-size: 11px; color: var(--o-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.dock-recent button.is-presence { cursor: default; color: var(--o-muted); font-style: italic; }
+.dock-recent button.is-presence i { flex: none; align-self: center; width: 7px; height: 7px; border-radius: 50%; }
+
+/* sound menu */
+.office-sound span { font-size: 15px; line-height: 1; }
+.office-sound.is-playing span { animation: sound-bob 1.6s ease-in-out infinite; display: inline-block; }
+@keyframes sound-bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-2px) rotate(-8deg); } }
+.sound-pop { width: 300px; display: flex; flex-direction: column; gap: 8px; }
+.sound-row { display: flex; align-items: center; gap: 10px; }
+.sound-row > span { display: flex; flex-direction: column; }
+.sound-row b { font-size: 13px; font-weight: 800; }
+.sound-row small { font-size: 11.5px; color: var(--o-muted); }
+.sound-vol { width: 100%; accent-color: var(--o-accent); margin: -2px 0 6px; }
+.sound-try { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding-top: 6px; border-top: 1px dashed var(--o-soft-line); font-size: 12px; color: var(--o-muted); }
+.sound-try button { padding: 2px 8px; font-size: 11.5px; font-weight: 700; border: 1.5px solid var(--o-soft-line); border-radius: 999px; cursor: pointer; color: var(--o-ink); }
+.sound-try button:hover:not(:disabled) { border-color: var(--o-line); }
+@media (prefers-reduced-motion: reduce) { .office-sound.is-playing span { animation: none; } }
+
+/* quick search (⌘K) */
+.cmdk-backdrop { position: fixed; inset: 0; z-index: 200; height: auto !important; min-height: 0 !important; display: flex; flex-direction: row; align-items: flex-start; justify-content: center; padding-top: 12vh; background: #1c194055; backdrop-filter: blur(2px); }
+.cmdk { width: min(620px, calc(100vw - 32px)); max-height: 70vh; display: flex; flex-direction: column; overflow: hidden; animation: note-in 160ms ease-out; }
+.cmdk-input { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 2px solid var(--o-soft-line); }
+.cmdk-input input { flex: 1; font-size: 16px; background: transparent; outline: none; color: var(--o-ink); }
+.cmdk kbd { padding: 0 6px; font-family: var(--o-body); font-size: 11px; font-weight: 800; color: var(--o-muted); background: var(--o-panel-2); border: 1.5px solid var(--o-soft-line); border-bottom-width: 2.5px; border-radius: 5px; }
+.cmdk-list { flex: 1; overflow-y: auto; margin: 0; padding: 6px; list-style: none; }
+.cmdk-group { padding: 8px 8px 4px; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--o-muted); }
+.cmdk-list button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px 10px; text-align: left; border-radius: 8px; cursor: pointer; }
+.cmdk-list button span { min-width: 0; font-size: 13.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmdk-list button small { flex: 1; min-width: 0; font-size: 12px; color: var(--o-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmdk-list button kbd { margin-left: auto; }
+.cmdk-list button.is-active { background: #ece6ff; box-shadow: inset 3px 0 0 var(--o-bar-2); }
+.cmdk-empty { padding: 20px; text-align: center; font-size: 13px; color: var(--o-muted); }
+.cmdk-shortcut { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; font-size: 13px; font-weight: 700; }
+.cmdk-foot { display: flex; gap: 14px; padding: 8px 14px; font-size: 11.5px; color: var(--o-muted); border-top: 2px solid var(--o-soft-line); }
+.cmdk-foot kbd { margin-right: 3px; }
+
+/* ---- app bar, right side: solid chips that read on the purple bar ---- */
+.office-right { gap: 10px; }
+.office-right .office-bell {
+  width: 38px; height: 34px; background: #fff; border: 2px solid #1c1940; border-radius: 10px; box-shadow: 0 3px 0 #1c1940;
+  transition: transform 60ms ease, box-shadow 60ms ease;
+}
+.office-right .office-bell:hover { background: #f3efff; }
+.office-right .office-bell:active, .office-right .office-bell.is-active { transform: translateY(2px); box-shadow: 0 1px 0 #1c1940; background: #ece6ff; }
+.office-right .office-bell .o-count { top: -8px; right: -8px; border: 2px solid #fff; box-shadow: none; }
+.office-right .office-bell.has-new { background: #fff4d6; border-color: #8a5a00; box-shadow: 0 3px 0 #8a5a00; }
+.office-sound-glyph { font-size: 17px; line-height: 1; font-variant-emoji: text; color: var(--o-bar); font-weight: 700; }
+.office-sound.is-playing { background: #dcf7e9 !important; border-color: var(--o-ok-ink) !important; box-shadow: 0 3px 0 var(--o-ok-ink) !important; }
+.office-sound.is-playing .office-sound-glyph { color: var(--o-ok-ink); }
+.office-health {
+  height: 34px; padding: 0 14px; font-weight: 600; border-radius: 10px; border: 2px solid #1c1940; box-shadow: 0 3px 0 #1c1940;
+}
+.office-health.is-ok { background: var(--o-ok); color: #fff; }
+.office-health.is-ok i { background: #fff; box-shadow: 0 0 0 3px #ffffff55; }
+.office-health.is-warn { background: var(--o-warn); color: #3a2400; border-color: #1c1940; }
+.office-health.is-warn i { background: #fff; }
+.office-me { height: 34px; background: #fff; color: var(--o-bar); border: 2px solid #1c1940; border-radius: 10px; box-shadow: 0 3px 0 #1c1940; }
+.office-me:hover, .office-me.is-active { background: #f3efff; }
+.office-me span { color: var(--o-bar); font-weight: 600; }
+.office-me .o-icon { filter: brightness(.6); }

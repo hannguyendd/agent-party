@@ -33,6 +33,11 @@
     `OfficeDock.tsx` (under the map: status, zoom, "Happening now" from world activity, recent notifications; it
     shrinks to one line, then to its bar, through a `dock` container query), `HistoryView.tsx` + `history.ts`
     (History page; word search is `GET /api/conversations/search` on this node only),
+    `CommandPalette.tsx` (⌘K quick search; `commands.ts` carries its commands and shortcut keys to screens as a window
+    event), `SoundMenu.tsx` (🔊: music and effects; synthesis in `src/sound.ts`, effects follow notifications via
+    `useNotificationSounds.ts`), `SkinPicker.tsx` / `DeskPicker.tsx` (popups via `popover.ts`; the desk picker is a
+    mini-map from the manifest's map plate and seats, `minimap.ts`), `live.ts` (ticking clock, what my agent is doing:
+    `LiveState.doing` is built from message / delta events), `src/tabBadge.ts` (unread count in the tab title + icon),
     `Onboarding.tsx` (guide over the map; its step is derived from state in `OfficeView`, and "+ New agent" opens
     its short agent form alone), `PartyPanel.tsx` (gather a Party), `PartyBar.tsx` (party controls inside a
     conversation, by role), `RecapList.tsx` (recaps of the open conversation), `trim.ts` (portraits cropped to
