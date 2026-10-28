@@ -60,10 +60,10 @@ def make_mesh_tools_factory(settings: Settings, directory: MeshDirectory, outbou
             {
                 "type": "object",
                 "properties": {
-                    "to": {"type": "string"},
-                    "text": {"type": "string"},
-                    "context_id": {"type": "string"},
-                    "task_id": {"type": "string"},
+                    "to": {"type": "string", "description": "Recipient agent ID, e.g. 'bob/qa-agent'"},
+                    "text": {"type": "string", "description": "The message body"},
+                    "context_id": {"type": "string", "description": "From a previous reply, to continue that conversation"},
+                    "task_id": {"type": "string", "description": "From a previous reply whose state was input_required"},
                 },
                 "required": ["to", "text"],
             },
@@ -77,10 +77,10 @@ def make_mesh_tools_factory(settings: Settings, directory: MeshDirectory, outbou
             {
                 "type": "object",
                 "properties": {
-                    "to": {"type": "string"},
+                    "to": {"type": "string", "description": "Recipient agent ID, e.g. 'bob/qa-agent'"},
                     "path": {"type": "string", "description": "Path relative to your working directory"},
-                    "text": {"type": "string"},
-                    "context_id": {"type": "string"},
+                    "text": {"type": "string", "description": "Short note sent with the file"},
+                    "context_id": {"type": "string", "description": "From a previous reply, to continue that conversation"},
                 },
                 "required": ["to", "path"],
             },
@@ -94,7 +94,8 @@ def make_mesh_tools_factory(settings: Settings, directory: MeshDirectory, outbou
 
         @tool(
             "needs_input",
-            "Mark your reply as a question for the peer: the conversation stays open waiting for their answer.",
+            "Only when answering a message a peer sent you: mark your reply as a question back to that peer, so the "
+            "conversation stays open waiting for their answer. Never call it to start a conversation; use send_message.",
             {"type": "object", "properties": {"question": {"type": "string"}}},
         )
         async def needs_input(args: dict[str, Any]) -> dict[str, Any]:
