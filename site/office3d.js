@@ -266,6 +266,8 @@ export async function mount(host, office, opts) {
       if (!active) return;
       const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now;
       if (Math.abs(azGoal - az) > 0.001) { az += (azGoal - az) * Math.min(1, dt * 7); place(); fit(); }
+      // WASD follows the camera, snapped to the grid's four directions.
+      sim.inputTurn = -Math.round(az / (Math.PI / 2)) * (Math.PI / 2);
       cutaway(Math.min(1, dt * 8));
       // Follow: keep the visitor's character in the middle while zoomed in.
       const me = sim.player;
@@ -295,7 +297,7 @@ export async function mount(host, office, opts) {
       });
       renderer.render(scene, cam);
     },
-    setActive(on) { active = on; root.hidden = !on; if (on) { last = performance.now(); fit(); } },
+    setActive(on) { active = on; root.hidden = !on; if (!on) sim.inputTurn = 0; if (on) { last = performance.now(); fit(); } },
     zoomBy(f) { const c = center(); zoomAt(f, c[0], c[1]); },
     resetZoom() { cam.zoom = 1; cam.updateProjectionMatrix(); pan.set(0, 0, 0); azGoal = AZ + Math.round((az - AZ) / (2 * Math.PI)) * 2 * Math.PI; place(); },
     setFollow(on) { follow = on; },

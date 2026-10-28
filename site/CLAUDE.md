@@ -31,6 +31,7 @@ product: nothing here talks to a node, the mesh or the world server, and every a
   counts as a floor click.
 - **Follow** (the target button, 2D and 3D): while zoomed in, the camera keeps the visitor's character centred.
   Spawning or walking with the keys turns it on; panning by hand turns it off.
+- In 3D the keys turn with the camera (`sim.inputTurn`, snapped to 90 degrees): W always walks up the screen.
 
 ## Rules
 

@@ -178,6 +178,11 @@
     var p = this.player, k = this.keys;
     if (!p.active) return;
     var vx = (k.right ? 1 : 0) - (k.left ? 1 : 0), vy = (k.down ? 1 : 0) - (k.up ? 1 : 0);
+    // A rotated 3D view turns the keys with it, so W always walks up the screen (inputTurn is set by office3d.js).
+    if (this.inputTurn) {
+      var c = Math.round(Math.cos(this.inputTurn)), sn = Math.round(Math.sin(this.inputTurn)), rx = vx * c - vy * sn;
+      vy = vx * sn + vy * c; vx = rx;
+    }
     if (vx || vy) {
       p.path = [];
       var n = Math.hypot(vx, vy), s = PLAYER_SPEED * dt;
