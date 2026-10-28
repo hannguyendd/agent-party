@@ -276,7 +276,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           onOpenChat={openChat}
           onStarted={id => { openChat(id); setSide('chats') }}
           onError={setError}
-          onGo={where => where === 'desk' ? sceneRef.current?.sendSelectedHome() : sceneRef.current?.moveSelectedTo(where === 'pantry' ? { x: 43, y: 10 } : { x: 41, y: 20 })}
+          // Spots inside each room on the map art; the scene snaps to the nearest tile it can reach.
+          onGo={where => where === 'desk' ? sceneRef.current?.sendSelectedHome() : sceneRef.current?.goToPlace(where === 'pantry' ? { x: 46, y: 8 } : { x: 47, y: 21 })}
           onSkin={skin => isPreview ? setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin } : a)) : void perform(() => api.setSkin(picked.agent_id, skin))}
           onSettings={() => go({ kind: 'settings', section: 'agents', agentId: picked.agent_id })}
           candidates={agents.filter(a => a.owner !== me).map(a => who(state, a.agent_id))}

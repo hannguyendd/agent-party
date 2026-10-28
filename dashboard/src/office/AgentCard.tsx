@@ -17,7 +17,7 @@ interface Props {
   onOpenChat: (id: string) => void
   onStarted: (id: string) => void
   onError: (msg: string) => void
-  onGo: (where: 'desk' | 'pantry' | 'meeting') => void
+  onGo: (where: 'desk' | 'pantry' | 'manager') => void
   onSkin: (skin: string) => void
   onSettings: () => void
   /** Other people's agents, offered when typing @. */
@@ -78,7 +78,7 @@ export function AgentCard(p: Props) {
         <span>Go to</span>
         <button disabled={!p.canAct} onClick={() => p.onGo('desk')}><Icon name="desk" />Desk</button>
         <button disabled={!p.canAct} onClick={() => p.onGo('pantry')}>☕ Pantry</button>
-        <button disabled={!p.canAct} onClick={() => p.onGo('meeting')}><Icon name="party" />Meeting</button>
+        <button disabled={!p.canAct} onClick={() => p.onGo('manager')}><Icon name="host" />Manager room</button>
       </div>
 
       <div className="o-agent-foot">

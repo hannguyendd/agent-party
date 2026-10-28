@@ -1101,6 +1101,15 @@ export class OfficeScene extends Phaser.Scene {
     }
   }
 
+  /** Quick trips ("Pantry", "Manager room"): walk to the closest reachable free tile around a spot in that room,
+   *  so the buttons keep working when the map art changes. */
+  goToPlace(spot: Point) {
+    const mine = [...this.selected].map((id) => this.sprites.get(id)).find(Boolean)
+    const from = mine ? tileOf(posOf(mine)) : null
+    const p = nearestFree(spot, (x, y) => !from || (from.x === x && from.y === y) || findPath(from, { x, y }).length > 0)
+    if (p) this.moveSelectedTo(p)
+  }
+
   sendSelectedHome() {
     for (const id of this.selected) this.callbacks?.onMove(id, { kind: 'desk' })
   }
