@@ -17,9 +17,11 @@ interface Props {
   onBack: () => void
   onOpen: (id: string) => void
   onExpand: () => void
+  /** The side column is widened for reading. */
+  wide?: boolean
 }
 
-export function ConversationPanel({ conv, messages, partial, approvals, onBack, onOpen, onExpand }: Props) {
+export function ConversationPanel({ conv, messages, partial, approvals, onBack, onOpen, onExpand, wide }: Props) {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -94,8 +96,8 @@ export function ConversationPanel({ conv, messages, partial, approvals, onBack, 
         >
           <Icon name="fork" />Fork
         </button>
-        <button className="o-icon-btn" onClick={onExpand} title="Open full screen" aria-label="Open full screen">
-          <Icon name="fit" />
+        <button className="o-icon-btn" onClick={onExpand} title={wide ? 'Narrow the panel' : 'Widen the panel'} aria-label={wide ? 'Narrow the panel' : 'Widen the panel'} aria-pressed={wide}>
+          <Icon name={wide ? 'zoom-out' : 'zoom-in'} />
         </button>
       </div>
 

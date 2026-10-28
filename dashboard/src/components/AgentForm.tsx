@@ -96,7 +96,7 @@ export function AgentForm({ owner, agent, onSaved, onDeleted, onStart }: Props) 
         <h1 className="text-base font-semibold">{isNew ? 'New agent' : `Edit ${agent.id}`}</h1>
         {!isNew && (
           <button className="btn ml-auto" onClick={() => onStart(agent.id)}>
-            ▶ Start session
+            Open in office
           </button>
         )}
       </div>
