@@ -25,3 +25,22 @@ Asset art was generated with the built-in image tool. Export, palette matching, 
 ## Additional chrome icons
 
 Added `attach`, `image`, `file`, `pantry`, `mention`, `question`, `search`, `keyboard`, `new-chat`, `people`, `clock`, `check` under `manifest.ui`, with matching `@2x` entries. Native icons are 16×16; @2x icons are 32×32 exact nearest-neighbour. Sources, previews and validation are in `design/office-style/C/ui-extra/`.
+
+## Fantasy Office cast, batch 2
+
+Add these IDs/labels to the skin picker and any skin allow-list maintained by the application owner:
+
+| ID | Display label |
+|---|---|
+| mage | Coffee Mage |
+| knight | Keyboard Knight |
+| ranger | Paper Ranger |
+| healer | Band-Aid Healer |
+| rogue | Donut Rogue |
+| berserker | Debug Viking |
+| slime | Crowned Slime |
+| dragon | Cardigan Dragon |
+
+All eight are in `manifest.characters48` with the existing 192×360 sheet / 48×72 frame contract and animation indices. Portraits follow `office/characters/<id>-portrait.png`. Feet/slime base end at logical y=70; y=71 stays transparent. No new layers or effect files are required: mage sparkles, healer heart and dragon smoke are contained inside their frames. Slime's squat silhouette is intentional; do not stretch it to human height. The existing animation behavior is unchanged: walk-right mirrors the left row.
+
+No application code was changed by the asset batch. Add the IDs to any server-side skin validation as needed before exposing them to owners. SHA-256 preservation and visual reviews are in `design/office-style/C/characters48-batch2/`.

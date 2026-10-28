@@ -1,0 +1,2636 @@
+{
+  "status": "PASS",
+  "new_ids": [
+    "mage",
+    "knight",
+    "ranger",
+    "healer",
+    "rogue",
+    "berserker",
+    "slime",
+    "dragon"
+  ],
+  "sheets": 8,
+  "portraits": 8,
+  "total_frames": 160,
+  "palette": "design/office-style/C/palette.txt",
+  "existing_assets_unchanged": true,
+  "existing_asset_count": 131,
+  "existing_files": [
+    {
+      "path": "dashboard/public/office/palette.txt",
+      "before": "86e57f850523ab77be7fc5b85cceee03ce62084a3f40194d358f0fa427b53726",
+      "after": "86e57f850523ab77be7fc5b85cceee03ce62084a3f40194d358f0fa427b53726",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/inject.png",
+      "before": "c5c89bb79dc26298f6cd1e946247ac8a1e05aa11f97be1d75210e57dbdf278dc",
+      "after": "c5c89bb79dc26298f6cd1e946247ac8a1e05aa11f97be1d75210e57dbdf278dc",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/check.png",
+      "before": "f7bd781821612fc3d6a24befd51bc9f4c4f6f3a697f55dbc4d98f9a8c3ebd565",
+      "after": "f7bd781821612fc3d6a24befd51bc9f4c4f6f3a697f55dbc4d98f9a8c3ebd565",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/desk@2x.png",
+      "before": "d14d7fbdefd6f02c8b64763e40cbab93ec3bab39c481bc84b4dad11790332e92",
+      "after": "d14d7fbdefd6f02c8b64763e40cbab93ec3bab39c481bc84b4dad11790332e92",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/stop.png",
+      "before": "af2f0794aa6c9f686cfbb9992ccd7a983e10f67ce7490cb6b19eee53320acff1",
+      "after": "af2f0794aa6c9f686cfbb9992ccd7a983e10f67ce7490cb6b19eee53320acff1",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/online@2x.png",
+      "before": "3062a7b2ab4f51fa269765180caa1d8e67cc6c51a518682362c56fe8cdea01c5",
+      "after": "3062a7b2ab4f51fa269765180caa1d8e67cc6c51a518682362c56fe8cdea01c5",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/search@2x.png",
+      "before": "683b8e0545b79f109466d6c5af9baabfa1bca51f2db7296d075058b5ecc1d355",
+      "after": "683b8e0545b79f109466d6c5af9baabfa1bca51f2db7296d075058b5ecc1d355",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/away.png",
+      "before": "241a0fb4a9c6dac87d6db2667ef9d3737a68a03a1679aadec639c10526d43d44",
+      "after": "241a0fb4a9c6dac87d6db2667ef9d3737a68a03a1679aadec639c10526d43d44",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/back@2x.png",
+      "before": "a70730097aef84bd56632a298262ec7f11bdc8930322af6f714e500e098c3fd1",
+      "after": "a70730097aef84bd56632a298262ec7f11bdc8930322af6f714e500e098c3fd1",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/new-chat@2x.png",
+      "before": "142f03f07b2bed49af3128c4e566040c67eba2a34fbe3bf7bca0971e0fb4a135",
+      "after": "142f03f07b2bed49af3128c4e566040c67eba2a34fbe3bf7bca0971e0fb4a135",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/send@2x.png",
+      "before": "6e69fbdedbd26ddb9f00a233ed8dbe495f1376a5b7479f933063db72a9d39542",
+      "after": "6e69fbdedbd26ddb9f00a233ed8dbe495f1376a5b7479f933063db72a9d39542",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/directory@2x.png",
+      "before": "0cfe07aabb60863c1208a410b21b550bbff10083b314cac97ebf16c0aa89c30d",
+      "after": "0cfe07aabb60863c1208a410b21b550bbff10083b314cac97ebf16c0aa89c30d",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/desk.png",
+      "before": "ff9cc323dda082af81da5edccf6fa17b916b11013c4d198207394db80b718070",
+      "after": "ff9cc323dda082af81da5edccf6fa17b916b11013c4d198207394db80b718070",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/people@2x.png",
+      "before": "41dcba9e5d05c3c86c20c7ec1d9481cc983f80099c21b32bea77d1317e45bf6b",
+      "after": "41dcba9e5d05c3c86c20c7ec1d9481cc983f80099c21b32bea77d1317e45bf6b",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/agents@2x.png",
+      "before": "c14c2d1ef9894d322c277b455e9b9a7c76506284f4e7261fcd6636c916f92234",
+      "after": "c14c2d1ef9894d322c277b455e9b9a7c76506284f4e7261fcd6636c916f92234",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/inject@2x.png",
+      "before": "ec5f9b170ac71a35c5149eb060160d88d36bdd0213dcc82dcde290231182be6d",
+      "after": "ec5f9b170ac71a35c5149eb060160d88d36bdd0213dcc82dcde290231182be6d",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/clock@2x.png",
+      "before": "0b1b189b5530889ed7bac16f74354e0de3b8a47044754f61fc4f2db952492994",
+      "after": "0b1b189b5530889ed7bac16f74354e0de3b8a47044754f61fc4f2db952492994",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/settings.png",
+      "before": "02112be13a066e86fb70b66b830d010b87fad94017f77dc6062ffd2d43304590",
+      "after": "02112be13a066e86fb70b66b830d010b87fad94017f77dc6062ffd2d43304590",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/host.png",
+      "before": "e85e130519ca26c57b2697de7d8f15f2dadf33d8e4e667bd167d96f8404186c5",
+      "after": "e85e130519ca26c57b2697de7d8f15f2dadf33d8e4e667bd167d96f8404186c5",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/pantry@2x.png",
+      "before": "a83e576fa7e484dc06c801931045393cc1b4d4246f548fdf7ec42f125bfaa692",
+      "after": "a83e576fa7e484dc06c801931045393cc1b4d4246f548fdf7ec42f125bfaa692",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/image@2x.png",
+      "before": "712a43abeb64e3c50876b695f07a5b27e87dc43677fd0fc0f14b7a9a5a911347",
+      "after": "712a43abeb64e3c50876b695f07a5b27e87dc43677fd0fc0f14b7a9a5a911347",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/approvals-pending@2x.png",
+      "before": "b575299bfe830fb42afe5c12fa83b424a21c5231b62accd3d0df8b9f1734d90c",
+      "after": "b575299bfe830fb42afe5c12fa83b424a21c5231b62accd3d0df8b9f1734d90c",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/pantry.png",
+      "before": "f2d7dc0e8e83e1566a420bea7ba37267e40cd4db8a68fa1bdf60d3c2d51601c2",
+      "after": "f2d7dc0e8e83e1566a420bea7ba37267e40cd4db8a68fa1bdf60d3c2d51601c2",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/typing.png",
+      "before": "908111f010cc151d5b87d585989564ca2a58fc2ff6278af89e58f17256750db7",
+      "after": "908111f010cc151d5b87d585989564ca2a58fc2ff6278af89e58f17256750db7",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/keyboard.png",
+      "before": "93aebef248eeb3959356c9d91a61fa117fa6ce86238c20a6bcd68929292801de",
+      "after": "93aebef248eeb3959356c9d91a61fa117fa6ce86238c20a6bcd68929292801de",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/question.png",
+      "before": "c57585bf77832a24a58fc10418d1c136ac8e835d3706bd4e64cbf8d0640e15a0",
+      "after": "c57585bf77832a24a58fc10418d1c136ac8e835d3706bd4e64cbf8d0640e15a0",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/mention@2x.png",
+      "before": "c7f91eb504254e684826ebb78679d2cd95729d6ccba5f0207bbdc6e27508a40b",
+      "after": "c7f91eb504254e684826ebb78679d2cd95729d6ccba5f0207bbdc6e27508a40b",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/bubble.png",
+      "before": "a032fc329f8606d0809be60021cb28faf6ae355cb4ca0a1e33b5bf4629f27816",
+      "after": "a032fc329f8606d0809be60021cb28faf6ae355cb4ca0a1e33b5bf4629f27816",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/recap.png",
+      "before": "d4b11f076f08dc9c90960d14a88ef065746563b490d4f6a14f79ce0f6e7bc527",
+      "after": "d4b11f076f08dc9c90960d14a88ef065746563b490d4f6a14f79ce0f6e7bc527",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/file.png",
+      "before": "f6c603ff699ea2073e7e45face432c94f15c4ca0b6e9d5cda482b833d2b37cf3",
+      "after": "f6c603ff699ea2073e7e45face432c94f15c4ca0b6e9d5cda482b833d2b37cf3",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/inquiry@2x.png",
+      "before": "0b339c484b29d4c36d97aeea37198d3167128f1c42560ce11d822465872eb5c8",
+      "after": "0b339c484b29d4c36d97aeea37198d3167128f1c42560ce11d822465872eb5c8",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/question@2x.png",
+      "before": "992137320c84f2a6a14be309eb79031a3b6a650524993e1c9b295fec905051af",
+      "after": "992137320c84f2a6a14be309eb79031a3b6a650524993e1c9b295fec905051af",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/zoom-out@2x.png",
+      "before": "46f5163104d0f41c0f08f591e20b3a8d56beab41c3669e32a6fb338593888469",
+      "after": "46f5163104d0f41c0f08f591e20b3a8d56beab41c3669e32a6fb338593888469",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/approvals@2x.png",
+      "before": "d57b2a95fa507033263db368d81dd966f2ebe603f1839aefcd00771a455382aa",
+      "after": "d57b2a95fa507033263db368d81dd966f2ebe603f1839aefcd00771a455382aa",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/party.png",
+      "before": "5f5eb098ad84226eee3aa28b242bac45961004733f39faeacc6b33e19a8e18a3",
+      "after": "5f5eb098ad84226eee3aa28b242bac45961004733f39faeacc6b33e19a8e18a3",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/new-chat.png",
+      "before": "ebbdd2263e78e8cbe9c227f9e78ffa7b2c28bab1e5f668f5115ebbe63cb9ef56",
+      "after": "ebbdd2263e78e8cbe9c227f9e78ffa7b2c28bab1e5f668f5115ebbe63cb9ef56",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/approvals.png",
+      "before": "da52a558b74bbc37cb782d2b2062e759b7be73aabd6dde06bca8c4c12ebc9ec4",
+      "after": "da52a558b74bbc37cb782d2b2062e759b7be73aabd6dde06bca8c4c12ebc9ec4",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/target.png",
+      "before": "985974611d6c39f1374ce6f102265f3b0664132511323f32e676510794b930e5",
+      "after": "985974611d6c39f1374ce6f102265f3b0664132511323f32e676510794b930e5",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/fit.png",
+      "before": "b728a0a443a0d9aa30a3df8bb1964766629e31d90285ef02ef5aac167d09191f",
+      "after": "b728a0a443a0d9aa30a3df8bb1964766629e31d90285ef02ef5aac167d09191f",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/away@2x.png",
+      "before": "834a21a3fa60016a9c35cb4309ebd78fef0b5a9c5bea241b714f8dd3f2a9a884",
+      "after": "834a21a3fa60016a9c35cb4309ebd78fef0b5a9c5bea241b714f8dd3f2a9a884",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/keyboard@2x.png",
+      "before": "0d2550e678859836ab4e7368de4fd74c24d6e166dab18cc918e8eb519d4c487c",
+      "after": "0d2550e678859836ab4e7368de4fd74c24d6e166dab18cc918e8eb519d4c487c",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/inquiry.png",
+      "before": "f93a186a625ca3a10fe565a27625244137caf6919729d68d330fb36f9471df7a",
+      "after": "f93a186a625ca3a10fe565a27625244137caf6919729d68d330fb36f9471df7a",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/recap@2x.png",
+      "before": "60de7e0ba00cdc83a857b1f5a587d2e11d02fcdf7d2525debdcfc08d9d30710f",
+      "after": "60de7e0ba00cdc83a857b1f5a587d2e11d02fcdf7d2525debdcfc08d9d30710f",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/zoom-in@2x.png",
+      "before": "11670a3134aacd33b4fb7107365420ba5d8b631248d750779be4ac6a224adba9",
+      "after": "11670a3134aacd33b4fb7107365420ba5d8b631248d750779be4ac6a224adba9",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/agents.png",
+      "before": "80108f9086d8b225138c9454f4103cf1825dd1ddbea239055a7f89ac14a3e677",
+      "after": "80108f9086d8b225138c9454f4103cf1825dd1ddbea239055a7f89ac14a3e677",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/approvals-pending.png",
+      "before": "3e57db29570e9c4734398f0eeaccd45f9dd94499e7344af31d944e8024fcab2d",
+      "after": "3e57db29570e9c4734398f0eeaccd45f9dd94499e7344af31d944e8024fcab2d",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/search.png",
+      "before": "95fc5d270236fb3e9af76f136de17b99a414562a9a4c4228f33ce9efc112d08f",
+      "after": "95fc5d270236fb3e9af76f136de17b99a414562a9a4c4228f33ce9efc112d08f",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/handback@2x.png",
+      "before": "ed2f382556100ba4470e9ec8b608270c1648c404626a04676bedf603e29a2125",
+      "after": "ed2f382556100ba4470e9ec8b608270c1648c404626a04676bedf603e29a2125",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/favicon.png",
+      "before": "36c34cc115dacae7c4b25c34d61e450fa7836052faff96147cdcc2044fb113ee",
+      "after": "36c34cc115dacae7c4b25c34d61e450fa7836052faff96147cdcc2044fb113ee",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/ring.png",
+      "before": "4032e12753e80ea1ddf1ee1890a6192e86e5935ced2e2be6992609dd3f90bb1f",
+      "after": "4032e12753e80ea1ddf1ee1890a6192e86e5935ced2e2be6992609dd3f90bb1f",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/attach@2x.png",
+      "before": "5c1f29b2e7031c074b5ea212a1f788694e0a606abbaac590d9b3bb58620d56e2",
+      "after": "5c1f29b2e7031c074b5ea212a1f788694e0a606abbaac590d9b3bb58620d56e2",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/office@2x.png",
+      "before": "48007f11d7776bafe34da964a28c6b125e4b8df2b79a4b9600f95410dad8ad90",
+      "after": "48007f11d7776bafe34da964a28c6b125e4b8df2b79a4b9600f95410dad8ad90",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/notifications-on.png",
+      "before": "e542f93adba266e5b2ca51c05481b494b22564969f36bb6ff1610d9eee833163",
+      "after": "e542f93adba266e5b2ca51c05481b494b22564969f36bb6ff1610d9eee833163",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/party@2x.png",
+      "before": "6c194f08dcd2c7a9c4a6cfe374acb9ffb5edf8b737bd8d8e526f08f7bf4b3d23",
+      "after": "6c194f08dcd2c7a9c4a6cfe374acb9ffb5edf8b737bd8d8e526f08f7bf4b3d23",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/file@2x.png",
+      "before": "1c82162767029f892a4cfc004070a820539aaaeb1dc08ee996e82944370e0fdc",
+      "after": "1c82162767029f892a4cfc004070a820539aaaeb1dc08ee996e82944370e0fdc",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/mention.png",
+      "before": "3cae39f28bdb19f9dd467a8f486baca708e7f6ed16c0e7402342bb20a0970e68",
+      "after": "3cae39f28bdb19f9dd467a8f486baca708e7f6ed16c0e7402342bb20a0970e68",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/office.png",
+      "before": "955176d05b3497e510135ea38d5662ece747f5bc254397702426791233b40e64",
+      "after": "955176d05b3497e510135ea38d5662ece747f5bc254397702426791233b40e64",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/check@2x.png",
+      "before": "b4f11e37fe8fc24662e52bfe80df33fe6cb87853372158cb5be5ef3cc91eb715",
+      "after": "b4f11e37fe8fc24662e52bfe80df33fe6cb87853372158cb5be5ef3cc91eb715",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/logo.png",
+      "before": "36c34cc115dacae7c4b25c34d61e450fa7836052faff96147cdcc2044fb113ee",
+      "after": "36c34cc115dacae7c4b25c34d61e450fa7836052faff96147cdcc2044fb113ee",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/host@2x.png",
+      "before": "80e7ae6657b0ebc4786cb6681ac1b7ffa4131e9e5487d61d8248bc5de9d2c6b9",
+      "after": "80e7ae6657b0ebc4786cb6681ac1b7ffa4131e9e5487d61d8248bc5de9d2c6b9",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/bubble-tail.png",
+      "before": "0127932459883e23bdfed6e7677dd8c621549e8e33a10be20e3d1abbeab3a33f",
+      "after": "0127932459883e23bdfed6e7677dd8c621549e8e33a10be20e3d1abbeab3a33f",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/attach.png",
+      "before": "eec253a43f6989611d78cd59eda150dc06ef394b59bd728addca2f239c4a02b4",
+      "after": "eec253a43f6989611d78cd59eda150dc06ef394b59bd728addca2f239c4a02b4",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/directory.png",
+      "before": "150ce102db73e76e9dd79d88b946ae808fd6581ba7e2460022df3979c52dd796",
+      "after": "150ce102db73e76e9dd79d88b946ae808fd6581ba7e2460022df3979c52dd796",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/logo@2x.png",
+      "before": "5182076190a43ef57b591feb4a0b2f59267ff8eb581f2d128c17a9304f87696a",
+      "after": "5182076190a43ef57b591feb4a0b2f59267ff8eb581f2d128c17a9304f87696a",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/handback.png",
+      "before": "35fe315e250075161c6aa70a446a45d81022023fa6d2a27022db084caaa250ba",
+      "after": "35fe315e250075161c6aa70a446a45d81022023fa6d2a27022db084caaa250ba",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/notifications-on@2x.png",
+      "before": "5d74ad8a7c12132e43907591684cc7c1010b0d33d961d0a1454190eb053be907",
+      "after": "5d74ad8a7c12132e43907591684cc7c1010b0d33d961d0a1454190eb053be907",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/fork@2x.png",
+      "before": "518bfa42882c6963b493e2a70366ec43bb52cd15a3f320bed907bedc4dd9a0ee",
+      "after": "518bfa42882c6963b493e2a70366ec43bb52cd15a3f320bed907bedc4dd9a0ee",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/clock.png",
+      "before": "f770d0431f1e1b8d0743d9a5a88c63eb45f72ed3b0ada7e2ccb493c7ec2ae0ad",
+      "after": "f770d0431f1e1b8d0743d9a5a88c63eb45f72ed3b0ada7e2ccb493c7ec2ae0ad",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/online.png",
+      "before": "8166f94cfa2e62cfaf3f47fe13d0c919f5d9b5ab89be40833ddef4b937c75a16",
+      "after": "8166f94cfa2e62cfaf3f47fe13d0c919f5d9b5ab89be40833ddef4b937c75a16",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/fit@2x.png",
+      "before": "e09af6066ca92ce0ab04153b67727ea577d4ed5b27d0c9fb50c48694a189e8a0",
+      "after": "e09af6066ca92ce0ab04153b67727ea577d4ed5b27d0c9fb50c48694a189e8a0",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/settings@2x.png",
+      "before": "8b7f8498b3ce564a2bb85ccdcabbfbeb377335725c95fc3ae9cc8934982355a3",
+      "after": "8b7f8498b3ce564a2bb85ccdcabbfbeb377335725c95fc3ae9cc8934982355a3",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/takeover.png",
+      "before": "9605dcdee43d8406e5312a57ed0fa45f96c76320147f203672eb1dfd9fce264b",
+      "after": "9605dcdee43d8406e5312a57ed0fa45f96c76320147f203672eb1dfd9fce264b",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/assignment.png",
+      "before": "eb82ceee7aefad5c0cb269fd2c6d9961d8564e68af257ffc2f18e3e368ef0ea5",
+      "after": "eb82ceee7aefad5c0cb269fd2c6d9961d8564e68af257ffc2f18e3e368ef0ea5",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/stop@2x.png",
+      "before": "c7c063ea8bab738cc8e9ca86cbe4942dca26c68dca60a01e8fb0797a4679ad68",
+      "after": "c7c063ea8bab738cc8e9ca86cbe4942dca26c68dca60a01e8fb0797a4679ad68",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/close@2x.png",
+      "before": "3319ab36010faca3abcdcb773671711f1e689281ac93c21d9c8d60f9f5291dd3",
+      "after": "3319ab36010faca3abcdcb773671711f1e689281ac93c21d9c8d60f9f5291dd3",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/send.png",
+      "before": "255b454d965f5124fa9ece008d89618bc134f501f0ddbe9e981369756956c72c",
+      "after": "255b454d965f5124fa9ece008d89618bc134f501f0ddbe9e981369756956c72c",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/zoom-out.png",
+      "before": "2d40a23afea1b351fa9a78a97d0f6cb5319dad30961e2de9b3fe0b1ba74a3ac0",
+      "after": "2d40a23afea1b351fa9a78a97d0f6cb5319dad30961e2de9b3fe0b1ba74a3ac0",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/assignment@2x.png",
+      "before": "f0b8c3a47fcdf4c66ed7962fc82c66780ffef8eab05b1d18b5a98745feaef837",
+      "after": "f0b8c3a47fcdf4c66ed7962fc82c66780ffef8eab05b1d18b5a98745feaef837",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/back.png",
+      "before": "dffa6c7cbb92bdf86f61db0cdc8bbac39b599a1971ea929191a59ef130b41ad2",
+      "after": "dffa6c7cbb92bdf86f61db0cdc8bbac39b599a1971ea929191a59ef130b41ad2",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/fork.png",
+      "before": "d07fcbc7dbff1f3a8bb472c2491fd511562ff9c7fbef91f882d2289c3fbf1b5f",
+      "after": "d07fcbc7dbff1f3a8bb472c2491fd511562ff9c7fbef91f882d2289c3fbf1b5f",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/takeover@2x.png",
+      "before": "053d60b4682e529e35c256a892b1ca1e570b0b4a58352d24a82b00f705e90801",
+      "after": "053d60b4682e529e35c256a892b1ca1e570b0b4a58352d24a82b00f705e90801",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/image.png",
+      "before": "f7072bc32412f47a16dd8574f1a58f0daf49ab5cc99154bd54120ec5a0fef249",
+      "after": "f7072bc32412f47a16dd8574f1a58f0daf49ab5cc99154bd54120ec5a0fef249",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/zoom-in.png",
+      "before": "a60db21b2c4a87ff5ca1d5fbc01d92b3856c1c6ab47ca437f3dcbcb1b628de4d",
+      "after": "a60db21b2c4a87ff5ca1d5fbc01d92b3856c1c6ab47ca437f3dcbcb1b628de4d",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/ring-selected.png",
+      "before": "d4aca8484c7fbb5b64bd6630081d9f0b56bd119c70315714adefed542f89ce04",
+      "after": "d4aca8484c7fbb5b64bd6630081d9f0b56bd119c70315714adefed542f89ce04",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/people.png",
+      "before": "1f2d3cc93e9593dc034f1f66eebcc8dcb71b50dedfbc89c126dff5ad71a3a993",
+      "after": "1f2d3cc93e9593dc034f1f66eebcc8dcb71b50dedfbc89c126dff5ad71a3a993",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/ui/close.png",
+      "before": "51b84846790c388e25d1b96574f342c71bac440d12fd3f687005b2b54b5077d0",
+      "after": "51b84846790c388e25d1b96574f342c71bac440d12fd3f687005b2b54b5077d0",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters48/designer.png",
+      "before": "b0ed96f7bf812b610931c1c99fef221c28b6459b34e2fb213221f3ac6ad1a26c",
+      "after": "b0ed96f7bf812b610931c1c99fef221c28b6459b34e2fb213221f3ac6ad1a26c",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters48/penguin.png",
+      "before": "7e399a0cee1607342cb5abeb022a79a1187a3f4994604edf43e46201a8daf317",
+      "after": "7e399a0cee1607342cb5abeb022a79a1187a3f4994604edf43e46201a8daf317",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters48/cat.png",
+      "before": "10450cc8d21173bd5eaf12d0e4cfe13699d0a61686ab272cab3e5dcf5f7d86cc",
+      "after": "10450cc8d21173bd5eaf12d0e4cfe13699d0a61686ab272cab3e5dcf5f7d86cc",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters48/alien.png",
+      "before": "d7fed72246e05e33837b962f1f5773f36d340b2107a1bed2013f874ff2d3775d",
+      "after": "d7fed72246e05e33837b962f1f5773f36d340b2107a1bed2013f874ff2d3775d",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters48/robot.png",
+      "before": "8e9fee80d75e8b92f9806b2381b4121e1b1ac575e7da10746b44e7efc3b8ab71",
+      "after": "8e9fee80d75e8b92f9806b2381b4121e1b1ac575e7da10746b44e7efc3b8ab71",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters48/lead.png",
+      "before": "4b6bb287cf4a1c12882d6e8680db49712772555080d1cb54a28b96734ec9e817",
+      "after": "4b6bb287cf4a1c12882d6e8680db49712772555080d1cb54a28b96734ec9e817",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters48/dev-hoodie.png",
+      "before": "17b43aaba6210cf398f90a0115f68b021281281de51d537226c7a10f5689890c",
+      "after": "17b43aaba6210cf398f90a0115f68b021281281de51d537226c7a10f5689890c",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters48/shiba.png",
+      "before": "7e922d6804216fd8ceacaa8d8c1c41be06d503ff12701e69aab86045efeb3dc2",
+      "after": "7e922d6804216fd8ceacaa8d8c1c41be06d503ff12701e69aab86045efeb3dc2",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/plant.png",
+      "before": "43182a805d3e26c4471bc2bc1da9833dbcedc9f21d8376a8b0d77dd20288f54a",
+      "after": "43182a805d3e26c4471bc2bc1da9833dbcedc9f21d8376a8b0d77dd20288f54a",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/coffee.png",
+      "before": "64e7060bfed6457812b5030b4fa2c8cc6189ac44114fda9b6a8587ca6e6ee2f1",
+      "after": "64e7060bfed6457812b5030b4fa2c8cc6189ac44114fda9b6a8587ca6e6ee2f1",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/desk.png",
+      "before": "4b315ac12fd7f4ee70c92f7ab1d86e511a0638b9e900b83709dcebcd574eafcf",
+      "after": "4b315ac12fd7f4ee70c92f7ab1d86e511a0638b9e900b83709dcebcd574eafcf",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/desk-side.png",
+      "before": "a70b093f15b015d91b0f16cfa0fed720025cf3adda6ab64a3c82bf9439666112",
+      "after": "a70b093f15b015d91b0f16cfa0fed720025cf3adda6ab64a3c82bf9439666112",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/whiteboard.png",
+      "before": "eea1954d9f22dfaa73f2269c286827ec1850bc15758428af93f9069c92cee467",
+      "after": "eea1954d9f22dfaa73f2269c286827ec1850bc15758428af93f9069c92cee467",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/mat.png",
+      "before": "63b116dbde3546c0997fb3ba64114060d366d53dab71e851c5719658c4f324fb",
+      "after": "63b116dbde3546c0997fb3ba64114060d366d53dab71e851c5719658c4f324fb",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/stool.png",
+      "before": "7c333c23b023c11295e9d3a96a7afa11bcaa0d276bc0d865555d9a30d7f8b37c",
+      "after": "7c333c23b023c11295e9d3a96a7afa11bcaa0d276bc0d865555d9a30d7f8b37c",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/sofa.png",
+      "before": "972bbea62d65e6aea4ae02381a6b160943cb1a468eed51fa29f6eec1215844d2",
+      "after": "972bbea62d65e6aea4ae02381a6b160943cb1a468eed51fa29f6eec1215844d2",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/fridge.png",
+      "before": "af5f92904be683f2f3f08774f6636139d5a326f829baace3ec3c0b8c9e89ff20",
+      "after": "af5f92904be683f2f3f08774f6636139d5a326f829baace3ec3c0b8c9e89ff20",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/chair.png",
+      "before": "5023a14cff80380b86d200fc0b63ba677a61ac88cdacca8614328478aceb15cb",
+      "after": "5023a14cff80380b86d200fc0b63ba677a61ac88cdacca8614328478aceb15cb",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/door.png",
+      "before": "ebbe77c6ccdb619f9703377e1ca8ce2837ecaac7b25ef0ffb21d304e09880021",
+      "after": "ebbe77c6ccdb619f9703377e1ca8ce2837ecaac7b25ef0ffb21d304e09880021",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/printer.png",
+      "before": "d1f36901617f0205fade9698f6be7b85e874b6cd4bd9409075a68bcb835e3401",
+      "after": "d1f36901617f0205fade9698f6be7b85e874b6cd4bd9409075a68bcb835e3401",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/table.png",
+      "before": "fc7de240de2946ec5d58df80270ee4189c82e35a4eed3ed92a0a26a3f38021b5",
+      "after": "fc7de240de2946ec5d58df80270ee4189c82e35a4eed3ed92a0a26a3f38021b5",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/bookshelf.png",
+      "before": "b70490be34bfcb401fec519bc33f71826902cc8db17383afc6283f6543ec6801",
+      "after": "b70490be34bfcb401fec519bc33f71826902cc8db17383afc6283f6543ec6801",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/chair-back.png",
+      "before": "946a9e162e71e58a702b9ed7a40bb8a10c6e0efd2274be5cf752abccaaa8ef43",
+      "after": "946a9e162e71e58a702b9ed7a40bb8a10c6e0efd2274be5cf752abccaaa8ef43",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/objects/sink.png",
+      "before": "3131006a8028849d222dcf309c10953871765776cdc63d91233a44412361b821",
+      "after": "3131006a8028849d222dcf309c10953871765776cdc63d91233a44412361b821",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/map/seats.json",
+      "before": "586b795a5625620eabe5e08e2f4c63978da27249c5bfd652e10be4d1a8252909",
+      "after": "586b795a5625620eabe5e08e2f4c63978da27249c5bfd652e10be4d1a8252909",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/map/collision.png",
+      "before": "a98c04f666e84f2246980882ae15503008bafceeb09dc151bc510a05c10af893",
+      "after": "a98c04f666e84f2246980882ae15503008bafceeb09dc151bc510a05c10af893",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/map/background.png",
+      "before": "5effb92dd1896f44fe9fc5c707efab5fc7032dc90ca2c6ca74242f195c1cd050",
+      "after": "5effb92dd1896f44fe9fc5c707efab5fc7032dc90ca2c6ca74242f195c1cd050",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/map/foreground.png",
+      "before": "5dd131ac44909fe52d2aa74872600034b140eb75dfe3338c28590c6639a9f82a",
+      "after": "5dd131ac44909fe52d2aa74872600034b140eb75dfe3338c28590c6639a9f82a",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/map/collision@16x.png",
+      "before": "265efff5a954cd2c99d7f623e6154f21d2538916a019bacc123aef64c8ba95db",
+      "after": "265efff5a954cd2c99d7f623e6154f21d2538916a019bacc123aef64c8ba95db",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/designer.png",
+      "before": "397db92a03a32e1400fda26016b608a1c7b1d13999bbbc3724faa0b0728226f4",
+      "after": "397db92a03a32e1400fda26016b608a1c7b1d13999bbbc3724faa0b0728226f4",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/designer-portrait.png",
+      "before": "8bc382bddb48240b4e99c2795c7f11572c04ce1d90eae446a6d707d0598975ea",
+      "after": "8bc382bddb48240b4e99c2795c7f11572c04ce1d90eae446a6d707d0598975ea",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/shiba-portrait.png",
+      "before": "e4541977abce422a2dcc78ffe18f29a534c7b94c334c01671ed3d88f5f711ddf",
+      "after": "e4541977abce422a2dcc78ffe18f29a534c7b94c334c01671ed3d88f5f711ddf",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/robot-portrait.png",
+      "before": "46a2596f7adeb9ccd3b9630f233b7be3a074f7c2c655abe244c9f2c1e76f22f4",
+      "after": "46a2596f7adeb9ccd3b9630f233b7be3a074f7c2c655abe244c9f2c1e76f22f4",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/lead-portrait.png",
+      "before": "073482ca180197a62f8f17d87ca83e9ff0912ba11b6ae1bbc4182a0384093295",
+      "after": "073482ca180197a62f8f17d87ca83e9ff0912ba11b6ae1bbc4182a0384093295",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/cat-portrait.png",
+      "before": "f99793ba16be6973cf473ed8699dafb7b93943ccb409a4e367b419da975b5edf",
+      "after": "f99793ba16be6973cf473ed8699dafb7b93943ccb409a4e367b419da975b5edf",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/penguin.png",
+      "before": "6c5c238f9ece93643bed1d1ae50e8c30ffbfbba2a8cf9646764cf5fc7eba87c1",
+      "after": "6c5c238f9ece93643bed1d1ae50e8c30ffbfbba2a8cf9646764cf5fc7eba87c1",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/penguin-portrait.png",
+      "before": "c4a0d75f84ea7a048064921de57b3150a233cbeefcdcb487b88cb2ad56beb703",
+      "after": "c4a0d75f84ea7a048064921de57b3150a233cbeefcdcb487b88cb2ad56beb703",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/cat.png",
+      "before": "c82633e6625e60b896bc1732d69bde7f1dcbd9a2cf8dd629060ffa54f2152477",
+      "after": "c82633e6625e60b896bc1732d69bde7f1dcbd9a2cf8dd629060ffa54f2152477",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/alien.png",
+      "before": "a60690db4681f9fea7a6d18cc8c0d61ab93542b521d904eafdb75ad0057d0a93",
+      "after": "a60690db4681f9fea7a6d18cc8c0d61ab93542b521d904eafdb75ad0057d0a93",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/robot.png",
+      "before": "72e194b65c263f49dccd252fe29b9727def10cdfe2735bad5d453352b479fb82",
+      "after": "72e194b65c263f49dccd252fe29b9727def10cdfe2735bad5d453352b479fb82",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/alien-portrait.png",
+      "before": "279b88aa0bec7d72254949482295dd0c611baf2d20b423dfb3d6ba604697e4a3",
+      "after": "279b88aa0bec7d72254949482295dd0c611baf2d20b423dfb3d6ba604697e4a3",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/lead.png",
+      "before": "4e123f35ebabc08863d646a627a989a11a5b54c06714e1ecc4724f9a42778588",
+      "after": "4e123f35ebabc08863d646a627a989a11a5b54c06714e1ecc4724f9a42778588",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/dev-hoodie-portrait.png",
+      "before": "76bbbbb69f13ee28e787f605f5c99c2f60a57714e2193fd70072a88bce3c3d8c",
+      "after": "76bbbbb69f13ee28e787f605f5c99c2f60a57714e2193fd70072a88bce3c3d8c",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/dev-hoodie.png",
+      "before": "753a1f25ce74e6d7bebecc8167e8a6bcb47d50b39b6cd3c043b1f12d48458b5f",
+      "after": "753a1f25ce74e6d7bebecc8167e8a6bcb47d50b39b6cd3c043b1f12d48458b5f",
+      "unchanged": true
+    },
+    {
+      "path": "dashboard/public/office/characters/shiba.png",
+      "before": "aba8979606cdc2b5069b9aa245d7b64ced1aeea181a4e3dd15fd1ede0c7a7dff",
+      "after": "aba8979606cdc2b5069b9aa245d7b64ced1aeea181a4e3dd15fd1ede0c7a7dff",
+      "unchanged": true
+    }
+  ],
+  "original_eight_sheets_unchanged": true,
+  "original_eight_portraits_unchanged": true,
+  "rest_of_manifest_unchanged": true,
+  "manifest_rest_hash_before": "aa92cfb5104c12cc02854882bb99fdaa822694764bf95773af69eb33afd394a7",
+  "manifest_rest_hash_after": "aa92cfb5104c12cc02854882bb99fdaa822694764bf95773af69eb33afd394a7",
+  "slime_squash": [
+    {
+      "row": 0,
+      "dimensions": [
+        [
+          42,
+          37
+        ],
+        [
+          36,
+          43
+        ],
+        [
+          40,
+          38
+        ],
+        [
+          35,
+          45
+        ]
+      ],
+      "wider_shorter_strides": true
+    },
+    {
+      "row": 1,
+      "dimensions": [
+        [
+          43,
+          38
+        ],
+        [
+          35,
+          44
+        ],
+        [
+          44,
+          37
+        ],
+        [
+          34,
+          43
+        ]
+      ],
+      "wider_shorter_strides": true
+    },
+    {
+      "row": 2,
+      "dimensions": [
+        [
+          43,
+          40
+        ],
+        [
+          35,
+          41
+        ],
+        [
+          42,
+          38
+        ],
+        [
+          34,
+          42
+        ]
+      ],
+      "wider_shorter_strides": true
+    }
+  ],
+  "sources": {
+    "mage": {
+      "row_bands": [
+        [
+          50,
+          335
+        ],
+        [
+          378,
+          665
+        ],
+        [
+          716,
+          1010
+        ],
+        [
+          1051,
+          1342
+        ],
+        [
+          1371,
+          1664
+        ]
+      ],
+      "row_boundaries": [
+        0,
+        356,
+        690,
+        1030,
+        1356,
+        1717
+      ],
+      "scale": 0.19383259911894274
+    },
+    "knight": {
+      "row_bands": [
+        [
+          85,
+          351
+        ],
+        [
+          409,
+          686
+        ],
+        [
+          738,
+          1008
+        ],
+        [
+          1058,
+          1330
+        ],
+        [
+          1383,
+          1648
+        ]
+      ],
+      "row_boundaries": [
+        0,
+        380,
+        712,
+        1033,
+        1356,
+        1717
+      ],
+      "scale": 0.20853080568720378
+    },
+    "ranger": {
+      "row_bands": [
+        [
+          61,
+          353
+        ],
+        [
+          408,
+          686
+        ],
+        [
+          755,
+          1044
+        ],
+        [
+          1084,
+          1383
+        ],
+        [
+          1400,
+          1693
+        ]
+      ],
+      "row_boundaries": [
+        0,
+        380,
+        720,
+        1064,
+        1391,
+        1717
+      ],
+      "scale": 0.21052631578947367
+    },
+    "healer": {
+      "row_bands": [
+        [
+          95,
+          365
+        ],
+        [
+          406,
+          684
+        ],
+        [
+          727,
+          1006
+        ],
+        [
+          1049,
+          1341
+        ],
+        [
+          1401,
+          1662
+        ]
+      ],
+      "row_boundaries": [
+        0,
+        385,
+        705,
+        1027,
+        1371,
+        1717
+      ],
+      "scale": 0.19383259911894274
+    },
+    "rogue": {
+      "row_bands": [
+        [
+          94,
+          378
+        ],
+        [
+          431,
+          699
+        ],
+        [
+          756,
+          1036
+        ],
+        [
+          1088,
+          1364
+        ],
+        [
+          1408,
+          1681
+        ]
+      ],
+      "row_boundaries": [
+        0,
+        404,
+        727,
+        1062,
+        1386,
+        1717
+      ],
+      "scale": 0.22
+    },
+    "berserker": {
+      "row_bands": [
+        [
+          133,
+          380
+        ],
+        [
+          417,
+          683
+        ],
+        [
+          739,
+          994
+        ],
+        [
+          1055,
+          1312
+        ],
+        [
+          1377,
+          1626
+        ]
+      ],
+      "row_boundaries": [
+        0,
+        398,
+        711,
+        1024,
+        1344,
+        1717
+      ],
+      "scale": 0.21782178217821782
+    },
+    "slime": {
+      "row_bands": [
+        [
+          296,
+          513
+        ],
+        [
+          572,
+          783
+        ],
+        [
+          849,
+          1049
+        ],
+        [
+          1133,
+          1347
+        ],
+        [
+          1419,
+          1631
+        ]
+      ],
+      "row_boundaries": [
+        0,
+        542,
+        816,
+        1091,
+        1383,
+        1717
+      ],
+      "scale": 0.20754716981132076
+    },
+    "dragon": {
+      "row_bands": [
+        [
+          83,
+          364
+        ],
+        [
+          400,
+          661
+        ],
+        [
+          725,
+          983
+        ],
+        [
+          1047,
+          1306
+        ],
+        [
+          1372,
+          1624
+        ]
+      ],
+      "row_boundaries": [
+        0,
+        382,
+        693,
+        1015,
+        1339,
+        1717
+      ],
+      "scale": 0.20276497695852536
+    }
+  },
+  "characters": [
+    {
+      "id": "mage",
+      "label": "Coffee Mage",
+      "files": [
+        {
+          "path": "dashboard/public/office/characters48/mage.png",
+          "size": [
+            192,
+            360
+          ],
+          "sha256": "01f976d15750c1a009a5b62c20743605f405ffd508e6e9ff214b6a95bf8a6780",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        },
+        {
+          "path": "dashboard/public/office/characters/mage-portrait.png",
+          "size": [
+            32,
+            48
+          ],
+          "sha256": "b31a679e23cdb6d9a8f22a3b8994b95a45bc40e26530d0924c98872e1e4ad5aa",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        }
+      ],
+      "frame_size": [
+        48,
+        72
+      ],
+      "frame_count": 20,
+      "native_portrait": "32x48 rasterized directly from high-resolution front pose, no blur or 48px up/downscale",
+      "one_scale_all_poses": 0.19383259911894274,
+      "frame_bounds": [
+        [
+          4,
+          16,
+          44,
+          71
+        ],
+        [
+          4,
+          17,
+          44,
+          71
+        ],
+        [
+          5,
+          17,
+          43,
+          71
+        ],
+        [
+          4,
+          17,
+          44,
+          71
+        ],
+        [
+          4,
+          16,
+          44,
+          71
+        ],
+        [
+          2,
+          15,
+          45,
+          71
+        ],
+        [
+          4,
+          15,
+          44,
+          71
+        ],
+        [
+          4,
+          15,
+          43,
+          71
+        ],
+        [
+          4,
+          14,
+          44,
+          71
+        ],
+        [
+          4,
+          15,
+          43,
+          71
+        ],
+        [
+          4,
+          15,
+          44,
+          71
+        ],
+        [
+          5,
+          15,
+          43,
+          71
+        ],
+        [
+          4,
+          18,
+          44,
+          71
+        ],
+        [
+          3,
+          20,
+          44,
+          71
+        ],
+        [
+          7,
+          20,
+          46,
+          71
+        ],
+        [
+          3,
+          15,
+          45,
+          71
+        ],
+        [
+          3,
+          18,
+          44,
+          71
+        ],
+        [
+          4,
+          19,
+          44,
+          71
+        ],
+        [
+          4,
+          15,
+          44,
+          71
+        ],
+        [
+          4,
+          15,
+          44,
+          71
+        ]
+      ],
+      "contact_y": 70,
+      "last_row_71": "transparent",
+      "unique_walk_frames": [
+        4,
+        4,
+        4
+      ],
+      "typing_frames_distinct": true,
+      "typing_lower_body_distinct": true,
+      "frame_hashes": [
+        "67cbb36a27636d73bffa03e18789a2d16085f40dddf40c0f5f1d6dd1e7c7da23",
+        "2aec014655d2856278ce817919e734733859aaeabd8f99ad63d2b57bca185f7d",
+        "b3b0ca23fb28ce1ce6abf0dceab77146b7d56f534757d90cb4a6b5ca1ee9cf99",
+        "04741cb7ccbc9f9240b44d17ce5f0c27bda35ad5f9659f256defef455073b2dc",
+        "204192f7bd4055f472ccaad9f605e872b895a9a7b6261f0e98da28d1ddc48473",
+        "5d2325ec85b2e703f7545f1566643f5b4d390bf3bf74082c99334d8ecfacf6fb",
+        "c5cc41a5133741d8a59b08470bac6a2ea21dc01e9cbda73e081691b509aa7b95",
+        "833f960571c035ff23458be8fb9f8ac3a8e76847440ce75c7a5af518cd0e39dd",
+        "7025d4c763fe529d6cf7b8c1d0225890025a323858d3e2cadbca8da51878f245",
+        "1d232da5d95fd0f7d49e69f9887bd68094c237f59b361dd4977d01f02f5e29d3",
+        "c2887718c816e32cd3993a20276048d50d46cb85e0e4f65566970bb8c07cfee8",
+        "838a2e30098245b544fcf9d360db212f9648e1a2e2caea801e815cac368a63fb",
+        "6a5f4fd6ef98aadc307f68f95a4d3c7f04ddffaa43a8044d1481ddd727c77784",
+        "58b4fe4ed1feeecba2eed30277a699944b577e4f2377cf45ab7ea68ce9207477",
+        "90bbb9010dc38b4a6b55c8a2b985c911e588c03001152a11df857b1ec4f03598",
+        "e6863ca95b9b40bf05bae1e9a0d4db21103080319c51a9c4b9a896cb915d21af",
+        "a0fa880ce44986dd1faf0668386d644b66d67d7d6d2ec912b05ad8c4f4b4e7e6",
+        "719eeb2a88bd195a425a1f20dc6b09c5b543f6dffc6dcef663680fbbce4d0075",
+        "ae219d5b143d2aed385c73cc9ddd3e9e222ef2e45c461bfde036295734f994a2",
+        "5caef8dabd003243b2876ca972152a08ec09357fb4db847bfe55ce33070c279c"
+      ]
+    },
+    {
+      "id": "knight",
+      "label": "Keyboard Knight",
+      "files": [
+        {
+          "path": "dashboard/public/office/characters48/knight.png",
+          "size": [
+            192,
+            360
+          ],
+          "sha256": "c4113d1e4a0b9fd1214a63ecd8fb26ddbde5426f3545eefef6b1c1f3e16ad9c9",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        },
+        {
+          "path": "dashboard/public/office/characters/knight-portrait.png",
+          "size": [
+            32,
+            48
+          ],
+          "sha256": "311b8873e0bfd0695aa5dfa4fb886730bceb1f7e8f3ef4d8b5833e8921da5741",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        }
+      ],
+      "frame_size": [
+        48,
+        72
+      ],
+      "frame_count": 20,
+      "native_portrait": "32x48 rasterized directly from high-resolution front pose, no blur or 48px up/downscale",
+      "one_scale_all_poses": 0.20853080568720378,
+      "frame_bounds": [
+        [
+          2,
+          16,
+          45,
+          71
+        ],
+        [
+          3,
+          16,
+          44,
+          71
+        ],
+        [
+          2,
+          16,
+          45,
+          71
+        ],
+        [
+          4,
+          16,
+          43,
+          71
+        ],
+        [
+          6,
+          13,
+          42,
+          71
+        ],
+        [
+          6,
+          15,
+          42,
+          71
+        ],
+        [
+          6,
+          13,
+          42,
+          71
+        ],
+        [
+          6,
+          15,
+          41,
+          71
+        ],
+        [
+          3,
+          15,
+          45,
+          71
+        ],
+        [
+          5,
+          16,
+          43,
+          71
+        ],
+        [
+          4,
+          15,
+          43,
+          71
+        ],
+        [
+          5,
+          17,
+          42,
+          71
+        ],
+        [
+          3,
+          20,
+          45,
+          71
+        ],
+        [
+          5,
+          19,
+          42,
+          71
+        ],
+        [
+          4,
+          21,
+          43,
+          71
+        ],
+        [
+          2,
+          14,
+          46,
+          71
+        ],
+        [
+          4,
+          19,
+          43,
+          71
+        ],
+        [
+          5,
+          19,
+          43,
+          71
+        ],
+        [
+          3,
+          16,
+          44,
+          71
+        ],
+        [
+          4,
+          16,
+          44,
+          71
+        ]
+      ],
+      "contact_y": 70,
+      "last_row_71": "transparent",
+      "unique_walk_frames": [
+        4,
+        4,
+        4
+      ],
+      "typing_frames_distinct": true,
+      "typing_lower_body_distinct": true,
+      "frame_hashes": [
+        "cea89d68f7d3c2d7e2e57af7e1f4d529b701113ba52e8b9f091a75c0dba8853f",
+        "8ca075e4f33a4f3b11b3867a265bd32e41e162adbdb33bdabd7f9752d2a4d4e3",
+        "29500dd154fcfcabf875cefcedac8614f95cd245d34a1074c610c60e9b7aa700",
+        "02cfdc5a948964c076e3969e536b173c62c2bd8fb9d90b180c21f98eb45dfcdf",
+        "941f60ebfac4713c9412ff2bade67480d6b42d0f1e60b4a2737fd3913de90b74",
+        "3715e2b3df4b6733df222c61d23db109f7f53bc9178b0311a19aac3c23659ae5",
+        "19a0af9ef13ff1901e9e6ea6a71f3afe5cc0e5885578864bb50a516d1080eadc",
+        "8010b4b69e44b83bf8b58829c34924b47caefba1497ef8b73f15d66548e72d58",
+        "e2b02c63b4c54beefe838f89c5bd263d48f52c3467f34534299246f911032be0",
+        "1808f0da9659a9a57d751e7bcfad5cc31cb15327e2f2d2966623de6de00cdc83",
+        "54a36690cb8bf2a39bd72552d61d6bee0d754ba500b2b2bd6697fb9c1675d0b4",
+        "59c15d488005b8f6e3c9acc6b2b94635411a6cc648419146d2db96e6b2738f7c",
+        "ca5b96109f0dbcf94efb76a6661a6d2da63a0ba54c7afb54f4b1462d0c898561",
+        "7976e4f5a01f6a7e6d110b49dfeaedaf9ef073110db22a8edbd64e9923ff6241",
+        "8e89be9862d6711ba65dded9faddfbba4116c4421c401d7d2a0ba47f4a09a25c",
+        "93351049ac2785f06bd8fd727ce5161e96e0ecd683630efbbaae74580cc4cd09",
+        "d5d810e64de5181e51b38700c6e82373a5a96dcfe43feec72bcefb5b4dc7d526",
+        "9ad17bbcc75dcff5c06cac18450aa76022958f79056f3c416afc7c4a8b658fb5",
+        "c8817c6328149e5681195e3b7cb53035884378c805ce5fb4d0f690251077b606",
+        "4c2d811bcaebda26ddfb5d51a976886b3faa6093b4a9c9bdc80626333639ac50"
+      ]
+    },
+    {
+      "id": "ranger",
+      "label": "Paper Ranger",
+      "files": [
+        {
+          "path": "dashboard/public/office/characters48/ranger.png",
+          "size": [
+            192,
+            360
+          ],
+          "sha256": "94326c14523db1244d073ff9fc700857557a9ee4584cedebeee884535768a5d2",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        },
+        {
+          "path": "dashboard/public/office/characters/ranger-portrait.png",
+          "size": [
+            32,
+            48
+          ],
+          "sha256": "f902ad8a39816b211988a96d59b776f84b4db17abb1051fd123b846a9d6924ef",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        }
+      ],
+      "frame_size": [
+        48,
+        72
+      ],
+      "frame_count": 20,
+      "native_portrait": "32x48 rasterized directly from high-resolution front pose, no blur or 48px up/downscale",
+      "one_scale_all_poses": 0.21052631578947367,
+      "frame_bounds": [
+        [
+          2,
+          10,
+          46,
+          71
+        ],
+        [
+          3,
+          11,
+          45,
+          71
+        ],
+        [
+          2,
+          10,
+          46,
+          71
+        ],
+        [
+          2,
+          11,
+          45,
+          71
+        ],
+        [
+          3,
+          12,
+          45,
+          71
+        ],
+        [
+          3,
+          12,
+          44,
+          71
+        ],
+        [
+          3,
+          12,
+          44,
+          71
+        ],
+        [
+          4,
+          13,
+          44,
+          71
+        ],
+        [
+          4,
+          10,
+          43,
+          71
+        ],
+        [
+          4,
+          11,
+          43,
+          71
+        ],
+        [
+          4,
+          10,
+          43,
+          71
+        ],
+        [
+          5,
+          11,
+          43,
+          71
+        ],
+        [
+          2,
+          18,
+          45,
+          71
+        ],
+        [
+          3,
+          20,
+          45,
+          71
+        ],
+        [
+          5,
+          17,
+          43,
+          71
+        ],
+        [
+          2,
+          9,
+          46,
+          71
+        ],
+        [
+          2,
+          18,
+          45,
+          71
+        ],
+        [
+          2,
+          18,
+          45,
+          71
+        ],
+        [
+          2,
+          10,
+          45,
+          71
+        ],
+        [
+          2,
+          10,
+          46,
+          71
+        ]
+      ],
+      "contact_y": 70,
+      "last_row_71": "transparent",
+      "unique_walk_frames": [
+        4,
+        4,
+        4
+      ],
+      "typing_frames_distinct": true,
+      "typing_lower_body_distinct": true,
+      "frame_hashes": [
+        "6d8c3c793ac5ce98212b4f49ec6cc7f38354623afb4b15cc2ffaad4b670346ae",
+        "ca84e444baf38b559fe930c1eae76b9308b2f894ad50db04b6515038c83a7b64",
+        "b4c04ce56fd2dd65e4859ff9b32386cde314e6901d315cdf1f18e5821b65df9c",
+        "3865d22fe5b686d146adc4be45cda65639af74f767f76fd683da5e72d06ae8d9",
+        "342e7d7ddcdb160721afe4b8bbb0ef4f56898445adc2c0c3df42b472a36c5737",
+        "01947dbdd8c9ce9836b128035a02321fe88ad53ad5a5f4d9698ff813d90457ef",
+        "891753fd2e49194459abb2b999e0e85c3ec48849ebcc84d11e5883a435ef6823",
+        "19ee3f2a50da166529bd5691d033b089b76055ac6e1c9fedbfb2b0be0eb4d2a2",
+        "a830c436a3569f5b0a788e7816fdded79916c25aa0f45637e1765392ace88078",
+        "edd3e7da44b014293902b5b3e322eb06337c259659789f465c068b6ce2666757",
+        "6c1664561e7bd5cef8f52a4621a24e5453637a982b4bc1c7fba4c36c474cf23f",
+        "bcd4e6d75449b2da46b1fcea54e3018ead52caa156e8d36afab9834414771134",
+        "1e4e7d902f06bfb76d79c7270d0dd6ed9d8784c829ec27e6b50e626128aa2b2a",
+        "a0ecff842762b7807f3bfda1f3dcb0b818433c17829a5079f0852a09b1ef9d93",
+        "00c615d5c4974def3b6c351e41585cc2a83ba78bc6336fcd9fe13f85a660cfa2",
+        "ff1879f4e80f8c16a26aac9776e51d7a6dafb1acda3c2b4460066c26c26768f6",
+        "b184a5ee816dfae4478416f12e0ccd7e8b862f74a7f9d70cc9c53816048c2165",
+        "898db55dfddfbcb4a26be7d67214311ac7d3812d6cfc468ae17435b4463d7249",
+        "8b97f99cb4b10d416443a3918c8c0dc5e11bdc593e1a15ceb875e09c228c42ba",
+        "e3b8e34bf2fe7349cf5cac8c3b5d94f7aa399b48d408940d8721aee25e36a8bc"
+      ]
+    },
+    {
+      "id": "healer",
+      "label": "Band-Aid Healer",
+      "files": [
+        {
+          "path": "dashboard/public/office/characters48/healer.png",
+          "size": [
+            192,
+            360
+          ],
+          "sha256": "743f4e38d0352a6e987b86ed304139db3e68cd2b87952f138baa54b16387b6ce",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        },
+        {
+          "path": "dashboard/public/office/characters/healer-portrait.png",
+          "size": [
+            32,
+            48
+          ],
+          "sha256": "4adb451643f0a6e0159dc85cb1e452ee40a9fd6061edfe686f6dd00904991e4d",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        }
+      ],
+      "frame_size": [
+        48,
+        72
+      ],
+      "frame_count": 20,
+      "native_portrait": "32x48 rasterized directly from high-resolution front pose, no blur or 48px up/downscale",
+      "one_scale_all_poses": 0.19383259911894274,
+      "frame_bounds": [
+        [
+          4,
+          19,
+          43,
+          71
+        ],
+        [
+          5,
+          20,
+          42,
+          71
+        ],
+        [
+          5,
+          19,
+          42,
+          71
+        ],
+        [
+          5,
+          20,
+          42,
+          71
+        ],
+        [
+          4,
+          17,
+          43,
+          71
+        ],
+        [
+          5,
+          17,
+          42,
+          71
+        ],
+        [
+          4,
+          17,
+          43,
+          71
+        ],
+        [
+          4,
+          17,
+          43,
+          71
+        ],
+        [
+          5,
+          17,
+          42,
+          71
+        ],
+        [
+          2,
+          19,
+          46,
+          71
+        ],
+        [
+          4,
+          17,
+          44,
+          71
+        ],
+        [
+          7,
+          19,
+          45,
+          71
+        ],
+        [
+          5,
+          29,
+          42,
+          71
+        ],
+        [
+          4,
+          27,
+          44,
+          71
+        ],
+        [
+          4,
+          28,
+          43,
+          71
+        ],
+        [
+          4,
+          15,
+          44,
+          71
+        ],
+        [
+          6,
+          25,
+          41,
+          71
+        ],
+        [
+          6,
+          25,
+          41,
+          71
+        ],
+        [
+          5,
+          20,
+          43,
+          71
+        ],
+        [
+          5,
+          20,
+          43,
+          71
+        ]
+      ],
+      "contact_y": 70,
+      "last_row_71": "transparent",
+      "unique_walk_frames": [
+        4,
+        4,
+        4
+      ],
+      "typing_frames_distinct": true,
+      "typing_lower_body_distinct": true,
+      "frame_hashes": [
+        "2a83557989509fee00fec4a150807491931df1863996bb0873c9ab4bce349c15",
+        "b8603318b62b4ff7173ef856a38698680eb264abc4d07a10c943b3b82235e1c6",
+        "924214fce23e7ee523778e588dddd3c9d71955d841bd10f4a0811df68b5fabde",
+        "efbc64d43da607cb43b584acad623efef5220fd9840d68d21e7f1976618118b9",
+        "1cc8fd2220ba318d54dfbc14bda781c7d142aae8a0fac7e488899b890f981d5e",
+        "8003a6a4d893deec9b7ba25273f8583fcb3ed1c66433069022151714f2d7e744",
+        "88001519f15284f846ddbf9ee8c0e42dad8ebf7384eb088c13dec7359dd3b384",
+        "8da2e4d30498a0bd3a4e3a5d206a1f1625f1402a4cd0b84f67ccfbf0aed9aa3e",
+        "7b0a29fc7fe0927a8d19851a9ccef733227f0707f0be111b71c48e74a5496389",
+        "7a22a73673859953c8a0dc03b29608d4887903f2077cae67e5aadea5feae0c18",
+        "1598717e66d46ed69075591d795632c550ddcdea10ee90f8b2292c1ec94d67ac",
+        "3de3951001b89c898e6f59c229e0389c2fb32a055a9082293eeb6350ff9ec3b2",
+        "2c097b47d9898c32f95f8d5da6832db9a1945fd62a9256e1b8593874acc54465",
+        "571840c5b002c1c5dca446349af3ac65e6fb0aa32f8848f6d30e15da25b103af",
+        "5f6b94fd7a6667d91edc97d6ba869548099d21e418763bfd416e073f8538cff6",
+        "81b2192d034e1a2bc633a7b54a344398325085f2dfb6a26be1cd992467eda92d",
+        "f03c7f0b59bc5ef0be92aa6e5c36e924cc122a062d1296bcc9984dcaf9786f78",
+        "60a2138b3259cc07382905e036298f51d93ea485129accc1c21b993991f13c33",
+        "7bd756dd265d874e2eee13b62f1396a6615d44ffa6ca5dcce37a83ed84ef0d82",
+        "b0f2c4072203e8ccb204e55b3549f0fc71c17d7fd88121859821c85c5cc107c9"
+      ]
+    },
+    {
+      "id": "rogue",
+      "label": "Donut Rogue",
+      "files": [
+        {
+          "path": "dashboard/public/office/characters48/rogue.png",
+          "size": [
+            192,
+            360
+          ],
+          "sha256": "59814f4b49d872f0541e0432006b9cc21eab8228041d69ef29c5eec479116c0a",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        },
+        {
+          "path": "dashboard/public/office/characters/rogue-portrait.png",
+          "size": [
+            32,
+            48
+          ],
+          "sha256": "56e7405b41fbeb9eb74a6fd2900ea531c508de19dc98cb7e3bd90448944d99c3",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        }
+      ],
+      "frame_size": [
+        48,
+        72
+      ],
+      "frame_count": 20,
+      "native_portrait": "32x48 rasterized directly from high-resolution front pose, no blur or 48px up/downscale",
+      "one_scale_all_poses": 0.22,
+      "frame_bounds": [
+        [
+          2,
+          9,
+          46,
+          71
+        ],
+        [
+          2,
+          9,
+          46,
+          71
+        ],
+        [
+          2,
+          9,
+          46,
+          71
+        ],
+        [
+          2,
+          9,
+          45,
+          71
+        ],
+        [
+          3,
+          12,
+          44,
+          71
+        ],
+        [
+          4,
+          12,
+          44,
+          71
+        ],
+        [
+          4,
+          12,
+          43,
+          71
+        ],
+        [
+          4,
+          12,
+          44,
+          71
+        ],
+        [
+          4,
+          9,
+          43,
+          71
+        ],
+        [
+          4,
+          11,
+          44,
+          71
+        ],
+        [
+          3,
+          10,
+          44,
+          71
+        ],
+        [
+          4,
+          11,
+          43,
+          71
+        ],
+        [
+          2,
+          18,
+          45,
+          71
+        ],
+        [
+          4,
+          18,
+          43,
+          71
+        ],
+        [
+          4,
+          19,
+          43,
+          71
+        ],
+        [
+          2,
+          10,
+          45,
+          71
+        ],
+        [
+          3,
+          17,
+          45,
+          71
+        ],
+        [
+          3,
+          17,
+          45,
+          71
+        ],
+        [
+          3,
+          11,
+          45,
+          71
+        ],
+        [
+          2,
+          11,
+          45,
+          71
+        ]
+      ],
+      "contact_y": 70,
+      "last_row_71": "transparent",
+      "unique_walk_frames": [
+        4,
+        4,
+        4
+      ],
+      "typing_frames_distinct": true,
+      "typing_lower_body_distinct": true,
+      "frame_hashes": [
+        "0aa86c3e405449696019734e6e8078e2b29e4eb15a06c5dd374b74bd6aa1528b",
+        "d4b76b471114dc49f583f3bffc21cc18afe7650d83da62c15cb2e45d372d66b1",
+        "764c89fd97e40cd853c1415049727e6140f33d5996d7bbc7516255370dce73b9",
+        "049502a689f6a72bf20143fb071f2954d79446bb42729da3a8c483fc6362bdbd",
+        "bfed4020625294883deafb585967f4d7f1418d68112d0db4ff7135ef2c919555",
+        "8a745b08d16080d7450e8f65d42a8ddbabdf2b1c8c2d3a8c7c4f023e6e89d081",
+        "513d2fdcf076e923f1d34d2cbdffe71e107006625aa37fd632d247c09739415c",
+        "00153ab88a2ef33ab52977efb19e1ba561e29236c8c4874a946992c22bbcaeca",
+        "649e9dc910c6d264a91e706ad9d00565a4e88b4926f0ec8bfcc56f19c00f0af1",
+        "41877be1548d2e92e4e3e9de0aceafd60af036590b4bdc22fd126087a41bf904",
+        "0d8b7f2c82d7736a805ecd0e733c4c7520c0df8db34d00fb82b62bc331fcb8f4",
+        "8fb217da52ed711f97f11252b00ce20171e6e8a47fcdcb5b320103466c513767",
+        "70138772e3120aa25807889365ae0ec28f2cabdef1584bb2d284397c9d3dd668",
+        "1d1101bc7568c8218079fedf4fec65e09def07ab00800a66227436a757c65bf4",
+        "2ecdf5396bcbfb585f762d2f80c3e5bdb3fbf20d557394848c97d4e7e13c49d4",
+        "e3932640241bd1004ee6105a172c983ac1b3119b9eaa3da70fe24a62e7eff82b",
+        "2fc0bb929879c1e144287f0f0ba9e56531cd98cd1a470603b851e39ef75b7214",
+        "a9e12b4347eb830123ab697bc9c3e725b8f92b39b5d94d760204317a37fe4bd8",
+        "9818d4eca085371170496b7d19be7413730653d5290c0af08bafda27320561db",
+        "c03b272d25cda9b35585c7591a778c5998c0c47510524b0ab4cfea95ff7de138"
+      ]
+    },
+    {
+      "id": "berserker",
+      "label": "Debug Viking",
+      "files": [
+        {
+          "path": "dashboard/public/office/characters48/berserker.png",
+          "size": [
+            192,
+            360
+          ],
+          "sha256": "d2e08b8cd6e8edcad9483fd99fbe4c4f58d046ac922870dc54db2db51523eb0b",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        },
+        {
+          "path": "dashboard/public/office/characters/berserker-portrait.png",
+          "size": [
+            32,
+            48
+          ],
+          "sha256": "6f8098321502a59e93e49fc0eb23198ba60375cee4bcf500dcaefba4c665856b",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        }
+      ],
+      "frame_size": [
+        48,
+        72
+      ],
+      "frame_count": 20,
+      "native_portrait": "32x48 rasterized directly from high-resolution front pose, no blur or 48px up/downscale",
+      "one_scale_all_poses": 0.21782178217821782,
+      "frame_bounds": [
+        [
+          4,
+          17,
+          44,
+          71
+        ],
+        [
+          5,
+          18,
+          43,
+          71
+        ],
+        [
+          5,
+          17,
+          43,
+          71
+        ],
+        [
+          5,
+          18,
+          42,
+          71
+        ],
+        [
+          3,
+          13,
+          44,
+          71
+        ],
+        [
+          4,
+          14,
+          44,
+          71
+        ],
+        [
+          3,
+          14,
+          44,
+          71
+        ],
+        [
+          4,
+          14,
+          44,
+          71
+        ],
+        [
+          4,
+          16,
+          44,
+          71
+        ],
+        [
+          4,
+          15,
+          43,
+          71
+        ],
+        [
+          3,
+          15,
+          44,
+          71
+        ],
+        [
+          5,
+          16,
+          43,
+          71
+        ],
+        [
+          4,
+          20,
+          43,
+          71
+        ],
+        [
+          3,
+          19,
+          45,
+          71
+        ],
+        [
+          3,
+          22,
+          45,
+          71
+        ],
+        [
+          2,
+          15,
+          46,
+          71
+        ],
+        [
+          4,
+          20,
+          43,
+          71
+        ],
+        [
+          5,
+          21,
+          43,
+          71
+        ],
+        [
+          5,
+          17,
+          42,
+          71
+        ],
+        [
+          5,
+          17,
+          43,
+          71
+        ]
+      ],
+      "contact_y": 70,
+      "last_row_71": "transparent",
+      "unique_walk_frames": [
+        4,
+        4,
+        4
+      ],
+      "typing_frames_distinct": true,
+      "typing_lower_body_distinct": true,
+      "frame_hashes": [
+        "ef1a4af38e75cb83b29db88ccf004cb917759379bc22b2f29b70c5e222795041",
+        "b743a903013e5f3358df845c9fc1dda9dd5401f2458566e09124279ec8e0ae6d",
+        "cc8be1f68e31d7a7c7316f66ac38de9248eab7ddb115aab48d8878d800581213",
+        "dfd05baf7e3c186ea5ff135cee7506053c53939bdf1fcc1c71b783af1d908786",
+        "0720b8a9a05d27aad58fb11999421b71bfdd891f1337c4bc19651564b38671db",
+        "b20666f213a47154d967c78ebe3fd899fea7064370178b844d4473a3b6c7a3c9",
+        "47d3d90c9e082f2000af5ac8b4ef2fea427258e4173a310af7f496b5bc7ec5a0",
+        "59b0a8ffb7ba5e531b6269cbf05946a6f94e25faad2e69b388a836276b522820",
+        "946151f1fe3e3964a596522828a10d863b5c14c1089b8d67c0354606e2d14bc8",
+        "076ac52ec8f37125f418d1d326e94832099d0dd84fcda7b8cbdb056d59552685",
+        "46d7f26fce05831aac443f755e0649335153fd1c57cb5b36a443f3debee4da18",
+        "be764a6e656924f59259148c44a480f0f6960e14d2644b3091572838e091d10b",
+        "8fb1c830bc88905f59d1702c73be62e0a0ae042c82f9ca4df54f3b86387fd512",
+        "4d9e2c1d49c0d071436a3a4418087355a6970e6bd16221facea4ca5d2005b522",
+        "37639dcbf5ecb08d36537ae3acf85b6e35a9069f396abb10926dba1dd036f879",
+        "e98df57847e10032c4925ca06f8ff3b75810e4bba2e298e48478fed41218d821",
+        "2e5417aa365da12461b9fc4e00d99eda6b75b9942d99b534edc01a1265a83eb8",
+        "4818b75a1f33c67c55db3bdeb7ed7ad6f5139bf77e0855e691a9bac7616154e1",
+        "37e7692c4432cb6db4d2b82a3a6e2f30de7619626627ff00859aed5b785148a3",
+        "082852430573bd6620cedff43b8fd6ff960df82b9fbe88b2ea2eb9371e7fcd48"
+      ]
+    },
+    {
+      "id": "slime",
+      "label": "Crowned Slime",
+      "files": [
+        {
+          "path": "dashboard/public/office/characters48/slime.png",
+          "size": [
+            192,
+            360
+          ],
+          "sha256": "3544256f4c6e672f540d45c07a68b02b23c1565dc00e56b3b7ee7f9e2ec52e99",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        },
+        {
+          "path": "dashboard/public/office/characters/slime-portrait.png",
+          "size": [
+            32,
+            48
+          ],
+          "sha256": "f88fcc1586f80e3428be0c8c15bcc85262148fdb98fbaa60389b59100d91a97f",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        }
+      ],
+      "frame_size": [
+        48,
+        72
+      ],
+      "frame_count": 20,
+      "native_portrait": "32x48 rasterized directly from high-resolution front pose, no blur or 48px up/downscale",
+      "one_scale_all_poses": 0.20754716981132076,
+      "frame_bounds": [
+        [
+          3,
+          34,
+          45,
+          71
+        ],
+        [
+          6,
+          28,
+          42,
+          71
+        ],
+        [
+          4,
+          33,
+          44,
+          71
+        ],
+        [
+          6,
+          26,
+          41,
+          71
+        ],
+        [
+          2,
+          33,
+          45,
+          71
+        ],
+        [
+          6,
+          27,
+          41,
+          71
+        ],
+        [
+          2,
+          34,
+          46,
+          71
+        ],
+        [
+          10,
+          28,
+          44,
+          71
+        ],
+        [
+          2,
+          31,
+          45,
+          71
+        ],
+        [
+          6,
+          30,
+          41,
+          71
+        ],
+        [
+          3,
+          33,
+          45,
+          71
+        ],
+        [
+          7,
+          29,
+          41,
+          71
+        ],
+        [
+          4,
+          34,
+          44,
+          71
+        ],
+        [
+          5,
+          32,
+          42,
+          71
+        ],
+        [
+          3,
+          34,
+          45,
+          71
+        ],
+        [
+          4,
+          28,
+          43,
+          71
+        ],
+        [
+          4,
+          33,
+          44,
+          71
+        ],
+        [
+          4,
+          32,
+          44,
+          71
+        ],
+        [
+          6,
+          27,
+          42,
+          71
+        ],
+        [
+          6,
+          28,
+          41,
+          71
+        ]
+      ],
+      "contact_y": 70,
+      "last_row_71": "transparent",
+      "unique_walk_frames": [
+        4,
+        4,
+        4
+      ],
+      "typing_frames_distinct": true,
+      "typing_lower_body_distinct": true,
+      "frame_hashes": [
+        "c29d710225ccd8781ec1ee377f7dae2d5180786ee15b40a11fc86801b3cd1575",
+        "15ad9c59bd0750adade8aa8061519766accb54ae18cdf8dfd0d0006beb3392ab",
+        "0d45be17d5c7eb600d1ee81eb938610fc3d8e1f7a109900871de2b5739047c94",
+        "aea7debdfd5b760f9bf714ee378997e2c62f80ff4f15b22d8d276fb76d2ec5c4",
+        "2f586d18ff3bfe1d0f20ed5cc094287da0cc973d497e01af4ce47ee4ef618ce3",
+        "f8a5901f7d84ca89588989d54c4401f1a69b199d0e333c430232843d8b112b9e",
+        "810996014076395d2ed477113b62614d61c5e8dab145d0cef13ab8856e98f8f2",
+        "e5c3d209109c5753bd6860e698e9aba4bdb664bd3f5f43afbf2e69aa62273c56",
+        "2ccd82c00ada4b3a7a0bdcd4eb449ddef1923fb3b67685f507e9ac9c785d2d0c",
+        "dc17ee0fb11062022f8ed685bed8b1520f0bdba535b8b7b4c80b08fa632323c1",
+        "868051537529b629abb4db668d30bd771f4fc785b93be35b025e5a74af13792b",
+        "90e220a6e025f1b88d84628af954338f748faecf911ffce42ecc2721c67d50e2",
+        "6e8b8e83ac1d3e9ed5a910d72c0bf04f3694ef8da35a9b8c76ce733d41222431",
+        "0d834449e1c024e6bc39cf3ab364848c2c52d47b6d3a33c261d2d869bbf14780",
+        "d034e40defd90bf5d01556c8d4ecbec8aed0dbc1a8e859d4e36ec864599ba0b2",
+        "8db278949c06ec4f594d79488b8512bb5c00550bc5eb6982491893a8478922ab",
+        "951f1280362088ae883c9791336cf507d4f17b7edeb43333a18b796f00b7baf7",
+        "cba1b73afce9f7664d8fd175e2c3a7a97adc286fb90002a54598f65451b291eb",
+        "d044313478175ae6c8864e446726150caab6a8cb84b50650f0aad25d023c7615",
+        "faf3c1d50db16dfc34d9b5c87c0e77b044cc3c6df152441a1ad8052716119d7a"
+      ]
+    },
+    {
+      "id": "dragon",
+      "label": "Cardigan Dragon",
+      "files": [
+        {
+          "path": "dashboard/public/office/characters48/dragon.png",
+          "size": [
+            192,
+            360
+          ],
+          "sha256": "44a5c0e1efd76077a5376ed92828954d1e205625bc663dc4256f55d450f58900",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        },
+        {
+          "path": "dashboard/public/office/characters/dragon-portrait.png",
+          "size": [
+            32,
+            48
+          ],
+          "sha256": "4f06f79148cdf4e19c8686c98cb288f7a6b3ea91746ecb64b123d8bc1512c504",
+          "palette": "PASS",
+          "alpha": "binary 0/255"
+        }
+      ],
+      "frame_size": [
+        48,
+        72
+      ],
+      "frame_count": 20,
+      "native_portrait": "32x48 rasterized directly from high-resolution front pose, no blur or 48px up/downscale",
+      "one_scale_all_poses": 0.20276497695852536,
+      "frame_bounds": [
+        [
+          5,
+          15,
+          43,
+          71
+        ],
+        [
+          9,
+          18,
+          46,
+          71
+        ],
+        [
+          5,
+          16,
+          42,
+          71
+        ],
+        [
+          6,
+          17,
+          42,
+          71
+        ],
+        [
+          5,
+          18,
+          43,
+          71
+        ],
+        [
+          2,
+          20,
+          46,
+          71
+        ],
+        [
+          3,
+          19,
+          44,
+          71
+        ],
+        [
+          5,
+          20,
+          42,
+          71
+        ],
+        [
+          7,
+          19,
+          41,
+          71
+        ],
+        [
+          6,
+          22,
+          41,
+          71
+        ],
+        [
+          6,
+          19,
+          41,
+          71
+        ],
+        [
+          6,
+          22,
+          41,
+          71
+        ],
+        [
+          6,
+          21,
+          42,
+          71
+        ],
+        [
+          5,
+          22,
+          42,
+          71
+        ],
+        [
+          6,
+          21,
+          41,
+          71
+        ],
+        [
+          3,
+          18,
+          45,
+          71
+        ],
+        [
+          5,
+          23,
+          42,
+          71
+        ],
+        [
+          6,
+          22,
+          42,
+          71
+        ],
+        [
+          6,
+          20,
+          41,
+          71
+        ],
+        [
+          6,
+          21,
+          41,
+          71
+        ]
+      ],
+      "contact_y": 70,
+      "last_row_71": "transparent",
+      "unique_walk_frames": [
+        4,
+        4,
+        4
+      ],
+      "typing_frames_distinct": true,
+      "typing_lower_body_distinct": true,
+      "frame_hashes": [
+        "1ae11c017163ea56d896c96eca41f99dedae6007b05ba95c1aed31dd8aa712c6",
+        "3ed998291c59b0e494b52c42f961417a576db05b235d1df0b7a1b518c64b404c",
+        "4c57ef23d2b5860db016c51eb67a487dd9c3c1eec57736ac91fe16cde4ab011b",
+        "81431a259b44f93dfbc76e627fd80b308b090865184f582d0ff8b1463e54f7d7",
+        "5ce061170ce749291989ad40f39367f4bc094cc69d9efef403ac84c2b8b51f3b",
+        "92574f79f6ff2153f4a73919c8133ad4d7059d417100c30ecb2703f021d44f23",
+        "891f7e6464d94489fb593acd4ad2be4b5f1a8bc0f8696d1604bdd60812d8883e",
+        "188888ceb0e504d22c215ec1c4db2a9a0870089e8c95d8a013aa001c506f9473",
+        "a28f74502a0bb5629ef92c29958af529f470f6cf6ccce2304b5c0bc005079bfc",
+        "59c5336b2aced579028ba7c8d26edcc670e50da8829876a4fa4ece701a46a3bd",
+        "5d088f9ce5cf6e636b08d87565be10c1998efd33e4ba4578aed8ebbd51489480",
+        "3bed535d0b0b97021383db1d0deffbc2deb65184975852bd99b73f165d03d589",
+        "75e620b8f1a603b59aab2e38f7a2072dcc9a4e8dcc5e9444d995dc86c3e3df33",
+        "2d1ad4043b345c73462cf37ec510f69747874da80d41e936771e49d3646211ec",
+        "48e5ae30ccb851c62877e464c8b51376a2f96870d68d864360316e150f6a53ac",
+        "856dc5c7c71ce5a6929dccbcaf3542971008427f4efd08ef49c00b6accc7dc3b",
+        "94cb646ef33848e0d7de918127c673a31c6c39711b53bf32bb9ad2ce3080c1bd",
+        "c87493f9fe4d1a2d816bad489285d6fa79e1459924dc4dc9971e659c020c7b9f",
+        "7d38fb74438ac3a5524136c9af624f7950de4be27c5b33ca9ee81838551337cf",
+        "f2a9dc4471ef736c9c15318c1ffc40fd9af91b31ec4cb101095bf566eaa98cfe"
+      ]
+    }
+  ]
+}

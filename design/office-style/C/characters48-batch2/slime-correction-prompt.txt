@@ -1,0 +1,7 @@
+Precise edit of this original mint crowned slime 4-column 5-row sprite atlas. Keep exact SAME character, all20frames and their positions and grid.
+Remove ALL decorative yellow/orange motion lines, music symbols, white flutter marks, and sparkles floating outside the slime. No effects except actual mint slime drips attached to base.
+ROW1 THIRD CELL (frame6): flip this RIGHT-facing walking sprite to LEFT-facing, so all FOUR in the second row face LEFT. Keep row0 front and row2 back.
+ROW4 FIRST TWO CELLS frames16,17: clearly show small nub hands typing forward, TWO visibly different hand positions, and a tiny attached mint drip on the lower edge that shifts left/right. No separate droplets on ground. Crown stays fixed.
+ROW3 FOURTH CELL frame15: wave one slime nub without external yellow marks.
+ROW4 LAST TWO frame18,19: front idle only, no white flutter graphics.
+All other sprite body pose features unchanged. Truly transparent background, flat palette mint, cream, butter-yellow crown and desaturated purple outline. Crisp square pixels, no semi-transparent edge, no blur, gradients, text or dithering. Exact4cols5rows grid retained.

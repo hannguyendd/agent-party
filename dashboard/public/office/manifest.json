@@ -130,6 +130,14 @@
     "cat": "office/characters48/cat.png",
     "penguin": "office/characters48/penguin.png",
     "alien": "office/characters48/alien.png",
-    "robot": "office/characters48/robot.png"
+    "robot": "office/characters48/robot.png",
+    "mage": "office/characters48/mage.png",
+    "knight": "office/characters48/knight.png",
+    "ranger": "office/characters48/ranger.png",
+    "healer": "office/characters48/healer.png",
+    "rogue": "office/characters48/rogue.png",
+    "berserker": "office/characters48/berserker.png",
+    "slime": "office/characters48/slime.png",
+    "dragon": "office/characters48/dragon.png"
   }
 }
