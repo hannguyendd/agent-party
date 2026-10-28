@@ -1,9 +1,9 @@
 # Agent Mesh: install this machine's node on Windows. Served by the team's world server:
 #   irm http://__SERVER__/install.ps1 | iex
-# Installs uv (if missing), the node server (dashboard included) and agentmesh-node, starts the node, asks whether
-# to start it at sign-in, adds Office shortcuts and opens the dashboard so you can join. Run it again to update.
-# $env:AGENTMESH_AUTOSTART='on' starts it at sign-in without asking; $env:AGENTMESH_NO_OPEN=1 skips the browser;
-# $env:AGENTMESH_UPDATE=1 (the in-app Update) keeps the current choice and asks nothing.
+# Installs uv (if missing), the node server (dashboard included) and agentmesh-node, runs the node in the background
+# now and at every sign-in, adds Office shortcuts and opens the dashboard so you can join. Run it again to update.
+# $env:AGENTMESH_AUTOSTART='off' skips start-at-sign-in; $env:AGENTMESH_NO_OPEN=1 skips the browser;
+# $env:AGENTMESH_UPDATE=1 (the in-app Update) keeps the current choice.
 $ErrorActionPreference = 'Stop'
 $Server = '__SERVER__'      # the world server this script came from (host:port)
 $Office = '__HOST__'        # prefilled as "Office server" in the setup form
@@ -63,11 +63,9 @@ if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
 
 # 5. Run it. Starting at sign-in is your choice (off unless you say yes); `agentfleet-node` shows a menu any time.
 uv tool update-shell 2>$null | Out-Null   # puts the tool folder on PATH for new terminals
+# Runs now and at every sign-in: online/offline is chosen in the app. $env:AGENTMESH_AUTOSTART='off' skips it.
 $Auto = $env:AGENTMESH_AUTOSTART
-if (-not $env:AGENTMESH_UPDATE -and -not $Auto) {
-  $Answer = Read-Host "Start $Title automatically when you sign in? [y/N]"
-  $Auto = if ($Answer -match '^[yY]') { 'on' } else { 'off' }
-}
+if (-not $env:AGENTMESH_UPDATE -and -not $Auto) { $Auto = 'on' }
 if ($Auto -eq 'on') { & $Node autostart on | Out-Null }
 elseif ($Auto -eq 'off') { & $Node autostart off | Out-Null; & $Node restart | Out-Null }   # a "no" also undoes an earlier install's
 else { & $Node restart | Out-Null }

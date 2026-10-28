@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Agent Mesh: install this machine's node. Served by the team's world server:
 #   curl -fsSL http://__SERVER__/install | bash
-# Installs uv (if missing), the node server (dashboard included) and agentmesh-node, starts the node, asks whether
-# to start it at login, adds an Office shortcut and opens the dashboard so you can join. Run it again to update.
-# AGENTMESH_AUTOSTART=on starts it at login without asking; AGENTMESH_NO_OPEN=1 skips opening the browser;
-# AGENTMESH_UPDATE=1 (the in-app Update) keeps the current start-at-login choice and asks nothing.
+# Installs uv (if missing), the node server (dashboard included) and agentmesh-node, runs the node in the background
+# now and at every login, adds an Office shortcut and opens the dashboard so you can join. Run it again to update.
+# AGENTMESH_AUTOSTART=off skips start-at-login; AGENTMESH_NO_OPEN=1 skips opening the browser;
+# AGENTMESH_UPDATE=1 (the in-app Update) keeps the current start-at-login choice.
 set -euo pipefail
 
 SERVER="__SERVER__"   # the world server this script came from (host:port)
@@ -58,12 +58,12 @@ fi
 # 4. Claude Code runs the agents; it needs a login on this machine.
 command -v claude >/dev/null 2>&1 || warn "Claude Code is not installed. Install it and log in (https://docs.claude.com/claude-code); your agents need it."
 
-# 5. Run it. Starting at login is your choice (off unless you say yes); `agentfleet-node` shows a menu any time.
+# 5. Run it, and at every login: the node is a quiet background service. Being online or offline is chosen in the
+#    app (account menu, or walking out of the door), so nobody needs to think about the node after this.
+#    AGENTMESH_AUTOSTART=off skips start-at-login; the in-app Update keeps whatever is set now.
 uv tool update-shell >/dev/null 2>&1 || true   # puts ~/.local/bin on PATH for new terminals
-if [ -z "${AGENTMESH_UPDATE:-}" ] && [ -z "${AGENTMESH_AUTOSTART:-}" ] && { : </dev/tty; } 2>/dev/null; then
-  printf '\033[1;36m?? \033[0m Start %s automatically when you log in? [y/N] ' "$TITLE" >/dev/tty
-  read -r answer </dev/tty || answer=""
-  case "$answer" in [yY]*) AGENTMESH_AUTOSTART=on ;; *) AGENTMESH_AUTOSTART=off ;; esac
+if [ -z "${AGENTMESH_UPDATE:-}" ] && [ -z "${AGENTMESH_AUTOSTART:-}" ]; then
+  AGENTMESH_AUTOSTART=on
 fi
 if [ "${AGENTMESH_AUTOSTART:-}" = on ]; then
   "$NODE" autostart on

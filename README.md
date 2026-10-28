@@ -87,8 +87,8 @@ itself; from elsewhere it asks for the admin key, printed by `make server` and s
 `agentmesh-node-<os>-<arch>`. Put binaries for other platforms next to it (`agentmesh-node-darwin-arm64`,
 `agentmesh-node-linux-x86_64`, `agentmesh-node-windows-amd64.exe`). The world server serves `/install` (bash),
 `/install.ps1` (PowerShell) and `/downloads/*`. The script installs uv if needed, the node with `uv tool install`,
-agentmesh-node into `~/.local/bin`, starts the node in the background with its data in `~/.agentfleet`, asks
-whether to start it at login (default no), adds an Office shortcut (macOS Applications, Windows Start menu +
+agentmesh-node into `~/.local/bin`, runs the node in the background now and at every login (data in `~/.agentfleet`;
+`AGENTMESH_AUTOSTART=off` skips the login part), adds an Office shortcut (macOS Applications, Windows Start menu +
 Desktop, Linux app menu) and opens the setup page with the server prefilled. Staff only need Claude Code installed
 and logged in.
 
