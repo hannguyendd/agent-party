@@ -118,7 +118,11 @@ owner @mentions. Per-agent **contact policy**: "Go ahead" (default) or "Ask me f
 - **Conversation panel**: avatars and names, my side on the right, mesh activity as events ("Asked API agent"),
   Stop / Take over (inbound only) / Hand back, Fork and Widen in the ⋯ menu.
 - **Waking owners**: browser notification while a tab is open; OS notification from the node when none is.
-- **Settings**: agents (create/edit, incl. contact policy), mesh & office status + directory, notification tests.
+- **Settings**: agents (create/edit, incl. contact policy), joining the team (same form as first run), mesh & office
+  status + directory, notification tests.
+- **First run**: a setup page (name, office server, join token) until the machine has joined; then a guide over the
+  map: create an agent (short form) → pick desk → notifications → basics. Step comes from real state; dismissed per
+  browser (`localStorage office.onboarded`).
 
 ## 8. Conversation status
 
@@ -146,25 +150,26 @@ stored), `approval`, `mesh`, `office` (relayed from the world server).
 | `MESH_NODE_URL` | `http://127.0.0.1:8080` |
 | `MESH_API_TOKEN_PATH` | — (usually `./data/mesh-api-token`) |
 | `WORLD_URL` | — (e.g. `ws://<hub>:7500/world/ws`; unset = no Office) |
+| `HUB_URL` | — (set = the node runs `agentmesh-node` itself) |
 | `STATIC_PEERS` | `{}` (dev/test: skip the mesh) |
 | `ASSIGNMENT_ACCEPT_TIMEOUT_S` | 900 |
 | `OS_NOTIFICATIONS` | true |
 | `MAX_INLINE_FILE_BYTES` | 5 MB |
 
+The web setup (`POST /api/setup`) writes `data/setup.json` with `owner`, `hub_url`, `world_url`; it overrides the
+env on every start (`Settings.apply_setup_file`).
+
 ## 11. Running
 
 ```sh
 # Hub (once, always-on machine)
-make hub HUB_HOST=<lan ip>
+make server HUB_HOST=<lan ip>           # hub (7400) + Office world server (7500)
 make hub-token DEVICE="han laptop"      # single-use token, send privately to each person
-make world                              # Office world server (port 7500)
 
 # Each machine
-make install
-make env OWNER=<name>                   # then add AGENTFLEET_WORLD_URL to node-server/.env
-# save the token to node-server/data/bootstrap-token
-make serve                              # node server + dashboard: http://127.0.0.1:9100
-make mesh-node HUB_HOST=<lan ip>        # agentmesh-node
+make setup                              # once: check tools, install, build
+make up                                 # node + dashboard on http://127.0.0.1:9100; join in the browser
+# (manual alternative: make env OWNER=<name>, AGENTFLEET_WORLD_URL in .env, make serve, make mesh-node)
 
 # Development
 make dev     # hot reload on :5173
@@ -210,5 +215,6 @@ real-stack smoke in `node-server/CLAUDE.md`.
 | `models.py` | SQLModel tables and enums |
 | `mesh_tools.py` | The four in-process MCP tools |
 | `notify.py` | OS notifications |
+| `meshproc.py` | Runs/restarts this device's `agentmesh-node` once setup knows the hub |
 | `app.py` | `build_node` wiring, mounts `/a2a` and the dashboard |
 | `config.py`, `db.py`, `files.py`, `naming.py`, `cli.py` | Settings, engine + column migration, files, IDs, CLI |

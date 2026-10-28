@@ -4,6 +4,7 @@ import asyncio
 import base64
 import re
 import contextlib
+import json
 import binascii
 import uuid
 from pathlib import Path
@@ -102,9 +103,88 @@ async def node_info(request: Request) -> dict[str, Any]:
     return {
         "owner": s.owner,
         "base_url": s.public_base_url,
-        "mesh": await node.directory.node_status(),
+        "mesh": {**(await node.directory.node_status()), "process": node.meshproc.status()},
         "files": {"max_bytes": s.max_inline_file_bytes, "suffixes": s.allowed_file_suffixes},
     }
+
+
+# setup (first run, from the web)
+
+
+class SetupIn(BaseModel):
+    owner: str = Field(pattern=r"^[A-Za-z0-9_-]{1,40}$")
+    # Office server address: an IP / hostname (hub on :7400, world server on :7500) or a full hub URL.
+    server: str = Field(min_length=1)
+    token: str = ""
+
+
+def _server_urls(server: str) -> tuple[str, str]:
+    server = server.strip().rstrip("/")
+    if "://" in server:
+        host = server.split("://", 1)[1].split("/", 1)[0].rsplit(":", 1)[0]
+        return server, f"ws://{host}:7500/world/ws"
+    host = server.rsplit(":", 1)[0] if server.count(":") == 1 else server
+    return f"http://{server if ':' in server else server + ':7400'}", f"ws://{host}:7500/world/ws"
+
+
+def _setup_view(node) -> dict[str, Any]:
+    s = node.settings
+    return {
+        "configured": s.owner != "me" and bool(s.world_url),
+        "owner": s.owner,
+        "hub_url": s.hub_url,
+        "world_url": s.world_url,
+        "has_token": (s.data_dir / "bootstrap-token").exists(),
+        "enrolled": (s.data_dir / "mesh-node" / "agent.db").exists(),
+        "agents": len([a for a in node.store.list_agents() if a.enabled]),
+        "mesh_node": node.meshproc.status(),
+    }
+
+
+@router.get("/setup")
+def get_setup(request: Request) -> dict[str, Any]:
+    return _setup_view(_node(request))
+
+
+@router.post("/setup")
+async def save_setup(body: SetupIn, request: Request) -> dict[str, Any]:
+    """First-run setup: who you are, where the office server is, and the join token. Applied live."""
+    node = _node(request)
+    s = node.settings
+    if body.owner != s.owner and any(a.enabled for a in node.store.list_agents()):
+        raise HTTPException(409, f"this machine already has agents for '{s.owner}'; the owner can't change now")
+    hub_url, world_url = _server_urls(body.server)
+    s.data_dir.mkdir(parents=True, exist_ok=True)
+    s.setup_path.write_text(json.dumps({"owner": body.owner, "hub_url": hub_url, "world_url": world_url}, indent=2))
+    if body.token.strip():
+        token_file = s.data_dir / "bootstrap-token"
+        token_file.write_text(body.token.strip() + "\n")
+        token_file.chmod(0o600)
+    s.owner, s.hub_url, s.world_url = body.owner, hub_url, world_url
+    if s.mesh_api_token_path is None:
+        s.mesh_api_token_path = s.data_dir / "mesh-api-token"
+    node.directory.sync_node_config()  # the owner label lives in agentmesh-node.yaml
+    await node.world.stop()
+    node.world.start()
+    await _republish(node, force=True)
+    node.store.audit("setup_saved", owner=body.owner, has_token=bool(body.token.strip()))
+    return _setup_view(node)
+
+
+async def _republish(node, force: bool = False) -> None:
+    """agentmesh-node reads its services only at startup: restart the one we run when they changed."""
+    # force (setup, the restart button) always tries, so a missing binary shows up in status() with a reason.
+    if node.settings.hub_url and (force or (node.meshproc.installed and node.directory.config_dirty)):
+        if await node.meshproc.restart():
+            node.directory.config_dirty = False
+            node.store.bus.publish({"type": "mesh", "config_dirty": False})
+
+
+@router.post("/mesh/restart")
+async def mesh_restart(request: Request) -> dict[str, Any]:
+    node = _node(request)
+    await _republish(node, force=True)
+    return {**(await node.directory.node_status()), "process": node.meshproc.status()}
 
 
 @router.post("/mesh/sync")
@@ -146,7 +226,7 @@ def public_agents(request: Request) -> list[dict[str, Any]]:
 
 
 @router.post("/agents")
-def upsert_agent(body: AgentIn, request: Request) -> dict[str, Any]:
+async def upsert_agent(body: AgentIn, request: Request) -> dict[str, Any]:
     node = _node(request)
     try:
         validate_agent_id(body.id)
@@ -163,17 +243,19 @@ def upsert_agent(body: AgentIn, request: Request) -> dict[str, Any]:
     agent = node.store.save_agent(Agent(**data, enabled=True))
     node.gateway.invalidate(agent.id)
     node.directory.sync_node_config()
+    await _republish(node)
     return dump(agent)
 
 
 @router.delete("/agents/{agent_id:path}")
-def delete_agent(agent_id: str, request: Request) -> dict[str, str]:
+async def delete_agent(agent_id: str, request: Request) -> dict[str, str]:
     node = _node(request)
     if node.store.get_agent(agent_id) is None:
         raise HTTPException(404, "no such agent")
     node.store.delete_agent(agent_id)
     node.gateway.invalidate(agent_id)
     node.directory.sync_node_config()
+    await _republish(node)
     return {"status": "removed"}
 
 

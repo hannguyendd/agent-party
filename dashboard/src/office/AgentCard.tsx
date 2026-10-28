@@ -69,7 +69,7 @@ export function AgentCard(p: Props) {
       {!p.preview && (
         <div className="o-agent-primary">
           <button className="btn-primary o-message-btn" onClick={p.onMessage}>
-            <Icon name="inject" />Message {a.name}
+            <Icon name="new-chat" />Message {a.name}
           </button>
           {last && (
             <button className="o-continue" onClick={() => p.onOpenChat(last.id)} title="Open the latest chat">
@@ -85,7 +85,7 @@ export function AgentCard(p: Props) {
         <span className="o-agent-label">Go to</span>
         <div className="o-go">
           <button disabled={!p.canAct} onClick={() => p.onGo('desk')}><Icon name="desk" />Desk</button>
-          <button disabled={!p.canAct} onClick={() => p.onGo('pantry')}>☕ Pantry</button>
+          <button disabled={!p.canAct} onClick={() => p.onGo('pantry')}><Icon name="pantry" />Pantry</button>
           <button disabled={!p.canAct} onClick={() => p.onGo('manager')}><Icon name="host" />Manager</button>
         </div>
       </div>

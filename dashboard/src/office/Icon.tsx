@@ -5,6 +5,8 @@ export type IconName =
   | 'zoom-in' | 'zoom-out' | 'fit' | 'close' | 'send' | 'stop' | 'takeover' | 'handback' | 'fork'
   | 'inject' | 'inquiry' | 'assignment' | 'party' | 'recap' | 'host' | 'desk' | 'back'
   | 'notifications-on' | 'online' | 'away'
+  | 'attach' | 'image' | 'file' | 'pantry' | 'mention' | 'question' | 'search' | 'keyboard' | 'new-chat'
+  | 'people' | 'clock' | 'check'
 
 export function Icon({ name, size = 16, className, label }: { name: IconName; size?: 16 | 32; className?: string; label?: string }) {
   return (

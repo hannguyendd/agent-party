@@ -20,7 +20,7 @@ import {
 } from './layout'
 import { blockedRuns, distance, findPath, nearestFree, rebuildGrid } from './pathfind'
 import { renderRoom } from './renderRoom'
-import { CHAR_ANIMS, CHAR_FRAME, CHAR_SCALE, SKIN_BY_ID, ownerHue } from './skins'
+import { CHAR_ANIMS, CHAR_FRAME, CHAR_FRAME_48, CHAR_SCALE, SKIN_BY_ID, ownerHue } from './skins'
 
 export interface SceneData {
   me: string
@@ -139,6 +139,7 @@ export class OfficeScene extends Phaser.Scene {
   private selectBox!: Phaser.GameObjects.Graphics
   private drag: { start: Point; world: Point; mode: 'select' | 'pan'; scroll: Point } | null = null
   private sheets = new Set<string>()
+  private sheetFrame: { width: number; height: number; foot: number } = { ...CHAR_FRAME, foot: CHAR_FRAME.height }
   private ready = false
   private firstSync = true
   private walls!: Phaser.Physics.Arcade.StaticGroup
@@ -354,11 +355,14 @@ export class OfficeScene extends Phaser.Scene {
   // optional sprite sheets
 
   private loadSheets() {
-    const manifest = (this.cache.json.get('manifest') ?? {}) as { characters?: Record<string, string> }
-    const chars = manifest.characters ?? {}
+    const manifest = (this.cache.json.get('manifest') ?? {}) as { characters?: Record<string, string>; characters48?: Record<string, string> }
+    // Prefer the sheets drawn natively at 48x72 (no upscaling); fall back to the 32x48 ones scaled up.
+    const native = Object.keys(manifest.characters48 ?? {}).length > 0
+    const chars = (native ? manifest.characters48 : manifest.characters) ?? {}
+    this.sheetFrame = native ? CHAR_FRAME_48 : { ...CHAR_FRAME, foot: CHAR_FRAME.height }
     const keys = Object.keys(chars)
     if (!keys.length) return
-    for (const skin of keys) this.load.spritesheet(`char-${skin}`, chars[skin], { frameWidth: CHAR_FRAME.width, frameHeight: CHAR_FRAME.height })
+    for (const skin of keys) this.load.spritesheet(`char-${skin}`, chars[skin], { frameWidth: this.sheetFrame.width, frameHeight: this.sheetFrame.height })
     this.load.once('complete', () => {
       for (const skin of keys) {
         const key = `char-${skin}`
@@ -505,7 +509,8 @@ export class OfficeScene extends Phaser.Scene {
     s.token = s.face = s.sheet = undefined
     const info = SKIN_BY_ID[skin] ?? SKIN_BY_ID['dev-hoodie']
     if (this.sheets.has(skin)) {
-      s.sheet = this.add.sprite(0, 0, `char-${skin}`, 18).setOrigin(0.5, 1).setScale(CHAR_SCALE)
+      const f = this.sheetFrame
+      s.sheet = this.add.sprite(0, 0, `char-${skin}`, 18).setOrigin(0.5, f.foot / f.height).setScale((CHAR_FRAME.width * CHAR_SCALE) / f.width)
       s.container.addAt(s.sheet, 1)
     } else {
       s.token = this.add.circle(0, -16 * CHAR_SCALE, 13 * CHAR_SCALE, info.color).setStrokeStyle(2, 0xffffff)

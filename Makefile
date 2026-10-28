@@ -1,6 +1,8 @@
 # Agent Mesh — run targets. `make help` lists them.
 #
-# Device settings come from node-server/.env (AGENTFLEET_OWNER, ...); hub settings from the variables below.
+# Staff: `make setup` once, then `make up` and finish joining in the browser (name, office server, join token).
+# Admin (always-on machine): `make server HUB_HOST=<ip>`, then `make hub-token DEVICE=...` per laptop.
+# Device settings can also come from node-server/.env (AGENTFLEET_OWNER, ...); the web setup overrides them.
 
 SHELL := /bin/bash
 
@@ -15,13 +17,37 @@ DEVICE   ?=
 WORLD_PORT ?= 7500
 
 .DEFAULT_GOAL := help
-.PHONY: help install install-node install-dashboard test build serve dev dev-server dev-dashboard \
+.PHONY: help setup up server install install-node install-dashboard test build serve dev dev-server dev-dashboard \
         mesh-node mesh-config hub hub-token world env codegraph clean
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-# setup
+# staff: one-time setup, then run
+
+setup: ## One-time setup on a staff machine: check tools, install deps, build the dashboard
+	@command -v uv >/dev/null || { echo "missing: uv (https://docs.astral.sh/uv/)"; exit 1; }
+	@command -v bun >/dev/null || { echo "missing: bun (https://bun.sh)"; exit 1; }
+	@command -v claude >/dev/null || echo "warning: Claude Code CLI not found; agents can't run until it is installed and logged in"
+	@command -v agentmesh-node >/dev/null || echo "warning: agentmesh-node not found; the Office works, but agents can't reach other machines until it is installed"
+	@$(MAKE) --no-print-directory install build
+	@echo; echo "Done. Run 'make up', then open http://127.0.0.1:9100 to join the team."
+
+up: ## Run this machine's node (dashboard + agents + mesh connection) at http://127.0.0.1:9100
+	@test -d $(DASH_DIR)/dist || $(MAKE) --no-print-directory build
+	@(sleep 2; command -v open >/dev/null && open http://127.0.0.1:9100 || command -v xdg-open >/dev/null && xdg-open http://127.0.0.1:9100) >/dev/null 2>&1 &
+	cd $(NODE_DIR) && uv run agentfleet-node serve
+
+# admin: the always-on team machine
+
+server: ## Run the hub and the Office world server together (HUB_HOST=<fixed LAN IP or hostname>)
+	@test -n "$(HUB_HOST)" || { echo "usage: make server HUB_HOST=<fixed LAN IP or hostname>"; exit 1; }
+	@trap 'kill 0' EXIT INT TERM; \
+	$(MAKE) --no-print-directory hub & \
+	$(MAKE) --no-print-directory world & \
+	wait
+
+# setup pieces
 
 install: install-node install-dashboard ## Install all dependencies
 

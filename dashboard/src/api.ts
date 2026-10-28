@@ -28,6 +28,8 @@ export interface Agent extends AgentIn {
 }
 
 export interface MeshStatus {
+  /** The agentmesh-node this server runs for the owner (when an office server is set up). */
+  process?: MeshProcess
   node_url: string
   node_healthy: boolean
   config_path: string
@@ -41,6 +43,26 @@ export interface NodeInfo {
   mesh: MeshStatus
   /** Limits for attachments (same as files from peers). */
   files?: { max_bytes: number; suffixes: string[] }
+}
+
+/** First-run setup state (GET/POST /api/setup). */
+export interface MeshProcess {
+  installed: boolean
+  managed: boolean
+  running: boolean
+  pid: number | null
+  error: string | null
+  log: string
+}
+export interface SetupState {
+  configured: boolean
+  owner: string
+  hub_url: string | null
+  world_url: string | null
+  has_token: boolean
+  enrolled: boolean
+  agents: number
+  mesh_node: MeshProcess
 }
 
 /** A file the owner attaches to a message, base64-encoded. */
@@ -257,6 +279,9 @@ export const api = {
   assign: (from_agent: string, to_agent: string, text: string) =>
     req<{ status: string; conversation_id: string }>('POST', '/api/office/assign', { from_agent, to_agent, text }),
   notifyTest: () => req<{ shown: boolean }>('POST', '/api/notify/test'),
+  setup: () => req<SetupState>('GET', '/api/setup'),
+  saveSetup: (owner: string, server: string, token: string) => req<SetupState>('POST', '/api/setup', { owner, server, token }),
+  meshRestart: () => req<MeshStatus & { process: MeshProcess }>('POST', '/api/mesh/restart'),
 
   approvals: () => req<Approval[]>('GET', '/api/approvals'),
   decide: (id: string, allow: boolean, reason = '') =>

@@ -9,6 +9,7 @@ import { Avatar } from './OfficeChat'
 import { who } from './people'
 import { useSeen } from './seen'
 import { NEEDS_YOU, STATUS } from './status'
+import { Icon } from './Icon'
 
 const rank = (c: { status: string }) => (NEEDS_YOU.includes(c.status as never) ? 0 : c.status === 'running' ? 1 : 2)
 
@@ -23,6 +24,7 @@ const tabOf = (c: { direction: string }): ChatTab =>
 
 export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string; onOpen: (id: string) => void }) {
   const [q, setQ] = useState('')
+  const [searching, setSearching] = useState(false)
   const seenMap = useSeen()
   const needle = q.trim().toLowerCase()
   const mineConvs = Object.values(state.conversations).filter((c) => c.agent_id.startsWith(`${me}/`))
@@ -36,7 +38,7 @@ export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string;
     }),
   ) as Record<ChatTab, { n: number; alert: boolean; unread: boolean }>
   const rows = mineConvs
-    .filter((c) => tabOf(c) === tab)
+    .filter((c) => needle || tabOf(c) === tab) // a search looks through every tab
     .map((c) => ({ c, mine: who(state, c.agent_id), peer: c.peer_agent_id ? who(state, c.peer_agent_id) : null }))
     .filter(
       ({ c, mine, peer }) =>
@@ -47,9 +49,23 @@ export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string;
   const tabInfo = CHAT_TABS.find((t) => t.id === tab)!
   return (
     <div className="o-frame office-card office-list">
-      <h2>
-        Chats <span>{mineConvs.length}</span>
-      </h2>
+      {searching ? (
+        <label className="o-search o-chat-bar">
+          <Icon name="search" />
+          <input
+            className="input o-chat-search"
+            placeholder="Search all chats…"
+            value={q}
+            autoFocus
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && (setQ(''), setSearching(false))}
+          />
+          <button type="button" className="o-icon-btn" aria-label="Close search" onClick={() => { setQ(''); setSearching(false) }}>
+            <Icon name="close" />
+          </button>
+        </label>
+      ) : (
+      <div className="o-chat-bar">
       <div className="o-chat-tabs" role="tablist">
         {CHAT_TABS.map((t) => (
           <button
@@ -66,16 +82,13 @@ export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string;
           </button>
         ))}
       </div>
-      {counts[tab].n > 3 && (
-        <input
-          className="input o-chat-search"
-          placeholder={`Search ${tabInfo.label.toLowerCase()} chats…`}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
+      <button className="o-icon-btn" aria-label="Search chats" title="Search chats" onClick={() => setSearching(true)}>
+        <Icon name="search" />
+      </button>
+      </div>
       )}
-      {counts[tab].n === 0 && <p className="office-empty">{tabInfo.empty}</p>}
-      {counts[tab].n > 0 && rows.length === 0 && <p className="office-empty">Nothing matches “{q}”.</p>}
+      {!needle && counts[tab].n === 0 && <p className="office-empty">{tabInfo.empty}</p>}
+      {needle && rows.length === 0 && <p className="office-empty">Nothing matches “{q}”.</p>}
       {rows.length > 0 && (
         <div className="o-chat-group">
           {rows.map(({ c, mine, peer }) => {

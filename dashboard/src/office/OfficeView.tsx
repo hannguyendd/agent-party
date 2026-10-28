@@ -16,12 +16,16 @@ import { ACTIVE_STATUSES } from './status'
 import { who } from './people'
 import { ApprovalsList, ChatsList } from './SideLists'
 import { PeerMenu } from './PeerMenu'
+import { Onboarding, type OnboardingStep } from './Onboarding'
 import { ApprovalCard } from '../components/ApprovalCard'
-import { enableNotifications, notificationsSupported } from '../useNotifications'
+import { notificationsSupported } from '../useNotifications'
 import './office.css'
 
 const EMPTY_AGENTS: OfficeAgent[] = []
 const EMPTY_DESKS: Record<string, string> = {}
+const ONBOARDED_KEY = 'office.onboarded'
+const readFlag = () => { try { return localStorage.getItem(ONBOARDED_KEY) === '1' } catch { return false } }
+const writeFlag = () => { try { localStorage.setItem(ONBOARDED_KEY, '1') } catch { /* private window: the guide shows again next time */ } }
 
 const sampleAgents: OfficeAgent[] = [
   ['dev', 'Developer', 'dev-hoodie', { kind: 'desk' }],
@@ -122,6 +126,18 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   // Reading a conversation marks it seen (Chats shows a dot for new messages elsewhere).
   useEffect(() => { if (conv) markSeen(conv.id, conv.updated_at) }, [conv])
   const ownDesk = Object.entries(desks).find(([, owner]) => owner === me)?.[0]
+  // First-run guide. Its step follows real state, so it resumes where the person left off.
+  const [onboarded, setOnboarded] = useState(readFlag)
+  const [quickAgent, setQuickAgent] = useState(false)
+  const [notifySkipped, setNotifySkipped] = useState(false)
+  const finishOnboarding = () => { writeFlag(); setOnboarded(true) }
+  const hasAgents = Object.keys(state.agents).length > 0
+  const onboardStep: OnboardingStep | null = isPreview || !state.node ? null
+    : !hasAgents ? 'agent'
+    : office?.enabled && !ownDesk ? 'desk'
+    : notifyPerm === 'default' && notificationsSupported() && !notifySkipped ? 'notify'
+    : 'tips'
+  const showGuide = quickAgent || (!onboarded && !!onboardStep && !pickingDesk)
   const sceneData: SceneData = useMemo(() => ({
     me, agents, desks, owners: isPreview ? { preview: { connected: true, present: true } } : office?.owners ?? {},
     bubbles: Object.fromEntries(agents.filter(a => a.activity && ['running', 'awaiting_approval', 'awaiting_owner'].includes(a.activity.status)).map(a => {
@@ -198,6 +214,19 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
             })}
           </div>
         )}
+        {showGuide && (
+          <Onboarding
+            step={quickAgent ? 'agent' : onboardStep ?? 'tips'}
+            owner={me}
+            single={quickAgent}
+            onAgentCreated={id => { setQuickAgent(false); setNotice(`${id} is ready. It appears on the map in a moment.`) }}
+            onPickDesk={() => setPickingDesk(true)}
+            onNotify={() => { setNotifySkipped(true); setNotifyPerm(notificationsSupported() ? Notification.permission : 'denied') }}
+            onDone={finishOnboarding}
+            onClose={() => (quickAgent ? setQuickAgent(false) : finishOnboarding())}
+            onAdvanced={() => { setQuickAgent(false); go({ kind: 'settings', section: 'agents', agentId: 'new' }) }}
+          />
+        )}
         <div className="office-zoom" aria-label="Zoom">
           <button className="o-btn" aria-label="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}>−</button>
           <button className="o-btn" aria-label="Fit office" onClick={() => sceneRef.current?.fitCamera()}><Icon name="fit" size={32} /></button>
@@ -253,30 +282,11 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         </div>
 
         {side === 'agents' && <>
-        {!isPreview && (!mine.length || !ownDesk || notifyPerm === 'default') && (
-          <div className="o-frame office-card office-setup">
-            <h2>Get started</h2>
-            <ol>
-              <li className={mine.length ? 'is-done' : ''}>
-                <span>Create your first agent</span>
-                {!mine.length && <button className="btn-primary" onClick={() => go({ kind: 'settings', section: 'agents', agentId: 'new' })}>Create</button>}
-              </li>
-              <li className={ownDesk ? 'is-done' : ''}>
-                <span>Pick your desk on the map</span>
-                {!ownDesk && <button className="btn" disabled={!canAct} onClick={() => setPickingDesk(true)}>Pick</button>}
-              </li>
-              <li className={notifyPerm !== 'default' ? 'is-done' : ''}>
-                <span>Turn on notifications</span>
-                {notifyPerm === 'default' && notificationsSupported() && <button className="btn" onClick={() => void enableNotifications().then(setNotifyPerm)}>Turn on</button>}
-              </li>
-            </ol>
-          </div>
-        )}
         <div className="o-frame office-card">
-          <h2>Your agents <span>{mine.length}</span></h2>
+          <h2><span className="o-h2-title">Your agents</span>{!isPreview && <button className="o-mini-btn is-primary" onClick={() => setQuickAgent(true)}>+ New agent</button>}</h2>
           {ownDesk && <div className="office-desk-row"><Icon name="desk" /><span>Your desk <strong>{ownDesk}</strong></span>
-            <button className="office-link" disabled={!canAct} onClick={() => setPickingDesk(p => !p)}>{pickingDesk ? 'cancel' : 'change'}</button></div>}
-          {!mine.length && <p className="office-empty">Your online agents show up here. <button className="btn" onClick={() => go({ kind: 'settings', section: 'agents' })}>+ New agent</button></p>}
+            <button className="o-mini-btn" disabled={!canAct} onClick={() => setPickingDesk(p => !p)}>{pickingDesk ? 'Cancel' : 'Change desk'}</button></div>}
+          {!mine.length && <p className="office-empty">{hasAgents ? 'Your agents appear here once the office connects.' : 'No agents yet. Press + New to create one.'}</p>}
           <div className="office-agent-list">{mine.map(a => <button key={a.agent_id} className={`office-agent ${selected.includes(a.agent_id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(a.agent_id)} onClick={() => sceneRef.current?.selectOnly([a.agent_id])}>
             <img src={`office/characters/${a.skin}-portrait.png`} alt="" width="32" height="48" />
             <span><strong>{a.name}</strong><small>{statusText(a)}</small></span>
@@ -314,12 +324,12 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
       <span className={`office-connection ${isPreview || office?.connected ? 'is-online' : ''}`}>{isPreview ? 'Design preview' : office?.connected ? 'Office connected' : 'Reconnecting'}</span>
       {!isPreview && <span className="office-present" title={presentOwners.join(', ')}>
         {presentOwners.slice(0, 6).map(o => <i key={o} style={{ background: ownerCss(o) }} title={o} />)}
-        {presentOwners.length} in the office
+        <Icon name="people" />{presentOwners.length} in the office
       </span>}
       {ownDesk && <span>Desk {ownDesk}</span>}
       {!isPreview && <button className="office-foot-link" onClick={() => { setOpenConv(null); setSide('chats') }}>{activeChats} active chat{activeChats === 1 ? '' : 's'}</button>}
       {!isPreview && pendingApprovals.length > 0 && <button className="office-foot-link is-alert" onClick={() => { setOpenConv(null); setSide('approvals') }}>{pendingApprovals.length} waiting for you</button>}
-      <span className="office-keys"><kbd>WASD</kbd> walk · <kbd>E</kbd> talk · <kbd>H</kbd> desk · <kbd>F</kbd> follow · scroll to zoom</span>
+      <span className="office-keys"><Icon name="keyboard" /><kbd>WASD</kbd> walk · <kbd>E</kbd> talk · <kbd>H</kbd> desk · <kbd>F</kbd> follow · scroll to zoom</span>
     </footer>
   </section>
 }

@@ -24,7 +24,9 @@
     `Composer.tsx` (the one message box: `MentionInput` @picker + `AttachBar` + Send), `PeerMenu.tsx` (Ask / Assign),
     `attachments.ts` (pick / drop / paste, checked against `node.files`, sent base64), `status.ts` (status labels and
     tones), `seen.ts` (per-browser "seen" marks for unread dots), `people.ts` (`who()`: display name / owner / skin),
-    `SettingsView.tsx`.
+    `SettingsView.tsx`, `SetupView.tsx` + `SetupForm.tsx` (first-run join page; the form is reused in Settings),
+    `Onboarding.tsx` (guide over the map; its step is derived from state in `OfficeView`, and "+ New agent" opens
+    its short agent form alone).
   - Art comes from `public/office/manifest.json` (Codex; see `docs/office/`). Don't hard-code art; add a manifest key.
   - `office.css` scopes the pastel theme to `.office-view` and maps the shared tokens (`--panel`, `--muted`, …) so
     shared components (`ApprovalCard`, `AgentForm`, `Directory`) match it without their own restyle.

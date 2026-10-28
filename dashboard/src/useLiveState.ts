@@ -122,9 +122,11 @@ function applyWorld(s: LiveState, e: WorldEvent): LiveState {
   const o = s.office
   if (e.type === 'error') return { ...s, officeError: e.message || null }
   if (!o) return s // a snapshot fetch follows every reconnect
+  // Any world event means the link is up, even if a REST snapshot fetched just before the link opened said otherwise.
+  if (e.type !== 'link' && !o.connected) return applyWorld({ ...s, office: { ...o, enabled: true, connected: true } }, e)
   switch (e.type) {
     case 'snapshot':
-      return { ...s, office: { ...o, connected: true, desks: e.desks, owners: e.owners, agents: e.agents, desk_ids: e.desk_ids, skins: e.skins } }
+      return { ...s, office: { ...o, enabled: true, connected: true, desks: e.desks, owners: e.owners, agents: e.agents, desk_ids: e.desk_ids, skins: e.skins } }
     case 'desks':
       return { ...s, office: { ...o, desks: e.desks } }
     case 'owners':

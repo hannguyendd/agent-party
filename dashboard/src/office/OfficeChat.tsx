@@ -8,6 +8,7 @@ import { clockTime } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { who, type Who } from './people'
 import { SKIN_BY_ID, ownerCss } from './skins'
+import { Icon } from './Icon'
 
 export function Avatar({ w, size = 28 }: { w: Who | 'me'; size?: number }) {
   if (w === 'me') return <span className="o-avatar o-avatar-me" style={{ width: size, height: size }}>you</span>
@@ -37,9 +38,9 @@ function Attachments({ files }: { files: unknown }) {
             <img src={api.fileUrl(f.id)} alt={f.name} loading="lazy" />
           </a>
         ) : f.id ? (
-          <a key={i} className="o-file" href={api.fileUrl(f.id)} title={f.path}>📎 {f.name}</a>
+          <a key={i} className="o-file" href={api.fileUrl(f.id)} title={f.path}><Icon name="file" />{f.name}</a>
         ) : (
-          <span key={i} className="o-file" title={f.path}>📎 {f.name}</span>
+          <span key={i} className="o-file" title={f.path}><Icon name="file" />{f.name}</span>
         ),
       )}
     </div>

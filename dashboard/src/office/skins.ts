@@ -1,5 +1,5 @@
 // Skins an owner can pick for an agent (CONTEXT.md "Skin"). Ids match the world server's SKINS.
-// Until Codex's sprite sheets land, each skin renders as a coloured token with an emoji face.
+// Sprite sheets come from the manifest; a skin without one renders as a coloured token with an emoji face.
 
 export interface SkinInfo {
   id: string
@@ -20,10 +20,13 @@ export const SKINS: SkinInfo[] = [
 ]
 export const SKIN_BY_ID: Record<string, SkinInfo> = Object.fromEntries(SKINS.map((s) => [s.id, s]))
 
-/** Sprite sheet layout from the asset brief: 4 columns x 5 rows of 32x48 frames. */
+/** Sprite sheet layout from the asset brief: 4 columns x 5 rows of 32x48 frames. Sizes on the map are given
+ *  relative to this frame. */
 export const CHAR_FRAME = { width: 32, height: 48 }
-/** On-map size relative to the sheet. The approved mockup draws people ~1.5x a 32x48 frame next to its furniture;
- *  set back to 1 once sheets are drawn natively at 48x72 (and update CHAR_FRAME). */
+/** The same layout drawn natively at 48x72 (manifest `characters48`); feet touch y=70, so the bottom edge of
+ *  row 70 (71) is the anchor. Preferred when present. */
+export const CHAR_FRAME_48 = { width: 48, height: 72, foot: 71 }
+/** On-map size relative to a 32x48 frame: people stand ~1.5x that next to the furniture (= the 48x72 sheets at 1:1). */
 export const CHAR_SCALE = 1.5
 export const CHAR_ANIMS = {
   'walk-down': [0, 1, 2, 3],

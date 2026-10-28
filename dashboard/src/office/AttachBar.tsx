@@ -1,6 +1,7 @@
 // Paperclip button and chips for files waiting to be sent with a message.
 
 import { human, type Attachments } from './attachments'
+import { Icon } from './Icon'
 
 /** `list` renders the pending chips, `button` the paperclip; a composer places each where it fits. */
 export function AttachBar({ att, disabled, list, button }: { att: Attachments; disabled?: boolean; list?: boolean; button?: boolean }) {
@@ -30,7 +31,7 @@ export function AttachBar({ att, disabled, list, button }: { att: Attachments; d
             e.target.value = ''
           }}
         />
-        <span aria-hidden>📎</span>
+        <Icon name="attach" />
       </label>}
     </>
   )

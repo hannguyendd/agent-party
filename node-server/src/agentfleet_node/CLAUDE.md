@@ -15,7 +15,14 @@ Office: `office.WorldClient` keeps one socket to the world server, mirrors its s
 world events to the dashboard as `{"type": "office", "event": …}`, and reports agents, presence (an open dashboard
 WebSocket = owner present) and status-only conversation activity.
 
-Modules: `world.py` (team world server), `office.py` (node ↔ world link), `notify.py` (OS notifications), plus the
+Setup: `GET/POST /api/setup` (web join form) writes `data/setup.json` (owner, hub_url, world_url; applied over the
+env by `Settings.apply_setup_file` on every start) and `data/bootstrap-token`, rewrites `agentmesh-node.yaml`,
+restarts the world link and (re)starts `agentmesh-node` via `meshproc.MeshNodeProcess`. Agent create/delete calls
+`_republish`, which restarts the managed mesh node because it reads services only at startup. The owner can't
+change while agents exist (409).
+
+Modules: `world.py` (team world server), `office.py` (node ↔ world link), `notify.py` (OS notifications),
+`meshproc.py` (managed `agentmesh-node`), plus the
 original `a2a_bridge`, `sessions`, `mesh`, `mesh_tools`, `store`, `api`, `models`, `db`, `files`, `naming`.
 
 ## Invariants

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from pydantic import Field
@@ -24,6 +25,8 @@ class Settings(BaseSettings):
     mesh_node_config_path: Path = Path("./data/agentmesh-node.yaml")
     # Team world server for the Office view, e.g. ws://192.168.1.10:7500/world/ws (unset: Office disabled).
     world_url: str | None = None
+    # Hub (agentmesh-one) URL; when set, the node server runs agentmesh-node itself (meshproc.py).
+    hub_url: str | None = None
     # Dev/test only: skip discovery and call peers directly, {"owner": "http://host:port"}.
     static_peers: dict[str, str] = Field(default_factory=dict)
 
@@ -47,6 +50,22 @@ class Settings(BaseSettings):
 
     # Claude CLI path override (default: whatever the SDK finds).
     claude_cli_path: str | None = None
+
+    @property
+    def setup_path(self) -> Path:
+        """Choices made in the web setup (owner, hub, world); they override env vars on startup."""
+        return self.data_dir / "setup.json"
+
+    def apply_setup_file(self) -> "Settings":
+        if self.setup_path.exists():
+            try:
+                saved = json.loads(self.setup_path.read_text())
+            except ValueError:
+                return self
+            for key in ("owner", "hub_url", "world_url"):
+                if saved.get(key):
+                    setattr(self, key, saved[key])
+        return self
 
     @property
     def db_path(self) -> Path:

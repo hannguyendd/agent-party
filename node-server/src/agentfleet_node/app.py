@@ -13,6 +13,7 @@ from agentfleet_node.config import Settings
 from agentfleet_node.db import Database, make_engine
 from agentfleet_node.mesh import MeshDirectory
 from agentfleet_node.mesh_tools import make_mesh_tools_factory
+from agentfleet_node.meshproc import MeshNodeProcess
 from agentfleet_node.notify import os_notify
 from agentfleet_node.office import WorldClient
 from agentfleet_node.sessions import SessionManager
@@ -31,6 +32,7 @@ class Node:
     sessions: SessionManager
     gateway: A2AGateway
     world: WorldClient
+    meshproc: MeshNodeProcess
 
 
 def build_node(settings: Settings, client_factory: Callable | None = None) -> Node:
@@ -54,18 +56,21 @@ def build_node(settings: Settings, client_factory: Callable | None = None) -> No
         return "none"
 
     sessions.wake_owner = wake_owner
-    return Node(settings, bus, store, directory, outbound, sessions, gateway, world)
+    return Node(settings, bus, store, directory, outbound, sessions, gateway, world, MeshNodeProcess(settings))
 
 
 def create_app(settings: Settings | None = None, client_factory: Callable | None = None) -> FastAPI:
-    settings = settings or Settings()
+    settings = (settings or Settings()).apply_setup_file()
     node = build_node(settings, client_factory)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         node.directory.sync_node_config()
         node.world.start()
+        if settings.hub_url:
+            await node.meshproc.start()  # no-op with a reason in status() if agentmesh-node isn't installed
         yield
+        await node.meshproc.stop()
         await node.world.stop()
         await node.sessions.shutdown()
 

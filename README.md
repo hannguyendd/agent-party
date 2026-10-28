@@ -66,12 +66,25 @@ Quick reference (`make help` lists every target):
 
 | Where | Command |
 |---|---|
-| Hub machine | `make hub HUB_HOST=<lan ip>` · `make hub-token DEVICE="han laptop"` · `make world` (Office, port 7500) |
-| Each device, once | `make install` · `make env OWNER=han` · add `AGENTFLEET_WORLD_URL=ws://<hub>:7500/world/ws` to `node-server/.env` · save the join token to `node-server/data/bootstrap-token` |
-| Each device | `make serve` (node server + built dashboard on :9100) · `make mesh-node HUB_HOST=<lan ip>` |
+| Hub machine (admin) | `make server HUB_HOST=<lan ip>` (hub + Office world server) · `make hub-token DEVICE="han laptop"` per laptop |
+| Each staff machine, once | `make setup` (checks uv / bun / claude / agentmesh-node, installs, builds) |
+| Each staff machine | `make up`, then finish in the browser at http://127.0.0.1:9100 |
 | Development | `make dev` (node server + Vite hot reload on :5173) · `make test` · `make build` |
 
-The steps below show what those targets run.
+**Joining from the browser.** On first run the dashboard shows a setup page: your name (the owner in agent IDs),
+the office server (the hub machine's IP or hostname; the hub URL `:7400` and world URL `:7500` are derived from
+it) and the join token. Saving writes `data/setup.json` (overrides `.env`) and `data/bootstrap-token`, regenerates
+`agentmesh-node.yaml`, connects the Office and starts `agentmesh-node` for you (`meshproc.py`; it is restarted
+whenever your agents change, since it reads its services only at startup). The owner name can't change once
+agents exist. Settings → Mesh has the same form plus "Restart mesh connection".
+
+**First time in the Office.** A short guide over the map walks through: create an agent (name, what it does,
+project folder, look; safe read-only defaults, "All options…" opens the full form), pick your desk, turn on
+notifications, and the basics. Its step follows real state, so closing the tab resumes where you left off; it is
+dismissed per browser. "+ New agent" in the Agents tab reuses the same short form.
+
+The manual steps below show what those targets run (still useful for scripted setups or running the mesh node
+by hand).
 
 ### 1. Hub (once, on the always-on machine)
 
@@ -154,5 +167,7 @@ Local hub + two `agentmesh-node`s + two node servers:
   agents or take a desk (no message content is exposed). A shared world token is the planned fix.
 - **Party and Recap** are designed (`CONTEXT.md`, ADR 0003) but not built.
 - The map's foreground plate is unused (it covered agents standing in front of desks); proper occlusion needs
-  per-object art. Characters are 32×48 sheets drawn at 1.5×; native 48×72 sheets are requested from the art workflow.
+  per-object art. Characters use the native 48×72 sheets (`manifest.characters48`) when present.
+- The web setup and the managed `agentmesh-node` have not been run against a real hub yet (no agentmesh binaries
+  on the dev machine); the unit tests cover the form, files and error paths.
 - Agents cannot assign work on their own initiative (only the owner can, from the Office).

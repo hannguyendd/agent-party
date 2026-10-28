@@ -1,7 +1,7 @@
 // Settings: the one other screen. Configuration only (agents, mesh, notifications); daily work stays in the Office.
 
 import { useState } from 'react'
-import { api, type NodeInfo } from '../api'
+import { api, type NodeInfo, type SetupState } from '../api'
 import type { SettingsSection, View } from '../App'
 import { AgentForm } from '../components/AgentForm'
 import { Directory } from '../components/Directory'
@@ -9,6 +9,7 @@ import { errMsg } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { enableNotifications, notificationsSupported } from '../useNotifications'
 import { AppBar } from './AppBar'
+import { SetupForm, SetupStatus } from './SetupForm'
 import { Icon, type IconName } from './Icon'
 import { SKIN_BY_ID } from './skins'
 import './office.css'
@@ -24,9 +25,11 @@ interface Props {
   view: Extract<View, { kind: 'settings' }>
   go: (v: View) => void
   setNode: (n: NodeInfo) => void
+  setup: SetupState | null
+  onSetupSaved: (s: SetupState) => void
 }
 
-export default function SettingsView({ state, view, go, setNode }: Props) {
+export default function SettingsView({ state, view, go, setNode, setup, onSetupSaved }: Props) {
   const section = view.section ?? 'agents'
   const at = (s: SettingsSection, agentId?: string) => go({ kind: 'settings', section: s, agentId })
   return (
@@ -50,7 +53,7 @@ export default function SettingsView({ state, view, go, setNode }: Props) {
         </nav>
         <main className="settings-main">
           {section === 'agents' && <AgentsSection state={state} agentId={view.agentId} at={at} go={go} />}
-          {section === 'mesh' && <MeshSection state={state} setNode={setNode} />}
+          {section === 'mesh' && <MeshSection state={state} setNode={setNode} setup={setup} onSetupSaved={onSetupSaved} />}
           {section === 'notifications' && <NotificationsSection />}
         </main>
       </div>
@@ -104,7 +107,7 @@ function AgentsSection({ state, agentId, at, go }: { state: LiveState; agentId?:
   )
 }
 
-function MeshSection({ state, setNode }: { state: LiveState; setNode: (n: NodeInfo) => void }) {
+function MeshSection({ state, setNode, setup, onSetupSaved }: { state: LiveState; setNode: (n: NodeInfo) => void; setup: SetupState | null; onSetupSaved: (s: SetupState) => void }) {
   const node = state.node
   const mesh = node?.mesh
   const office = state.office
@@ -122,8 +125,31 @@ function MeshSection({ state, setNode }: { state: LiveState; setNode: (n: NodeIn
       setBusy(false)
     }
   }
+  const restartMesh = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      const status = await api.meshRestart()
+      if (node) setNode({ ...node, mesh: status })
+      onSetupSaved(await api.setup())
+    } catch (e) {
+      setError(errMsg(e))
+    } finally {
+      setBusy(false)
+    }
+  }
   return (
     <div className="settings-stack">
+      <div className="o-frame settings-card">
+        <h2>Joining the team</h2>
+        <SetupForm initial={setup} onSaved={onSetupSaved} />
+        {setup?.configured && <SetupStatus setup={setup} officeConnected={!!office?.connected} />}
+        {setup?.mesh_node.installed && setup.hub_url && (
+          <div className="settings-actions">
+            <button className="btn" disabled={busy} onClick={() => void restartMesh()}>Restart mesh connection</button>
+          </div>
+        )}
+      </div>
       <div className="o-frame settings-card">
         <h2>This machine</h2>
         <dl className="settings-facts">

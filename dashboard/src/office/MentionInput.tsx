@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Avatar } from './OfficeChat'
 import type { Who } from './people'
+import { Icon } from './Icon'
 
 interface Props {
   value: string
@@ -59,7 +60,7 @@ export function MentionInput({ value, onChange, onSubmit, candidates, placeholde
     <div className="o-mention">
       {options.length > 0 && (
         <div className="o-mention-list" role="listbox" aria-label="Mention an agent">
-          <div className="o-mention-hint">Ask this agent directly</div>
+          <div className="o-mention-hint"><Icon name="mention" />Ask this agent directly</div>
           {options.map((c, i) => (
             <button
               key={c.id}
