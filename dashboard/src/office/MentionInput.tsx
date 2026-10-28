@@ -19,7 +19,7 @@ interface Props {
 
 /** The "@query" right before the caret, if any. */
 function mentionAt(text: string, caret: number): { start: number; query: string } | null {
-  const m = /(^|\s)@([\w/-]*)$/.exec(text.slice(0, caret))
+  const m = /(^|\s)@([\w/.-]*)$/.exec(text.slice(0, caret))
   return m ? { start: caret - m[2].length - 1, query: m[2].toLowerCase() } : null
 }
 
@@ -45,7 +45,9 @@ export function MentionInput({ value, onChange, onSubmit, candidates, placeholde
 
   const choose = (c: Who) => {
     if (!at) return
-    const insert = `@${c.id} `
+    // Show the name; Composer swaps it back to the ID on send (agents need IDs). Same name twice: use the ID.
+    const unique = candidates.filter((o) => o.name.toLowerCase() === c.name.toLowerCase()).length === 1
+    const insert = `@${unique ? c.name : c.id} `
     const next = value.slice(0, at.start) + insert + value.slice(caret)
     onChange(next)
     const pos = at.start + insert.length

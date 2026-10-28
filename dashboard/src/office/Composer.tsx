@@ -6,6 +6,7 @@ import { AttachBar } from './AttachBar'
 import { dropTarget, useAttachments, type Limits } from './attachments'
 import { Icon } from './Icon'
 import { MentionInput } from './MentionInput'
+import { withMentionIds } from './people'
 import type { Who } from './people'
 
 interface Props {
@@ -29,7 +30,7 @@ export function Composer(p: Props) {
   const ready = !p.disabled && !p.busy && (!!p.value.trim() || files.length > 0)
   const send = async () => {
     if (!ready) return
-    if (await p.onSend(p.value.trim(), p.allowFiles ? att.payload() : [])) att.clear()
+    if (await p.onSend(withMentionIds(p.value.trim(), p.candidates), p.allowFiles ? att.payload() : [])) att.clear()
   }
   return (
     <footer className="o-composer" {...dropTarget(att, !p.allowFiles || p.disabled)}>

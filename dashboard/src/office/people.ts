@@ -25,3 +25,17 @@ export function agentNames(state: LiveState): (id: string) => string | null {
   for (const a of Object.values(state.agents)) names.set(a.id.toLowerCase(), a.name)
   return (id) => names.get(id.toLowerCase()) ?? null
 }
+
+/** "@Backend Agent" (as the @-picker shows it) back to "@han/be" for the agent. Longest names first, so
+ *  "@API agent v2" isn't read as "@API agent". Names shared by two agents are never inserted by name. */
+export function withMentionIds(text: string, candidates: Who[]): string {
+  const byName = new Map<string, Who[]>()
+  for (const c of candidates) byName.set(c.name.toLowerCase(), [...(byName.get(c.name.toLowerCase()) ?? []), c])
+  const unique = [...byName.values()].filter((list) => list.length === 1).map((list) => list[0])
+  let out = text
+  for (const c of unique.sort((a, b) => b.name.length - a.name.length)) {
+    const escaped = c.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    out = out.replace(new RegExp(`(^|\\s)@${escaped}(?=$|[\\s.,:;!?)])`, 'gi'), `$1@${c.id}`)
+  }
+  return out
+}
