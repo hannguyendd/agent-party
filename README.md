@@ -71,11 +71,16 @@ Quick reference (`make help` lists every target):
 
 | Where | Command |
 |---|---|
-| Hub machine (admin) | `make server HUB_HOST=<lan ip> ORG="Taggle"` (hub + Office world server + staff installer) · `make hub-token DEVICE="han laptop"` per laptop |
+| Hub machine (admin) | `make server HUB_HOST=<lan ip> ORG="Taggle"` (hub + Office world server + staff installer), then invite people from **http://&lt;hub ip&gt;:7500/admin** (or `make hub-token DEVICE=…`) |
 | Staff, macOS / Linux | `curl -fsSL http://<hub ip>:7500/install \| bash` |
 | Staff, Windows | in PowerShell: `irm http://<hub ip>:7500/install.ps1 \| iex` |
 | Developer machine | `make setup` once, then `make up` (runs from the repo) |
 | Development | `make dev` (node server + Vite hot reload on :5173) · `make test` · `make build` |
+
+**Admin page** (`/admin` on the world server): create an invite per computer (a single-use join token from the
+hub, the install commands and a ready-to-send message), see who is online with which agents and desks, and check
+that the installer has a package and an agentmesh-node for each platform. It opens without a key on the server
+itself; from elsewhere it asks for the admin key, printed by `make server` and saved as `node-server/data/admin-key`.
 
 **Staff installer.** `make server` runs `make bundle` first: it builds the dashboard into the node package
 (`agentfleet_node/static`), builds the wheel into `dist/downloads/`, and copies this machine's `agentmesh-node` there as

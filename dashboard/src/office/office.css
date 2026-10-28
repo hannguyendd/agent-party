@@ -990,7 +990,8 @@ a.o-file:hover { border-color: var(--o-line); }
 .o-md table { border-collapse: collapse; font-size: .92em; display: block; overflow-x: auto; }
 .o-md th, .o-md td { padding: 3px 8px; border: 1px solid var(--o-soft-line); text-align: left; }
 .o-md hr { border: none; border-top: 1px solid var(--o-soft-line); margin: .6em 0; }
-.o-mention { padding: 0 5px; border-radius: 5px; font-weight: 800; background: var(--o-lav); color: var(--o-ink); white-space: nowrap; }
+/* an agent named in chat text (not .o-mention: that is the @-picker input box) */
+.o-agent-tag { display: inline; padding: 0 5px; border-radius: 5px; font-weight: 800; background: var(--o-lav); color: var(--o-ink); white-space: nowrap; }
 .o-msg-bubble { white-space: normal; }
 .o-exchange-a .o-md { margin-top: 2px; }
 

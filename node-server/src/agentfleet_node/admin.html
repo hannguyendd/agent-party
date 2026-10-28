@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<title>Office admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #f9eadc; --panel: #fefaf2; --panel-2: #fde9d7; --ink: #2c283c; --muted: #71799a; --line: #48506c;
+    --soft: #d7cecf; --mint: #9dd6b7; --mint-ink: #2f6b4a; --coral: #c4583a; --gold: #f2c45a; color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.5 Nunito, ui-sans-serif, system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #48506c; color: #fdf3e6; }
+  header h1 { font: 600 20px Fredoka, sans-serif; }
+  header span { margin-left: auto; font-size: 12px; opacity: .8; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+  .card { background: var(--panel); border: 2px solid var(--line); border-radius: 8px; box-shadow: 0 3px 0 var(--line); padding: 16px; }
+  .wide { grid-column: 1 / -1; }
+  h2 { font: 600 17px Fredoka, sans-serif; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  h2 small { font: 700 12px Nunito, sans-serif; color: var(--muted); }
+  p.note { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+  label { display: block; font-weight: 800; font-size: 13px; margin-bottom: 4px; }
+  input { width: 100%; padding: 8px 10px; font: inherit; border: 2px solid var(--line); border-radius: 6px; background: #fff; }
+  .row { display: flex; gap: 8px; align-items: flex-end; }
+  .row > div { flex: 1; }
+  button { font: 800 13px Nunito, sans-serif; padding: 8px 14px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel);
+    box-shadow: 0 2px 0 var(--line); cursor: pointer; white-space: nowrap; }
+  button.primary { background: var(--mint); }
+  button:active { transform: translateY(2px); box-shadow: none; }
+  button:disabled { opacity: .5; cursor: default; }
+  .result { margin-top: 14px; padding: 12px; border: 1.5px solid #9dd6b7; border-radius: 8px; background: #f2faf5; display: grid; gap: 8px; }
+  .kv { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; align-items: center; }
+  .kv b { font-size: 12px; color: var(--muted); }
+  code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; background: #fff; border: 1px solid var(--soft); border-radius: 4px;
+    padding: 4px 6px; overflow-wrap: anywhere; }
+  .err { color: var(--coral); font-weight: 700; font-size: 13px; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td, th { text-align: left; padding: 5px 4px; border-bottom: 1px solid var(--soft); }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--soft); margin-right: 6px; }
+  .dot.on { background: #3f9a67; } .dot.away { background: var(--gold); }
+  .ok { color: var(--mint-ink); font-weight: 800; } .miss { color: var(--coral); font-weight: 800; }
+  .empty { color: var(--muted); font-size: 13px; }
+  #login { max-width: 360px; margin: 80px auto; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } .kv { grid-template-columns: 1fr auto; } .kv b { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<header><h1 id="title">Office admin</h1><span id="sub"></span></header>
+
+<div id="login" class="card" hidden>
+  <h2>Admin key</h2>
+  <p class="note">On the server itself this page opens without a key. From another computer, enter the admin key
+    (shown by <code>make server</code>, saved in the world data folder as <code>admin-key</code>).</p>
+  <form id="loginForm"><input id="key" type="password" autocomplete="current-password" placeholder="Admin key" />
+    <div style="margin-top:10px"><button class="primary">Open admin</button></div></form>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<main id="app" hidden>
+  <section class="card wide">
+    <h2>Invite a computer <small>one single-use join token per machine</small></h2>
+    <p class="note">Name the machine (for your list), create the invite, then send the message to the person. They run one
+      command and paste the token on the page that opens.</p>
+    <form id="inviteForm" class="row">
+      <div><label for="device">Computer</label><input id="device" placeholder="e.g. Han's MacBook" maxlength="80" /></div>
+      <button class="primary" id="inviteBtn">Create invite</button>
+    </form>
+    <div class="err" id="inviteErr"></div>
+    <div class="result" id="result" hidden>
+      <div class="kv"><b>Join token</b><code id="rToken"></code><button data-copy="rToken">Copy</button></div>
+      <div class="kv"><b>macOS / Linux</b><code id="rMac"></code><button data-copy="rMac">Copy</button></div>
+      <div class="kv"><b>Windows</b><code id="rWin"></code><button data-copy="rWin">Copy</button></div>
+      <div><button class="primary" id="copyMsg">Copy message to send</button> <span class="note" id="copied"></span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>In the office <small id="presentCount"></small></h2>
+    <table><thead><tr><th>Person</th><th>Agents</th><th>Desk</th></tr></thead><tbody id="people"></tbody></table>
+  </section>
+
+  <section class="card">
+    <h2>Installer <small id="build"></small></h2>
+    <p class="note" id="pkg"></p>
+    <table><tbody id="platforms"></tbody></table>
+    <p class="note" style="margin-top:8px">Missing a platform? Put its <code>agentmesh-node</code> binary in
+      <code>dist/downloads/</code> under the name shown. Publish a new build with <code>make server</code> (or
+      <code>make bundle</code>); every Office then shows <em>Update available</em>.</p>
+  </section>
+
+  <section class="card wide">
+    <h2>Invites created <small>tokens are shown once; the list keeps their first letters</small></h2>
+    <table><thead><tr><th>Computer</th><th>Created</th><th>Token</th></tr></thead><tbody id="invites"></tbody></table>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id)
+let message = ''
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+
+async function call(path, body) {
+  const r = await fetch(path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {})
+  const data = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(data.detail || r.statusText)
+  return data
+}
+
+async function load() {
+  const o = await call('/admin/api/overview')
+  if (o.locked) { $('login').hidden = false; $('app').hidden = true; return }
+  $('login').hidden = true; $('app').hidden = false
+  const title = o.org ? `${o.org} Office` : 'Office'
+  document.title = `${title} admin`; $('title').textContent = `${title} admin`; $('sub').textContent = `server ${o.server}`
+  $('inviteBtn').disabled = !o.can_invite
+  if (!o.can_invite) $('inviteErr').textContent = 'Invites need the hub on this machine (agentmesh-one and hub/data). Start it with make server.'
+  const deskOf = Object.fromEntries(Object.entries(o.desks).map(([d, owner]) => [owner, d]))
+  const people = Object.entries(o.owners).filter(([name]) => !name.startsWith('zz'))
+  $('presentCount').textContent = `${people.filter(([, s]) => s.present).length} here now · ${people.filter(([, s]) => s.connected).length} online`
+  $('people').innerHTML = people.length ? people.map(([name, s]) => {
+    const agents = o.agents.filter((a) => a.owner === name).map((a) => esc(a.name)).join(', ') || '—'
+    const cls = s.present ? 'on' : s.connected ? 'away' : ''
+    return `<tr><td><span class="dot ${cls}"></span>${esc(name)}</td><td>${agents}</td><td>${esc(deskOf[name] || '—')}</td></tr>`
+  }).join('') : '<tr><td colspan="3" class="empty">Nobody has joined yet.</td></tr>'
+  $('build').textContent = o.build ? `build ${o.build}` : ''
+  $('pkg').innerHTML = o.package ? `Package <code>${esc(o.package)}</code> is ready.` : '<span class="miss">No package yet: run make server (or make bundle).</span>'
+  $('platforms').innerHTML = o.platforms.map((p) => `<tr><td>${esc(p.name)}</td><td><code>${esc(p.file)}</code></td><td class="${p.ready ? 'ok' : 'miss'}">${p.ready ? 'ready' : 'missing'}</td></tr>`).join('')
+  $('invites').innerHTML = o.invites.length ? o.invites.map((i) => `<tr><td>${esc(i.device)}</td><td>${new Date(i.created * 1000).toLocaleString()}</td><td><code>${esc(i.hint)}</code></td></tr>`).join('')
+    : '<tr><td colspan="3" class="empty">No invites yet.</td></tr>'
+}
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('loginErr').textContent = ''
+  try { await call('/admin/api/login', { key: $('key').value }); await load() } catch (err) { $('loginErr').textContent = err.message }
+})
+
+$('inviteForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('inviteErr').textContent = ''
+  const device = $('device').value.trim()
+  if (!device) { $('inviteErr').textContent = 'Name the computer first.'; return }
+  $('inviteBtn').disabled = true
+  try {
+    const r = await call('/admin/api/invites', { device })
+    $('rToken').textContent = r.token; $('rMac').textContent = r.mac; $('rWin').textContent = r.windows; message = r.message
+    $('result').hidden = false; $('copied').textContent = ''; $('device').value = ''
+    await load()
+  } catch (err) { $('inviteErr').textContent = err.message } finally { $('inviteBtn').disabled = false }
+})
+
+async function copy(text, where) {
+  try { await navigator.clipboard.writeText(text) } catch {
+    const t = document.createElement('textarea'); t.value = text; document.body.append(t); t.select(); document.execCommand('copy'); t.remove()
+  }
+  if (where) { where.textContent = 'Copied'; setTimeout(() => (where.textContent = ''), 1500) }
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-copy]')
+  if (b) { copy($(b.dataset.copy).textContent); b.textContent = 'Copied'; setTimeout(() => (b.textContent = 'Copy'), 1500) }
+})
+$('copyMsg').addEventListener('click', () => copy(message, $('copied')))
+
+load().catch((err) => { document.body.insertAdjacentHTML('beforeend', `<p class="err" style="padding:20px">${esc(err.message)}</p>`) })
+setInterval(() => { if (!$('app').hidden) load().catch(() => {}) }, 15000)
+</script>
+</body>
+</html>

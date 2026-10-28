@@ -39,6 +39,8 @@ It also serves the staff installer: `/install` and `/install.ps1` render `instal
 data) with the server address, newest wheel and `--org`; `/downloads/<name>` serves `dist/downloads` (safe names
 only). The installed node finds the dashboard in `agentfleet_node/static` (a repo checkout prefers
 `dashboard/dist`). `meshproc` runs `agentmesh-node run` itself, so nothing needs the repo at runtime.
+`admin.py` + `admin.html` are the `/admin` page (invites via `agentmesh-one token create`, office overview);
+localhost needs no key, the LAN needs `admin-key` (an HMAC cookie). Tests fake `agentmesh-one` on PATH.
 `service.py` manages an installed node (menu, background run with a pid file, opt-in start at login, update by
 re-running the installer, uninstall); `make bundle` writes `static/build.json`, which `/info` and `/api/update`
 compare. Test it with `HOME=<scratch> AGENTFLEET_PORT=<free port>` so it never touches a real install.

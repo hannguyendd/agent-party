@@ -473,10 +473,18 @@ def latest_build(downloads: Path | None) -> str:
         return ""
 
 
-def create_world_app(data_path: Path | None = None, downloads: Path | None = None, org: str = "") -> FastAPI:
+def create_world_app(data_path: Path | None = None, downloads: Path | None = None, org: str = "",
+                     hub_data: Path | None = None, hub_port: int = 7400) -> FastAPI:
     hub = WorldHub(WorldState(data_path, org.strip()[:60]))
     app = FastAPI(title="agentfleet world")
     app.state.hub = hub
+
+    # /admin: invite staff machines (join tokens + install commands) from a browser (admin.py).
+    from agentfleet_node.admin import AdminConfig, router as admin_router
+
+    admin_dir = data_path.parent if data_path else Path("./data")
+    app.state.admin = AdminConfig(admin_dir, hub_data, hub_port, downloads)
+    app.include_router(admin_router(app.state.admin, hub, latest_wheel, latest_build))
 
     # Staff machines install from here: `curl -fsSL http://<server>:7500/install | bash`. The script and the
     # files it fetches (node package, agentmesh-node per OS/arch) come from `downloads` (`make bundle`).

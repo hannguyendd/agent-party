@@ -1,0 +1,58 @@
+"""The office server's admin page: key-protected from the LAN, invites mint a token via agentmesh-one."""
+
+import os
+import stat
+
+from fastapi.testclient import TestClient
+
+from agentfleet_node.world import create_world_app
+
+
+def fake_agentmesh_one(tmp_path, monkeypatch, token="bt_abc123XYZ"):
+    """An agentmesh-one on PATH that prints a token like the real CLI and records its arguments."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    exe = bin_dir / "agentmesh-one"
+    exe.write_text(f'#!/bin/sh\necho "$@" > "{tmp_path}/args"\necho "Created bootstrap token"\necho "{token}"\n')
+    exe.chmod(exe.stat().st_mode | stat.S_IEXEC)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
+
+
+def admin_app(tmp_path, hub_data=True):
+    hub = tmp_path / "hub-data"
+    if hub_data:
+        hub.mkdir()
+    return create_world_app(tmp_path / "world" / "world.json", tmp_path / "downloads", "Taggle", hub, 7400)
+
+
+def test_admin_needs_the_key_from_the_lan_and_invites_mint_a_token(tmp_path, monkeypatch):
+    fake_agentmesh_one(tmp_path, monkeypatch)
+    app = admin_app(tmp_path)
+    c = TestClient(app)  # TestClient's address is not 127.0.0.1: like another machine on the LAN
+    assert "Invite a computer" in c.get("/admin").text
+    assert c.get("/admin/api/overview").json() == {"locked": True}
+    assert c.post("/admin/api/invites", json={"device": "Han's Mac"}).status_code == 401
+    assert c.post("/admin/api/login", json={"key": "nope"}).status_code == 401
+
+    key = (tmp_path / "world" / "admin-key").read_text().strip()
+    assert c.post("/admin/api/login", json={"key": key}).status_code == 200
+    o = c.get("/admin/api/overview").json()
+    assert o["locked"] is False and o["org"] == "Taggle" and o["can_invite"] is True
+
+    r = c.post("/admin/api/invites", json={"device": "Han's Mac"}, headers={"host": "10.0.0.5:7500"})
+    assert r.status_code == 200, r.text
+    inv = r.json()
+    assert inv["token"] == "bt_abc123XYZ"
+    assert "curl -fsSL http://10.0.0.5:7500/install | bash" in inv["message"] and "bt_abc123XYZ" in inv["message"]
+    assert "--max-usages 1" in (tmp_path / "args").read_text() and "Han's Mac" in (tmp_path / "args").read_text()
+    listed = c.get("/admin/api/overview").json()["invites"]
+    assert listed[0]["device"] == "Han's Mac" and listed[0]["hint"] == "bt_abc…"  # the full token isn't kept
+
+
+def test_invites_explain_why_they_cannot_be_made(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATH", "/nonexistent")
+    c = TestClient(admin_app(tmp_path))
+    key = (tmp_path / "world" / "admin-key").read_text().strip()
+    c.post("/admin/api/login", json={"key": key})
+    r = c.post("/admin/api/invites", json={"device": "x"})
+    assert r.status_code == 503 and "agentmesh-one" in r.json()["detail"]

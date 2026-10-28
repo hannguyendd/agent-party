@@ -44,6 +44,7 @@ up: ## Run this machine's node (dashboard + agents + mesh connection) at http://
 
 server: bundle ## Run hub + Office world server and serve the staff installer (HUB_HOST=<LAN IP> ORG="Taggle")
 	@test -n "$(HUB_HOST)" || { echo "usage: make server HUB_HOST=<fixed LAN IP or hostname>"; exit 1; }
+	@echo "Admin page (invite staff, see who is online): http://$(HUB_HOST):$(WORLD_PORT)/admin"
 	@echo "Staff install (macOS/Linux): curl -fsSL http://$(HUB_HOST):$(WORLD_PORT)/install | bash"
 	@echo "Staff install (Windows, PowerShell): irm http://$(HUB_HOST):$(WORLD_PORT)/install.ps1 | iex"
 	@trap 'kill 0' EXIT INT TERM; \
@@ -122,7 +123,7 @@ hub-token: ## Mint a single-use join token for a device (DEVICE="han laptop")
 	cd $(HUB_DIR) && HUB_PORT=$(HUB_PORT) ./mint-token.sh "$(DEVICE)"
 
 world: ## Run the Office world server (one per team, on the hub machine; port WORLD_PORT, default 7500)
-	cd $(NODE_DIR) && uv run agentfleet-node world --port $(WORLD_PORT) --downloads ../dist/downloads --org "$(ORG)"
+	cd $(NODE_DIR) && uv run agentfleet-node world --port $(WORLD_PORT) --downloads ../dist/downloads --org "$(ORG)" --hub-data ../hub/data --hub-port $(HUB_PORT)
 
 codegraph: ## Refresh the codegraph index (.codegraph/, local only)
 	codegraph sync .
