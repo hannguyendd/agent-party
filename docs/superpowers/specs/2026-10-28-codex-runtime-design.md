@@ -45,7 +45,7 @@ lets an owner create an agent that runs on **Codex**, so they can keep an agent 
 | Which Codex binary | The teammate's own `codex` whenever it is at least the tested minimum (newer than the pin → still used, with a "newer than tested" note). The CLI bundled with the SDK (`openai-codex-cli-bin`) only when theirs is missing or too old. Each release bumps the SDK pin (`docs/RELEASE.md` step). |
 | Saved approvals and hooks | Turned off for mesh Codex agents (config override, verified in the prototype): the user's saved "always allow" command rules and their hooks don't apply. Approval depends only on the agent's Office settings. |
 | Sandbox | A hard limit: an approval never lets a command escape it. An accepted Assignment raises a `read_only` agent to `workspace_write` for that conversation only. Network is a separate toggle, off by default. |
-| Packaging | `openai-codex` is a normal dependency (option 1): every install also downloads the pinned CLI. |
+| Packaging | `openai-codex` is an **optional extra** `agentfleet-node[codex]` (the pinned CLI it pulls is ~306 MB on disk, measured). `install.sh` / `install.ps1` install the extra when the host has Codex (`codex` on PATH or `~/.codex/auth.json`), on every install and update. Settings offers **Set up Codex agents** (re-runs the installer, like Update) when Codex is found but the extra is missing. Claude-only hosts download nothing extra. |
 | Codex home | The teammate's normal `~/.codex` (config, `AGENTS.md`, hooks) **is loaded**, plus the project's own setup. The UI warns about it (hint below). |
 | Personal MCP servers | Turned off for mesh Codex agents **if** a config override can do it (verify in the prototype; if not, stop and ask the owner). |
 | Visibility | Codex is offered only when the node finds it installed and signed in (table below). |
@@ -98,7 +98,8 @@ New `codex_status()` in `api.py`, next to `claude_status()`, returned as `setup[
   with). `newer_than_tested`: version > the pinned SDK version (informational note in the UI).
 - `binary`: `own` when compatible, else `bundled` (the SDK's default resolver). Never fall back to the bundled
   binary when the user's own is newer: an older Codex must not read a `~/.codex` written by a newer one.
-- `usable`: `logged_in`. (`installed` but not signed in → shown disabled.)
+- `sdk_installed`: `importlib.util.find_spec("openai_codex") is not None`.
+- `usable`: `logged_in and sdk_installed`. (`installed` but not signed in → shown disabled; signed in but no SDK → Settings shows **Set up Codex agents**.)
 
 Each call runs the checks fresh (fast subprocesses, a 5 s timeout each). They are only made when Settings or the
 create form opens.
@@ -257,7 +258,7 @@ copy with the names Codex shows, which the prototype confirms. Everything else i
 | 9 | Model names per runtime | Validated loosely: the node passes the name through; Codex rejects bad names, and the turn errors. The front-end lists models per runtime. |
 | 10 | Tool names differ | Mapping above; Codex default allow-list drops `Read`. |
 | 11 | No dollar cost | `cost_usd` 0, tokens logged. |
-| 12 | Bundled CLI size | Accepted (option 1). |
+| 12 | Bundled CLI size (~306 MB) | Only on hosts with Codex (optional extra, installed when the installer detects Codex). |
 | 13 | Teammate's Codex version drifts after creation | Status is re-checked when a session starts. Newer → still their own (note). Below the minimum → bundled, and the setup check says so. |
 | 19 | Saved "always allow" rules or hooks in `~/.codex` | Overridden off; prototype stop condition if that's impossible. |
 | 20 | Approved command needs to leave the sandbox or reach the network | Declined; the owner turns on the network toggle or changes the sandbox on the agent. |

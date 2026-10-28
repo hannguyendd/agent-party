@@ -17,7 +17,7 @@ reasoning).
 
 ## Global Constraints
 
-- `openai-codex==0.163.0` exact pin, a normal dependency of `node-server` (pulls `openai-codex-cli-bin`).
+- `openai-codex==0.163.0` exact pin as the optional extra `codex` of `node-server` (pulls `openai-codex-cli-bin`, ~306 MB). Code imports `openai_codex` lazily, only inside `SdkCodexSession`; the node must start and `make test` must pass without the extra.
 - `Agent.runtime` ∈ `{"claude", "codex"}`, default `"claude"`, immutable after creation (422 on change).
 - `Agent.runtime_options` keys for Codex only: `sandbox` (`"read_only" | "workspace_write"`, default
   `"workspace_write"`), `network` (bool, default `false`), `web_search` (bool, default `false`). Unknown keys → 422.
@@ -149,7 +149,7 @@ git commit -m "docs: Codex runtime prototype findings"
   - `Agent.runtime: str = "claude"`, `Agent.runtime_options: dict[str, Any]` (JSON column, default `{}`).
   - `CODEX_DEFAULT_ALLOWED_TOOLS: tuple[str, ...]` in `models.py` (values in Global Constraints).
   - `CODEX_OPTION_DEFAULTS = {"sandbox": "workspace_write", "network": False, "web_search": False}` in `runtimes/codex.py`.
-  - `codex_status(run: Callable = subprocess.run, which: Callable = shutil.which, home: Path | None = None) -> dict` returning `installed, path, version, logged_in, auth_mode, compatible, newer_than_tested, binary, usable` (spec "Detecting Codex"). `CODEX_MIN: str`, `CODEX_PINNED = "0.163.0"`.
+  - `codex_status(run: Callable = subprocess.run, which: Callable = shutil.which, home: Path | None = None) -> dict` returning `installed, path, version, logged_in, auth_mode, compatible, newer_than_tested, binary, sdk_installed, usable` (spec "Detecting Codex"). `CODEX_MIN: str`, `CODEX_PINNED = "0.163.0"`.
   - `codex_bin_for(status: dict) -> str | None` — own path when `binary == "own"`, else `None` (SDK resolves bundled).
   - `/api/setup` → `"codex": codex_status()`.
 
@@ -171,11 +171,15 @@ git commit -m "docs: Codex runtime prototype findings"
     - auth file present, `codex login status` failing → `logged_in=True` via the fallback.
     - API-key login → `auth_mode="api_key"`.
   - `test_setup_includes_codex`: `GET /api/setup` has a `codex` key.
+  - `test_codex_usable_needs_sdk`: signed in but `find_spec` patched to `None` → `sdk_installed=False, usable=False`.
+  - `test_installer_adds_codex_extra` (in `test_installer.py`): the rendered `install.sh` contains the Codex detection and installs `"$tmp/$WHEEL[codex]"` on that branch; same for `install.ps1`.
+  - `test_codex_setup_route`: `POST /api/codex/setup` with `codex` not found → 409; found → the update runner (patched) is called.
   - `test_fork_codex_conversation_409`: a Codex agent's conversation → `POST /api/conversations/{id}/fork` → 409.
 - [ ] **Step 2:** Run `cd node-server && uv run pytest tests/test_runtime_api.py -v`. Expected: FAIL (fields and
   `codex_status` missing).
 - [ ] **Step 3:** Implement:
-  - `uv add openai-codex==0.163.0`.
+  - `uv add --optional codex openai-codex==0.163.0`; dev sync includes it (`uv sync --extra codex` in the Makefile's test/setup targets) so Task 4's real `SdkCodexSession` import is checkable.
+  - Installers: `install.sh` / `install.ps1` add `[codex]` to the wheel spec when `codex` is on PATH or `~/.codex/auth.json` exists; the rendered-template tests in `test_installer.py` get a case for each. `POST /api/codex/setup` re-runs the installer detached with the same mechanism as `service.update` (409 when `codex` isn't found).
   - The model fields.
   - `AgentIn`: `runtime: Literal["claude","codex"] | None = None`, `runtime_options: dict[str, Any] | None = None`,
     and `allowed_tools: list[str] | None = None`. `None` means the runtime's default, so `upsert_agent` can tell
