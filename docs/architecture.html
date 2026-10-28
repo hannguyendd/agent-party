@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Fleet Architecture</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66;
+    --line: #e2e1dc; --accent: #c2410c; --accent-soft: #fdebe1; --code: #f1f0ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --panel: #1e1e1c; --text: #ecebe6; --muted: #9a9993;
+      --line: #33332f; --accent: #f08a4b; --accent-soft: #3a2519; --code: #2a2a27;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413; --panel: #1e1e1c; --text: #ecebe6; --muted: #9a9993;
+    --line: #33332f; --accent: #f08a4b; --accent-soft: #3a2519; --code: #2a2a27;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 28px 16px 8px; max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); }
+  nav { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); }
+  nav .inner { max-width: 1100px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 6px; overflow-x: auto; }
+  nav button { flex: none; border: 1px solid var(--line); background: var(--panel); color: var(--text);
+    padding: 6px 12px; border-radius: 999px; font: inherit; font-size: 13px; cursor: pointer; }
+  nav button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  section { display: none; }
+  section.active { display: block; }
+  h2 { font-size: 18px; margin: 0 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 16px; max-width: 75ch; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; overflow-x: auto; }
+  .mermaid { display: flex; justify-content: center; min-width: 560px; }
+  .notes { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 16px; }
+  .note { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+  .note b { display: block; margin-bottom: 2px; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Internal Agent Fleet — kiến trúc</h1>
+  <p>Claude Code agent của từng người nói chuyện với nhau qua A2A trên Agent Mesh. Ghi chú chữ: <code>docs/NOTES.md</code>.</p>
+</header>
+<nav><div class="inner" role="tablist" id="tabs"></div></nav>
+<main>
+
+<section id="topology" data-title="Topology">
+  <h2>Topology: hub, máy, agent</h2>
+  <p class="lead">Một hub cho cả team. Mỗi máy chạy hai tiến trình: <code>agentmesh-node</code> (mạng) và node-server (agent + dashboard).</p>
+  <div class="card"><pre class="mermaid">
+flowchart LR
+  subgraph HUB["Hub — máy LAN luôn bật"]
+    ONE["agentmesh-one :7400<br/>control plane · router · console<br/>policy.json · join token"]
+  end
+  subgraph A["Máy của han"]
+    direction TB
+    DA["Dashboard (React)<br/>served ở /"] -->|REST /api + WS /api/ws| NA["node-server :9100<br/>FastAPI + Claude Agent SDK"]
+    NA -->|ClaudeSDKClient| CA["Claude CLI sessions"]
+    NA -->|discover · /mesh proxy| MA["agentmesh-node :8080"]
+    MA -->|"/a2a/han.backend-agent/"| NA
+  end
+  subgraph B["Máy của bob"]
+    direction TB
+    NB["node-server :9100"] --> MB["agentmesh-node :8080"]
+    MB --> NB
+  end
+  MA <-->|enroll · policy · relay| ONE
+  MB <-->|enroll · policy · relay| ONE
+  MA <-.->|A2A qua mesh| MB
+  </pre></div>
+  <div class="notes">
+    <div class="note"><b>Tên service</b><code>han/backend-agent</code> → <code>han.backend-agent</code> (mesh không cho <code>/</code>). Logic ở <code>naming.py</code>.</div>
+    <div class="note"><b>Restart mesh node</b>Thêm/xoá agent → node-server ghi lại <code>agentmesh-node.yaml</code> → phải restart <code>agentmesh-node</code>.</div>
+    <div class="note"><b>Vì sao cần agentmesh-node</b>Python SDK của mesh gọi được nhưng không publish service được.</div>
+  </div>
+</section>
+
+<section id="inbound" data-title="Inbound">
+  <h2>Inbound: peer gọi agent của mình</h2>
+  <p class="lead">Mỗi A2A message thành một lượt của Claude session gắn với <code>contextId</code>.</p>
+  <div class="card"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant P as Peer agent
+  participant M as agentmesh-node
+  participant G as A2AGateway
+  participant X as MeshAgentExecutor
+  participant S as SessionManager
+  participant W as SessionWorker
+  participant C as Claude CLI
+  P->>M: A2A SendMessage (contextId, metadata.from_agent)
+  M->>G: POST /a2a/han.backend-agent/
+  G->>X: execute()
+  X->>X: find/create Conversation(agent_id, contextId)
+  X->>X: turn_count ≥ 20? → reject
+  X->>X: lưu file inline vào inbox/
+  X->>S: handle_inbound(format_prompt → mesh_message)
+  alt mode = manual
+    S->>S: _wait_for_owner (owner trả lời tay)
+  else mode = auto
+    S->>W: run_turn(prompt) [_turn_lock]
+    W->>C: query()
+    C-->>W: stream delta / tool_use / ResultMessage
+  end
+  W-->>X: TurnResult
+  alt error
+    X-->>P: failed
+  else needs_input
+    X-->>P: input-required (peer gửi tiếp cùng contextId + taskId)
+  else
+    X-->>P: completed
+  end
+  </pre></div>
+</section>
+
+<section id="outbound" data-title="Outbound">
+  <h2>Outbound: agent của mình gọi peer</h2>
+  <p class="lead">Agent dùng mesh tool. Địa chỉ được resolve theo thứ tự: local → static peer → mesh discovery.</p>
+  <div class="card"><pre class="mermaid">
+flowchart TD
+  T["Claude gọi mcp__mesh__send_message / share_file"] --> O["OutboundClient.send"]
+  O --> R{"MeshDirectory.resolve(to)"}
+  R -->|agent cùng máy| L["Gọi thẳng /a2a/&lt;service&gt;/ local"]
+  R -->|owner có trong static_peers| SP["Gọi thẳng node kia (dev/test)"]
+  R -->|GET /mesh/service/discover| D["Proxy /mesh/&lt;peer-id&gt;/a2a/&lt;service&gt;/"]
+  R -->|không thấy| OFF["AgentOffline — fail ngay, không queue"]
+  L --> H["HTTP blocking, chờ hết lượt bên kia<br/>(≤ outbound_timeout_s 900s)"]
+  SP --> H
+  D --> H
+  H --> REP["Trả tool result: reply · state · context_id · task_id"]
+  REP --> T
+  </pre></div>
+  <div class="notes">
+    <div class="note"><b>Tiếp tục hội thoại</b>Truyền lại <code>context_id</code>; nếu state là <code>input_required</code> thì truyền cả <code>task_id</code>.</div>
+    <div class="note"><b>Danh tính</b>Người nhận chỉ thấy <code>agentfleet.from_agent</code> trong metadata — lời khai, không được xác thực.</div>
+  </div>
+</section>
+
+<section id="policy" data-title="Tool policy">
+  <h2>Tool policy: allow / deny / ask</h2>
+  <p class="lead">Một nguồn sự thật: <code>sessions.policy_decision</code>, gọi từ cả hook <code>PreToolUse</code> và <code>can_use_tool</code>.</p>
+  <div class="card"><pre class="mermaid">
+flowchart TD
+  U["Claude muốn dùng tool"] --> HK["PreToolUse hook<br/>(luôn chạy)"]
+  U --> CU["can_use_tool<br/>(CLI bỏ qua với lệnh read-only)"]
+  HK --> PD{"policy_decision"}
+  CU --> PD
+  PD -->|match denied_tools| DENY["deny"]
+  PD -->|mcp__mesh__* · ToolSearch · match allowed_tools| ALLOW["allow"]
+  PD -->|còn lại| ASK["ask → tạo Approval<br/>status = awaiting_approval"]
+  ASK --> OW{"Owner bấm trên dashboard"}
+  OW -->|Approve| ALLOW
+  OW -->|Deny| DENY
+  OW -->|hết 300s| TO["timed_out → deny"]
+  </pre></div>
+  <div class="notes">
+    <div class="note"><b>Chặn nối lệnh</b><code>Bash(ls*)</code> không match <code>ls; rm -rf ~</code>: có <code>; &amp; | ` &lt; &gt; $(</code> hoặc xuống dòng là không match.</div>
+    <div class="note"><b>Allow mặc định</b><code>Read</code>, <code>Bash(ls*)</code>, <code>Bash(rg *)</code>, <code>Bash(grep *)</code>, <code>Bash(git status*|log*|diff*)</code>.</div>
+    <div class="note"><b>Không có Glob/Grep</b>CLI hiện tại không có hai tool này; tìm kiếm đi qua Bash.</div>
+  </div>
+</section>
+
+<section id="states" data-title="Trạng thái">
+  <h2>Trạng thái conversation</h2>
+  <p class="lead">Field <code>status</code> trong bảng <code>conversations</code>. Dashboard tô màu theo trạng thái này.</p>
+  <div class="card"><pre class="mermaid">
+stateDiagram-v2
+  [*] --> idle
+  idle --> running: run_turn / message tới
+  running --> awaiting_approval: tool cần duyệt
+  awaiting_approval --> running: approve / deny / timeout
+  running --> idle: ResultMessage OK
+  running --> error: lỗi / turn timeout 600s
+  running --> interrupted: Stop / Take over
+  interrupted --> awaiting_owner: inbound đang chờ
+  idle --> awaiting_owner: mode = manual khi message tới
+  awaiting_owner --> idle: owner reply / hand back / timeout 900s
+  idle --> running: hand back → agent chạy tiếp
+  </pre></div>
+  <div class="notes">
+    <div class="note"><b>Direction</b><code>inbound</code> (peer mở), <code>outbound</code> (agent mình mở), <code>local</code> (owner chạy riêng hoặc fork).</div>
+    <div class="note"><b>Mode</b><code>auto</code>: agent trả lời. <code>manual</code>: owner trả lời tay.</div>
+  </div>
+</section>
+
+<section id="owner" data-title="Owner controls">
+  <h2>Owner controls</h2>
+  <p class="lead">Mọi nút trên dashboard là một REST call; kết quả quay về qua WebSocket.</p>
+  <div class="card"><pre class="mermaid">
+sequenceDiagram
+  participant O as Owner (dashboard)
+  participant API as /api
+  participant S as SessionManager
+  participant W as SessionWorker
+  participant P as Peer đang chờ
+  O->>API: POST /takeover
+  API->>S: mode = manual
+  S->>W: interrupt()
+  Note over S,P: Inbound đang chạy → _wait_for_owner
+  alt Owner trả lời tay
+    O->>API: POST /reply {text}
+    API->>S: manual_reply → resolve gate
+    S-->>P: text của owner
+  else Trả lại cho agent
+    O->>API: POST /handback
+    API->>S: mode = auto → resolve gate
+    S->>W: run_turn("Continue where you left off…")
+    W-->>P: câu trả lời của agent
+  end
+  </pre></div>
+  <div class="card" style="margin-top:16px">
+    <table>
+      <tr><th>Nút</th><th>Endpoint</th><th>Hiệu ứng</th></tr>
+      <tr><td>Inject</td><td><code>/inject</code></td><td>Đang chạy: chèn vào lượt hiện tại. Rảnh: lượt local, peer không thấy.</td></tr>
+      <tr><td>Stop</td><td><code>/interrupt</code></td><td><code>client.interrupt()</code>, inbound chuyển sang chờ owner.</td></tr>
+      <tr><td>Take over / Hand back</td><td><code>/takeover</code> · <code>/handback</code></td><td>Đổi mode manual ↔ auto.</td></tr>
+      <tr><td>Reply</td><td><code>/reply</code></td><td>Trả lời peer bằng tay. 409 nếu không ai chờ.</td></tr>
+      <tr><td>Fork</td><td><code>/fork</code></td><td>Copy Claude session thành conversation local mới.</td></tr>
+      <tr><td>Approve / Deny</td><td><code>/api/approvals/{id}</code></td><td>Quyết định tool đang chờ.</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="data" data-title="Dữ liệu & event">
+  <h2>Dữ liệu và luồng event</h2>
+  <p class="lead">Mọi ghi đi qua <code>Store</code>: lưu SQLite rồi publish lên EventBus → WebSocket → reducer duy nhất ở dashboard.</p>
+  <div class="card"><pre class="mermaid">
+erDiagram
+  agents ||--o{ conversations : "agent_id"
+  conversations ||--o{ messages : "conversation_id"
+  conversations ||--o{ approvals : "conversation_id"
+  conversations ||--o{ files : "conversation_id"
+  agents { string id PK "owner/name" string working_dir json allowed_tools json denied_tools bool enabled "soft delete" }
+  conversations { string id PK string agent_id FK string context_id "unique với agent_id" string direction string session_id "Claude session" string status string mode int turn_count }
+  messages { string id PK string role "peer agent owner tool system" string kind "text tool_use tool_result status file" string content json data }
+  approvals { string id PK string tool_name json tool_input string status "pending allowed denied timed_out" }
+  files { string id PK string direction "received sent" string path int size }
+  audit_log { int id PK string event json detail "metadata only, no body" }
+  </pre></div>
+  <div class="card" style="margin-top:16px"><pre class="mermaid">
+flowchart LR
+  W["SessionWorker / Executor / API"] -->|add_message, set_status…| ST["store.Store"]
+  ST --> DB[("SQLite data/node.db")]
+  ST -->|publish| BUS["EventBus"]
+  W -->|"stream_delta (không lưu)"| BUS
+  BUS -->|/api/ws| WS["useLiveState<br/>applyEvent reducer"]
+  REST["REST snapshot"] --> WS
+  WS --> UI["Components"]
+  </pre></div>
+  <div class="notes">
+    <div class="note"><b>Event types</b><code>hello</code> · <code>agent</code> · <code>agent_removed</code> · <code>conversation</code> · <code>message</code> · <code>delta</code> · <code>approval</code> · <code>mesh</code></div>
+    <div class="note"><b>Mirror viết tay</b><code>dashboard/src/api.ts</code> phải khớp <code>api.py</code>, <code>models.py</code>, event trong <code>store.py</code>. Sửa cả hai trong một commit.</div>
+    <div class="note"><b>Audit</b><code>store.redact</code> bỏ mọi key chứa text/content/body/prompt/input/message. PHI không được vào audit.</div>
+  </div>
+</section>
+
+</main>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'neutral', securityLevel: 'strict',
+    flowchart: { htmlLabels: true, curve: 'basis' }, sequence: { mirrorActors: false } });
+
+  const sections = [...document.querySelectorAll('section')];
+  const tabs = document.getElementById('tabs');
+  const rendered = new Set();
+
+  async function show(id) {
+    for (const s of sections) s.classList.toggle('active', s.id === id);
+    for (const b of tabs.children) b.setAttribute('aria-selected', String(b.dataset.id === id));
+    if (!rendered.has(id)) {
+      rendered.add(id);
+      // Mermaid can only measure visible nodes, so render each tab when it first opens.
+      await mermaid.run({ nodes: document.querySelectorAll(`#${id} .mermaid`) });
+    }
+    try { localStorage.setItem('fleet-tab', id); } catch {}
+  }
+
+  for (const s of sections) {
+    const b = document.createElement('button');
+    b.role = 'tab'; b.dataset.id = s.id; b.textContent = s.dataset.title;
+    b.onclick = () => show(s.id);
+    tabs.append(b);
+  }
+  let start = 'topology';
+  try { start = localStorage.getItem('fleet-tab') || start; } catch {}
+  show(sections.some((s) => s.id === start) ? start : 'topology');
+</script>
+</body>
+</html>
