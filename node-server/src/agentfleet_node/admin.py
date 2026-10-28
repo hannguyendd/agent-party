@@ -12,6 +12,7 @@ the rest of v1.
 import hashlib
 import hmac
 import json
+import os
 import re
 import secrets
 import shutil
@@ -23,6 +24,8 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
+
+from agentfleet_node import installer
 
 PAGE = Path(__file__).with_name("admin.html")
 # What the installer looks for, per platform (see install.sh / install.ps1).
@@ -266,12 +269,22 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
         title = f"{hub.state.org} Office" if hub.state.org else "the Office"
         mac = f"curl -fsSL http://{host}/install | bash"
         win = f"irm http://{host}/install.ps1 | iex"
+        # The same installer from the GitHub release of the version this server serves, for a computer that can't
+        # download from the server (it still has to reach it afterwards to use the Office).
+        github = installer.release_base(os.environ.get("AGENTFLEET_RELEASE_REPO", installer.DEFAULT_REPO),
+                                        installer.wheel_version(latest_wheel(cfg.downloads)))
+        mac_gh = f"curl -fsSL {github}/install.sh | bash -s -- --server {host}" if github else ""
+        win_gh = f"$env:AGENTMESH_SERVER='{host}'; irm {github}/install.ps1 | iex" if github else ""
         message = (
             f"Hi! Here is how to join {title} on your computer.\n\n"
             f"1. Install Claude Code and log in (if you haven't): https://docs.claude.com/claude-code\n"
             f"2. Run this once:\n   macOS / Linux (Terminal): {mac}\n   Windows (PowerShell): {win}\n"
-            f"3. On the page that opens, enter your name and this join token (single use):\n   {token}\n"
+            + (f"   If that can't download, use the copy on GitHub instead:\n"
+               f"   macOS / Linux: {mac_gh}\n   Windows: {win_gh}\n" if github else "")
+            + f"3. On the page that opens, enter your name and this join token (single use):\n   {token}\n"
+            f"   Office server: {host}\n"
         )
-        return {"device": device, "token": token, "mac": mac, "windows": win, "message": message, "raw": raw}
+        return {"device": device, "token": token, "mac": mac, "windows": win, "mac_github": mac_gh, "windows_github": win_gh,
+                "message": message, "raw": raw}
 
     return r

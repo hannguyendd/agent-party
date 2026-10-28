@@ -12,7 +12,7 @@ Assignment, Party, Present, Recap…) is defined in `CONTEXT.md`; use those word
 - `node-server/`: Python node server, one per device. Runs the agents and speaks A2A. The same package also runs
   the team **world server** (`agentfleet-node world`, `make world`) on the hub machine for the Office.
 - `dashboard/`: React app served by the node server: the Office screen plus Settings.
-- `docs/`: `GUIDE.md` (how admins and staff run and use the Office), `NOTES.md` (repo overview), `adr/` (decisions),
+- `docs/`: `GUIDE.md` (how admins and staff run and use the Office), `RELEASE.md` (publishing versions), `NOTES.md` (repo overview), `adr/` (decisions),
   `office/` (art brief and Codex prompts).
 - `design/office-style/`: art sources and export scripts for the Office (owned by the art workflow, see below).
 - `CONTEXT.md`: domain glossary for the Office.
@@ -36,6 +36,13 @@ Each has its own CLAUDE.md. Commands live in the root `Makefile` (`make help`).
 - **Art vs code**: images, map plates, collision grid, seats and `dashboard/public/office/manifest.json` come from
   the art workflow (Codex, prompts in `docs/office/CODEX-PROMPTS.md`, rules in `design/office-style/`). Code reads
   the manifest and never hard-codes art. Art requests that need code go to `design/office-style/REQUESTS.md`.
+
+## Releases
+
+Staff get versions through `make release` (`scripts/release.sh`: bump, tag, push) and the GitHub Actions workflow
+that publishes the package + installers to a GitHub Release; the office server serves the same version
+(`git pull && make server`, built with bun or downloaded from the release). Never bump versions or push tags by hand.
+Details and the agent checklist: `docs/RELEASE.md`.
 
 ## Done means
 

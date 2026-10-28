@@ -45,6 +45,8 @@ def test_admin_needs_the_key_from_the_lan_and_invites_mint_a_token(tmp_path, mon
     inv = r.json()
     assert inv["token"] == "bt_abc123XYZ"
     assert "curl -fsSL http://10.0.0.5:7500/install | bash" in inv["message"] and "bt_abc123XYZ" in inv["message"]
+    # No package on the server in this test, so no version: no GitHub commands either.
+    assert inv["mac_github"] == "" and "GitHub" not in inv["message"]
     assert "--max-usages 1" in (tmp_path / "args").read_text() and "Han's Mac" in (tmp_path / "args").read_text()
     listed = c.get("/admin/api/overview").json()["invites"]
     assert listed[0]["device"] == "Han's Mac" and listed[0]["hint"] == "bt_abc…"  # the full token isn't kept
@@ -126,3 +128,16 @@ def test_the_token_is_found_whatever_else_the_hub_prints():
     assert parse_token("Created bootstrap token\nToken: bt_Q7x9demoTOKEN42abc\nExpires: 2026-11-04T10:00:00Z\n") == "bt_Q7x9demoTOKEN42abc"
     assert parse_token("ID: 3f2a8c1e-1b2c-4d5e-8f90-1234567890ab\nbootstrap token = Zk9xQ2ZsT3B6aXJ3MWVhcQ\nmax usages: 1\n2026-11-04 10:00:00") == "Zk9xQ2ZsT3B6aXJ3MWVhcQ"
     assert parse_token("ok\nexpires 2026-11-04T10:00:00Z") is None
+
+
+def test_invites_carry_the_github_commands_for_the_served_version(tmp_path, monkeypatch):
+    fake_agentmesh_one(tmp_path, monkeypatch)
+    (tmp_path / "downloads").mkdir()
+    (tmp_path / "downloads" / "agentfleet_node-0.4.2-py3-none-any.whl").write_bytes(b"w")
+    c = TestClient(admin_app(tmp_path))
+    c.post("/admin/api/login", json={"key": (tmp_path / "world" / "admin-key").read_text().strip()})
+    inv = c.post("/admin/api/invites", json={"device": "Bob's PC"}, headers={"host": "10.0.0.5:7500"}).json()
+    base = "https://github.com/hannguyendd/internal-agent-fleet/releases/download/v0.4.2"
+    assert inv["mac_github"] == f"curl -fsSL {base}/install.sh | bash -s -- --server 10.0.0.5:7500"
+    assert inv["windows_github"] == f"$env:AGENTMESH_SERVER='10.0.0.5:7500'; irm {base}/install.ps1 | iex"
+    assert inv["mac_github"] in inv["message"] and "Office server: 10.0.0.5:7500" in inv["message"]

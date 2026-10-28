@@ -1,0 +1,57 @@
+# Builds and publishes a release when a version tag is pushed (scripts/release.sh does that).
+# The Release gets: the node package (dashboard inside), install.sh / install.ps1 / uninstall.* filled in for
+# downloading from this release, and SHA256SUMS. Staff can install from it when the office server can't serve
+# the download; the office server can also fetch the package from it (make bundle without bun). See docs/RELEASE.md.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag matches the package version
+        run: |
+          v=$(sed -n 's/^version = "\(.*\)"$/\1/p' node-server/pyproject.toml | head -1)
+          test "v$v" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME but pyproject says $v"; exit 1; }
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Tests
+        run: cd node-server && uv run pytest -q
+
+      - name: Dashboard
+        run: cd dashboard && bun install --frozen-lockfile && bun run lint && bun run build
+
+      - name: Node package (dashboard inside)
+        run: |
+          rm -rf node-server/src/agentfleet_node/static
+          cp -R dashboard/dist node-server/src/agentfleet_node/static
+          printf '{"build": "%s"}\n' "$GITHUB_REF_NAME" > node-server/src/agentfleet_node/static/build.json
+          mkdir -p out
+          cd node-server && uv build --wheel --out-dir ../out
+
+      - name: Installers for this release
+        run: |
+          wheel=$(cd out && ls agentfleet_node-*.whl)
+          amversion=$(sed -n 's/^AGENTMESH_VERSION ?= //p' Makefile)
+          cd node-server && uv run python -m agentfleet_node.installer --wheel "$wheel" --out ../out \
+            --repo "$GITHUB_REPOSITORY" --amversion "$amversion"
+          cd ../out && sha256sum * > SHA256SUMS && ls -l
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" out/* --title "$GITHUB_REF_NAME" --generate-notes \
+            --notes "Staff install: see docs/GUIDE.md (Staff > Install). Admin: git pull && make server on the office server."

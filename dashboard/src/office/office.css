@@ -1596,3 +1596,18 @@ button.dock-pill:hover { border-color: var(--o-line); }
 .office-me:hover, .office-me.is-active { background: #f3efff; }
 .office-me span { color: var(--o-bar); font-weight: 600; }
 .office-me .o-icon { filter: brightness(.6); }
+
+/* Claude Code check (setup page + Settings > This computer) */
+.o-claude-check { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; padding: 10px 12px; text-align: left; border-radius: 10px; border: 2px solid; }
+.o-claude-check.is-ok { background: var(--o-ok-bg); border-color: var(--o-ok); color: var(--o-ok-ink); }
+.o-claude-check.is-todo { background: var(--o-warn-bg); border-color: var(--o-warn); color: var(--o-ink); }
+.o-claude-check strong { font-size: 14px; font-weight: 800; }
+.o-claude-check p, .o-claude-check small { font-size: 12.5px; color: var(--o-ink); }
+.o-claude-check small { color: var(--o-muted); }
+.o-claude-check a { color: var(--o-info-ink); text-decoration: underline; }
+.o-claude-check > .btn { align-self: flex-start; }
+.o-claude-cmd { display: flex; align-items: center; gap: 8px; }
+.o-claude-cmd code { flex: 1; padding: 6px 10px; font-size: 13px; font-weight: 700; background: #2f2b5c; color: #fff; border-radius: 6px; }
+.settings-card.is-danger { border-color: var(--o-err); }
+.settings-confirm { display: flex; flex-direction: column; gap: 8px; }
+.settings-confirm label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }

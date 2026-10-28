@@ -230,6 +230,9 @@ def test_world_serves_the_staff_installer_and_the_org_name(tmp_path):
     assert 'ORG="Taggle rm -rf "' in sh  # quotes, ; and ~ are stripped: the name can't break out of the string
     ps1 = c.get("/install.ps1", headers={"host": "10.0.0.5:7500"}).text
     assert "$Server = '10.0.0.5:7500'" in ps1 and "__SERVER__" not in ps1
+    # Fallback when the server's download fails: the GitHub release of the same version.
+    assert 'GITHUB="https://github.com/hannguyendd/internal-agent-fleet/releases/download/v0.1.0"' in sh
+    assert "__" not in sh.replace("__pycache__", "")
     assert c.get("/downloads/agentmesh-node-darwin-arm64").content == b"bin"
     assert c.get("/downloads/..%2Fworld.json").status_code == 404
     assert c.get("/downloads/missing").status_code == 404

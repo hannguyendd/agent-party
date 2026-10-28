@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Agent Mesh: remove this machine's node. Served by the team's office server:
-#   curl -fsSL http://__SERVER__/uninstall | bash
+#   curl -fsSL http://<office server>:7500/uninstall | bash   (or Settings > This computer > Uninstall)
 # Stops the node, removes start-at-login, the Office shortcut and the package (and agentmesh-node if the installer
 # put it there). Your agents and chats in ~/.agentfleet are kept unless you say so.
 set -uo pipefail

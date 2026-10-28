@@ -23,6 +23,8 @@ HUB_DATA ?= ../hub/data
 AGENTMESH_ONE ?=
 # Agent Mesh release used for agentmesh-node (staff) and agentmesh-one (hub); the stack was verified on rc.10.
 AGENTMESH_VERSION ?= v0.1.0-rc.10
+# This checkout's version (scripts/release.sh bumps it); an office server without bun serves that GitHub release.
+VERSION := $(shell sed -n 's/^version = "\(.*\)"$$/\1/p' node-server/pyproject.toml | head -1)
 # Where `make server` puts tools it installs (on PATH for the targets below).
 LOCAL_BIN := $(HOME)/.local/bin
 export PATH := $(LOCAL_BIN):$(HOME)/.bun/bin:$(PATH)
@@ -62,7 +64,18 @@ server: server-check bundle ## Run hub + Office world server + staff installer; 
 	$(MAKE) --no-print-directory world & \
 	wait
 
-bundle: ## Build what the staff installer serves: node package with the dashboard inside (+ this OS's agentmesh-node)
+bundle: ## What the staff installer serves: node package with the dashboard inside (built here with bun, else the GitHub release) + agentmesh-node
+	@if ! command -v bun >/dev/null; then \
+	  echo "bun is not installed: using the released package for v$(VERSION) from GitHub instead of building it."; \
+	  ./scripts/fetch-release.sh $(VERSION) dist/downloads; \
+	else $(MAKE) --no-print-directory bundle-build; fi
+	@# agentmesh-node for every staff platform, from the official release (checksums verified); kept until the version changes.
+	@if [ "$$(cat dist/downloads/agentmesh.version 2>/dev/null)" != "$(AGENTMESH_VERSION)" ]; then \
+	  echo "Fetching agentmesh-node $(AGENTMESH_VERSION) for macOS, Linux and Windows..."; \
+	  ./scripts/fetch-agentmesh.sh $(AGENTMESH_VERSION) node dist/downloads; fi
+	@ls dist/downloads
+
+bundle-build: ## Build the node package here (dashboard inside); needs bun
 	cd $(DASH_DIR) && bun install --frozen-lockfile >/dev/null && bun run build
 	rm -rf $(NODE_DIR)/src/agentfleet_node/static && cp -R $(DASH_DIR)/dist $(NODE_DIR)/src/agentfleet_node/static
 	@# A build id per bundle: installed nodes compare it with the server's to offer an update.
@@ -73,13 +86,11 @@ bundle: ## Build what the staff installer serves: node package with the dashboar
 	@ls dist/.wheel/agentfleet_node-*.whl >/dev/null
 	rm -f dist/downloads/agentfleet_node-*.whl && mv dist/.wheel/agentfleet_node-*.whl dist/downloads/ && rm -rf dist/.wheel
 	cp $(NODE_DIR)/src/agentfleet_node/static/build.json dist/downloads/build.json
-	@# agentmesh-node for every staff platform, from the official release (checksums verified); kept until the version changes.
-	@if [ "$$(cat dist/downloads/agentmesh.version 2>/dev/null)" != "$(AGENTMESH_VERSION)" ]; then \
-	  echo "Fetching agentmesh-node $(AGENTMESH_VERSION) for macOS, Linux and Windows..."; \
-	  ./scripts/fetch-agentmesh.sh $(AGENTMESH_VERSION) node dist/downloads; fi
-	@ls dist/downloads
 
-server-check: ## What the office server needs (uv, bun, agentmesh-one); offers to install what is missing
+release: ## Publish a new version for staff: make release BUMP=patch|minor|major|X.Y.Z (see docs/RELEASE.md)
+	./scripts/release.sh $(or $(BUMP),patch)
+
+server-check: ## What the office server needs (uv, agentmesh-one; bun only to build locally); offers to install what is missing
 	@for p in $(HUB_PORT) $(WORLD_PORT); do \
 	  if lsof -nP -iTCP:$$p -sTCP:LISTEN >/dev/null 2>&1; then \
 	    echo "Port $$p is already in use (an earlier make server?):"; lsof -nP -iTCP:$$p -sTCP:LISTEN | awk 'NR>1 {print "  pid " $$2 "  " $$1}'; \
@@ -88,14 +99,12 @@ server-check: ## What the office server needs (uv, bun, agentmesh-one); offers t
 	if ! command -v uv >/dev/null; then \
 	  if ask "uv (Python tooling) is missing. Install it now?"; then curl -LsSf https://astral.sh/uv/install.sh | sh; \
 	  else echo "Install uv: https://docs.astral.sh/uv/"; exit 1; fi; fi; \
-	if ! command -v bun >/dev/null; then \
-	  if ask "bun (builds the dashboard) is missing. Install it now?"; then curl -fsSL https://bun.sh/install | bash; \
-	  else echo "Install bun: https://bun.sh"; exit 1; fi; fi; \
+	command -v bun >/dev/null || echo "bun is not installed: the staff package comes from the GitHub release v$(VERSION) (install bun to build it here)."; \
 	if ! command -v agentmesh-one >/dev/null; then \
 	  if ask "agentmesh-one (the hub) is missing. Install $(AGENTMESH_VERSION) into $(LOCAL_BIN)?"; then \
 	    mkdir -p $(LOCAL_BIN) && ./scripts/fetch-agentmesh.sh $(AGENTMESH_VERSION) one $(LOCAL_BIN); \
 	  else echo "Install agentmesh-one: https://github.com/google/agentmesh/releases"; exit 1; fi; fi; \
-	echo "uv, bun and agentmesh-one are ready."
+	echo "uv and agentmesh-one are ready."
 
 doctor: ## Why other computers can't reach this office server: address, firewall, listening ports
 	@echo "This machine's LAN address: $(HUB_HOST)"
