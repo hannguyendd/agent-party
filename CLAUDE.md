@@ -37,6 +37,12 @@ Each has its own CLAUDE.md. Commands live in the root `Makefile` (`make help`).
   the art workflow (Codex, prompts in `docs/office/CODEX-PROMPTS.md`, rules in `design/office-style/`). Code reads
   the manifest and never hard-codes art. Art requests that need code go to `design/office-style/REQUESTS.md`.
 
+## Branches
+
+`develop` is the main branch of this project (GitHub's default branch): work lands there, pull requests target it,
+and releases are tagged from it. `main` is old and no longer the base for this work; don't branch from it or merge
+into it unless asked.
+
 ## Releases
 
 Staff get versions through `make release` (`scripts/release.sh`: bump, tag, push) and the GitHub Actions workflow

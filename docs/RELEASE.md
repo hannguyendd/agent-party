@@ -10,6 +10,9 @@ make release            # or: make release BUMP=minor | BUMP=major | BUMP=0.6.0
 
 Then, on the office server: Ctrl+C, `git pull`, `make server`. Every open Office shows **Update available**.
 
+Release from **`develop`** (the project's main branch): merge the work into `develop`, then run the command there.
+The script stops on any other branch unless you add `--any-branch`.
+
 ## What happens
 
 1. **`scripts/release.sh`** (what `make release` runs), on your machine:
@@ -36,7 +39,7 @@ Then, on the office server: Ctrl+C, `git pull`, `make server`. Every open Office
 
 ## For an agent asked to "release"
 
-1. Make sure the work is committed and `make test` + `make build` pass.
+1. Make sure the work is committed and merged into `develop`, you are on `develop`, and `make test` + `make build` pass.
 2. `make release BUMP=patch` (use `./scripts/release.sh patch --yes` when there is no terminal to answer).
 3. Report the version and the Actions link the script printed. Watch the run with `gh run watch` if `gh` is set up.
 4. Tell the admin to run `git pull && make server` on the office server.

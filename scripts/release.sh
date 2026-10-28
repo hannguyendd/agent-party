@@ -6,6 +6,7 @@
 #   scripts/release.sh major      # 0.4.1 -> 1.0.0
 #   scripts/release.sh 0.6.0      # exact version
 #   add --yes to skip the question, --dry-run to only print what would happen
+#   releases come from the develop branch (the project's main branch); --any-branch allows another one
 #
 # Bumps the version (node-server/pyproject.toml + uv.lock, dashboard/package.json), commits "chore(release): vX.Y.Z",
 # tags vX.Y.Z and pushes both. Pushing the tag starts .github/workflows/release.yml on GitHub, which runs the tests,
@@ -15,14 +16,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-BUMP=patch DRY=0 YES=0
+BUMP=patch DRY=0 YES=0 ANY=0
+MAIN_BRANCH=develop
 for a in "$@"; do
   case "$a" in
     --dry-run) DRY=1 ;;
     --yes|-y) YES=1 ;;
+    --any-branch) ANY=1 ;;
     patch|minor|major) BUMP=$a ;;
     [0-9]*.[0-9]*.[0-9]*) BUMP=$a ;;
-    -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,17p' "$0"; exit 0 ;;
     *) echo "unknown argument: $a (see --help)" >&2; exit 2 ;;
   esac
 done
@@ -46,6 +49,7 @@ REPO=$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.com
 # Release only what is committed and pushed-able.
 git diff --quiet && git diff --cached --quiet || die "commit or stash your changes first (git status)"
 [ "$BRANCH" != HEAD ] || die "not on a branch"
+[ "$BRANCH" = "$MAIN_BRANCH" ] || [ $ANY = 1 ] || die "releases come from $MAIN_BRANCH (you are on $BRANCH): merge into $MAIN_BRANCH first, or add --any-branch"
 git rev-parse -q --verify "refs/tags/$TAG" >/dev/null && die "tag $TAG already exists"
 git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1 && die "tag $TAG already exists on GitHub"
 [ "$(printf '%s\n%s\n' "$CURRENT" "$NEXT" | sort -V | tail -1)" = "$NEXT" ] && [ "$CURRENT" != "$NEXT" ] || die "$NEXT is not newer than $CURRENT"

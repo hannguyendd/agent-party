@@ -67,7 +67,8 @@ One token works for one computer, once. If someone reinstalls on a new computer,
 
 ### Publishing an update
 
-1. Whoever made the change (a developer or an agent) publishes a version: `make release` (details:
+1. Whoever made the change (a developer or an agent) merges it into `develop` and publishes a version from there:
+   `make release` (details:
    [RELEASE.md](RELEASE.md)). GitHub builds it and attaches it to a Release.
 2. On the office server:
 
