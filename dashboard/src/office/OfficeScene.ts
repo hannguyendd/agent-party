@@ -219,7 +219,10 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
       renderRoom(this)
     }
     for (const d of DESKS) {
-      const back = BEHIND[d.seat.face] ?? { x: 0, y: 1 }
+      // Behind the chair, or beside it when that is a wall (the HR seat backs onto the north wall).
+      const behind = BEHIND[d.seat.face] ?? { x: 0, y: 1 }
+      const back = [behind, { x: behind.y, y: behind.x }, { x: -behind.y, y: -behind.x }]
+        .find((o) => walkable(d.seat.x + Math.round(o.x), d.seat.y + Math.round(o.y))) ?? behind
       const at = { x: (d.seat.x + back.x + 0.5) * TILE, y: (d.seat.y + back.y + 0.5) * TILE }
       const text = crisp(
         this.add

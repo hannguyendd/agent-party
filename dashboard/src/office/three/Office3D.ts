@@ -18,6 +18,14 @@ const ELEVATION = 0.86
 const AZIMUTH = -0.42
 const WALK_SPEED = 4.7 // tiles per second, as in 2D (150 px/s at 32 px tiles)
 const NEARBY_STILL_S = 0.3
+const SYNC_MS = 250 // how often a keyboard-driven agent reports its tile, as in 2D
+const DRIVE_HOLD_MS = 1200 // after keys are released, keep local authority this long
+const BODY_RADIUS = 0.22 // tiles; the feet must stay on walkable tiles while driving
+const DOOR_REACH = 1.6 // tiles from a door's centre that open it
+const DRIVE_KEYS: Record<string, [number, number]> = {
+  w: [0, -1], arrowup: [0, -1], s: [0, 1], arrowdown: [0, 1], a: [-1, 0], arrowleft: [-1, 0], d: [1, 0], arrowright: [1, 0],
+}
+const DOOR_MODELS = new Set(['door-glass', 'door-glass-double'])
 const CUT_AWAY = 0.6 // lower a wall whose outside faces the camera this much (dot of its outward normal)
 const FACE_ANGLE: Record<Facing, number> = { down: 0, right: Math.PI / 2, up: Math.PI, left: -Math.PI / 2 }
 const WALL_OUT: Record<string, [number, number]> = { north: [0, -1], south: [0, 1], west: [-1, 0], east: [1, 0] }
@@ -53,6 +61,10 @@ interface Agent3D {
   leaving: boolean
   placed: boolean
   sent: { tile: Point; until: number } | null
+  driving: boolean
+  drivenUntil: number
+  lastSync: number
+  lastTile: string
   tag: HTMLDivElement
   name: HTMLSpanElement
   icon: HTMLSpanElement
@@ -99,6 +111,8 @@ export class Office3D implements OfficeRenderer {
   private drag: { x: number; y: number; moved: boolean } | null = null
   private raycaster = new THREE.Raycaster()
   private listeners: [EventTarget, string, EventListener][] = []
+  private keys = new Set<string>()
+  private doors: { root: THREE.Object3D; mixer: THREE.AnimationMixer; clips: THREE.AnimationClip[]; at: THREE.Vector2; open: boolean }[] = []
 
   private host: HTMLElement
 
@@ -181,7 +195,10 @@ export class Office3D implements OfficeRenderer {
 
   private buildRoom(layout: Layout3d) {
     const byModel = (list: Placement[]) => list.reduce<Record<string, Placement[]>>((m, p) => ((m[p.model] ||= []).push(p), m), {})
-    for (const [model, list] of Object.entries(byModel(layout.objects))) this.instance(this.scene, model, list, !model.startsWith('floor'))
+    for (const [model, list] of Object.entries(byModel(layout.objects))) {
+      if (DOOR_MODELS.has(model)) for (const p of list) this.door(p)
+      else this.instance(this.scene, model, list, !model.startsWith('floor'))
+    }
     for (const [facing, out] of Object.entries(WALL_OUT)) {
       const list = layout.walls.filter((w) => w.facing === facing)
       if (!list.length) continue
@@ -189,6 +206,38 @@ export class Office3D implements OfficeRenderer {
       this.scene.add(group)
       for (const [model, l] of Object.entries(byModel(list))) this.instance(group, model, l, true)
       this.walls.push({ group, out: new THREE.Vector2(...out) })
+    }
+  }
+
+  /** Glass doors are separate objects with their own open/close clips (leaves pivot at the hinges). */
+  private door(p: Placement) {
+    const gltf = this.models.get(p.model)
+    if (!gltf) return
+    const root = gltf.scene.clone(true)
+    root.position.copy(toWorld(p.x, p.z)).setY(p.y ?? 0)
+    root.rotation.y = ((p.rot ?? 0) * Math.PI) / 180
+    root.traverse((o) => {
+      if (o instanceof THREE.Mesh) o.castShadow = o.receiveShadow = true
+    })
+    this.scene.add(root)
+    this.doors.push({ root, mixer: new THREE.AnimationMixer(root), clips: gltf.animations, at: new THREE.Vector2(p.x, p.z), open: false })
+  }
+
+  private updateDoors(dt: number) {
+    for (const d of this.doors) {
+      const near = [...this.agents.values()].some((s) => s.pos.distanceTo(d.at) <= DOOR_REACH)
+      if (near !== d.open) {
+        d.open = near
+        const clip = d.clips.find((c) => c.name === (near ? 'open' : 'close'))
+        if (clip) {
+          d.mixer.stopAllAction()
+          const a = d.mixer.clipAction(clip)
+          a.setLoop(THREE.LoopOnce, 1)
+          a.clampWhenFinished = true
+          a.reset().play()
+        }
+      }
+      d.mixer.update(dt)
     }
   }
 
@@ -297,7 +346,7 @@ export class Office3D implements OfficeRenderer {
     const s: Agent3D = {
       id: a.agent_id, owner: a.owner, skin, root, mixer: new THREE.AnimationMixer(root), action: null, clip: '', ring,
       pos: new THREE.Vector2(SPAWN.x + 0.5, SPAWN.y + 0.5), heading: 0, path: [], dest: null, leaving: false, placed: false,
-      sent: null, tag, name, icon, bubble, top: root.getObjectByName('head-top') ?? null,
+      sent: null, driving: false, drivenUntil: 0, lastSync: 0, lastTile: '', tag, name, icon, bubble, top: root.getObjectByName('head-top') ?? null,
     }
     this.agents.set(a.agent_id, s)
     return s
@@ -337,6 +386,7 @@ export class Office3D implements OfficeRenderer {
         s.path = []
         continue
       }
+      if (s.drivenUntil > t) continue // the owner is steering it with the keyboard right now
       if (s.sent) {
         const target = this.data.agents.find((a) => a.agent_id === id)?.at
         const confirmed = target?.kind === 'tile' && target.x === s.sent.tile.x && target.y === s.sent.tile.y
@@ -668,8 +718,18 @@ export class Office3D implements OfficeRenderer {
       },
       { passive: false },
     )
+    this.on(this.host, 'keyup', (e) => {
+      this.keys.delete((e as KeyboardEvent).key.toLowerCase())
+    })
+    this.on(window, 'blur', () => this.keys.clear())
     this.on(this.host, 'keydown', (e) => {
-      const k = (e as KeyboardEvent).key.toLowerCase()
+      const ev = e as KeyboardEvent
+      const k = ev.key.toLowerCase()
+      if (DRIVE_KEYS[k]) {
+        ev.preventDefault()
+        this.keys.add(k)
+        return
+      }
       if (k === 'h') this.sendSelectedHome()
       else if (k === 'e') this.openNearby()
       else if (k === 'f') this.follow(this.selected.size === 1 ? [...this.selected][0] : null)
@@ -795,8 +855,10 @@ export class Office3D implements OfficeRenderer {
     this.az += (this.azTarget - this.az) * Math.min(1, dt * 7)
     this.zoom += (this.zoomTarget - this.zoom) * Math.min(1, dt * 10)
     if (this.ready) {
+      this.drive(dt)
       for (const s of [...this.agents.values()]) this.step(s, dt)
       this.checkNearby(dt)
+      this.updateDoors(dt)
     }
     const followed = this.following ? this.agents.get(this.following) : undefined
     if (followed) {
@@ -847,6 +909,7 @@ export class Office3D implements OfficeRenderer {
         return
       }
     }
+    if (s.driving) moving = true
     const tile = this.tileOf(s)
     const seat = !moving && !s.path.length ? this.seatFacing(tile) : null
     if (seat) s.heading = FACE_ANGLE[seat]
@@ -860,6 +923,68 @@ export class Office3D implements OfficeRenderer {
     const clip = moving || s.path.length ? 'walk' : seat ? (!present ? 'away' : talking ? 'type' : 'sit-idle') : talking ? 'talk' : 'idle'
     if (clip !== s.clip) this.play(s, clip)
     s.mixer.update(dt)
+  }
+
+  /** Keyboard: direct control of my one selected agent, relative to the screen (W is "up" whichever way the
+   *  camera is turned). Slides along walls; reports its tile like the 2D scene. */
+  private drive(dt: number) {
+    const s = this.selected.size === 1 ? this.agents.get([...this.selected][0]) : undefined
+    if (!s || s.leaving) return
+    let kx = 0
+    let ky = 0
+    for (const k of this.keys) {
+      kx += DRIVE_KEYS[k][0]
+      ky += DRIVE_KEYS[k][1]
+    }
+    kx = Math.sign(kx)
+    ky = Math.sign(ky)
+    if (!kx && !ky) {
+      if (s.driving) {
+        s.driving = false
+        this.syncDriven(s, true)
+      }
+      return
+    }
+    // Screen right and "towards the camera" on the floor, in tile axes (x, y = world x, z).
+    const mx = Math.cos(this.az) * kx + Math.sin(this.az) * ky
+    const my = -Math.sin(this.az) * kx + Math.cos(this.az) * ky
+    const len = Math.hypot(mx, my)
+    const step = (WALK_SPEED * dt) / len
+    const tryAt = (x: number, y: number) => {
+      if (!this.canStand(x, y)) return false
+      s.pos.set(x, y)
+      return true
+    }
+    const nx = s.pos.x + mx * step
+    const ny = s.pos.y + my * step
+    if (!tryAt(nx, ny) && !tryAt(nx, s.pos.y)) tryAt(s.pos.x, ny)
+    s.driving = true
+    s.path = []
+    s.dest = null
+    s.heading = Math.atan2(mx, my)
+    s.drivenUntil = now() + DRIVE_HOLD_MS
+    this.following = s.id
+    this.syncDriven(s, false)
+  }
+
+  private canStand(x: number, y: number) {
+    for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      if (!walkable(Math.floor(x + dx * BODY_RADIUS), Math.floor(y + dy * BODY_RADIUS))) return false
+    }
+    return true
+  }
+
+  private syncDriven(s: Agent3D, final: boolean) {
+    const tile = this.tileOf(s)
+    const key = tileKey(tile)
+    const t = now()
+    if (!final && (key === s.lastTile || t - s.lastSync < SYNC_MS)) return
+    if (final && key === s.lastTile && s.sent) return
+    s.lastSync = t
+    s.lastTile = key
+    s.sent = { tile, until: t + 3000 }
+    s.dest = tile
+    this.callbacks?.onMove(s.id, { kind: 'tile', x: tile.x, y: tile.y })
   }
 
   private play(s: Agent3D, clip: string) {
@@ -876,6 +1001,7 @@ export class Office3D implements OfficeRenderer {
     const w = this.host.clientWidth
     const h = this.host.clientHeight
     const v = new THREE.Vector3()
+    const spots: { s: Agent3D; x: number; y: number; w: number; h: number }[] = []
     for (const s of this.agents.values()) {
       ;(s.top ?? s.root).getWorldPosition(v)
       v.y += 0.12
@@ -884,7 +1010,21 @@ export class Office3D implements OfficeRenderer {
       const y = ((1 - v.y) / 2) * h
       const off = x < -80 || y < -40 || x > w + 80 || y > h + 40
       s.tag.hidden = off
-      if (!off) s.tag.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`
+      if (!off) spots.push({ s, x, y, w: s.tag.offsetWidth, h: s.tag.offsetHeight })
+    }
+    // Nearest the camera first; a tag that would cover one already placed lifts above it (twice at most), so
+    // names of people standing together stay readable, like the 2D scene.
+    spots.sort((a, b) => b.y - a.y)
+    const placed: { x: number; top: number; bottom: number; w: number }[] = []
+    for (const p of spots) {
+      let bottom = p.y
+      for (let lifts = 0; lifts < 2; lifts++) {
+        const hit = placed.find((q) => Math.abs(q.x - p.x) < (q.w + p.w) / 2 + 3 && bottom > q.top - 1 && bottom - p.h < q.bottom + 1)
+        if (!hit) break
+        bottom = hit.top - 3
+      }
+      placed.push({ x: p.x, top: bottom - p.h, bottom, w: p.w })
+      p.s.tag.style.transform = `translate(${p.x.toFixed(1)}px, ${bottom.toFixed(1)}px) translate(-50%, -100%)`
     }
   }
 
