@@ -215,3 +215,66 @@ inside images; the game renders all text):
 
 Write ui.json with name -> pixel rect (and nine-slice insets). Verify sizes and palette.
 ```
+
+---
+
+## Step 7: Eight more characters (48x72, same cast)
+
+Attach `design/office-style/C/characters48/sheets-review.png`, `poses-review.png`, one existing sheet (for example
+`dashboard/public/office/characters48/dev-hoodie.png`) and `design/office-style/C/palette.txt`. Assets only: no
+application code. After delivery the code side adds the eight ids to `SKINS` (world.py, skins.ts).
+
+```text
+Add EIGHT more original characters to the Office cast. They must look like the same game as the existing eight in
+dashboard/public/office/characters48/ (dev-hoodie, designer, lead, shiba, cat, penguin, alien, robot): same palette
+(design/office-style/C/palette.txt), same chibi proportions (big head, short body), same 1 px outline in a darker
+shade of the fill (never pure black), light from the top-left, crisp pixels with no anti-aliasing, no blur, no
+gradients, no dithering and no partial alpha. Assets only: do not edit any application code.
+
+## The eight characters (ids are file names; keep them exactly)
+- ops: human SRE / ops engineer, dark skin, short locs, olive utility vest with a small tool pouch, holding a
+  closed laptop under one arm.
+- pm: human product manager in a lavender hijab and a cream cardigan, holding a clipboard (no text on it).
+- intern: human junior developer, freckles, cap worn backwards, oversized mint t-shirt, small backpack.
+- data: human data scientist, long silver hair in a low ponytail, navy turtleneck, holding a small tablet that
+  shows a tiny bar chart drawn with 3 bars (no text or numbers).
+- fox: red fox standing on two legs, mustard sweater vest over a white collar, round glasses, bushy tail.
+- panda: panda standing on two legs, big over-ear headset, peach scarf.
+- frog: green frog standing on two legs, beige bucket hat, tiny orange backpack.
+- ghost: friendly round ghost (soft white body with a pale lavender shade) holding a coffee mug; it floats, so its
+  "feet" are the wavy hem of the body, which sits on the same contact line as everyone else's feet.
+
+Every silhouette must be easy to tell apart from the others AND from the existing eight at a glance (colour,
+shape, headwear, held object). Original designs only: do not copy or closely imitate characters from Pokémon,
+Gather, Stardew Valley, Animal Crossing or any other game or franchise. No text, logos or watermarks in sprites.
+
+## Deliverables
+1. dashboard/public/office/characters48/<id>.png for each id: sprite sheet 192x360 px = 4 columns x 5 rows of
+   48x72 frames, transparent, no gaps between frames. Same frame order as the existing sheets:
+   - Row 0 (frames 0-3): walk down toward camera: stride, stand, opposite stride, stand.
+   - Row 1 (4-7): walk left, same 4-beat cycle. Do NOT draw walking right; the game mirrors row 1.
+   - Row 2 (8-11): walk up, back view.
+   - Row 3 (12-15): sit facing down, sit facing left, sit facing up, standing and waving one hand.
+   - Row 4 (16-19): sitting and typing facing down (2 frames), standing idle breathing facing down (2 frames).
+   Feet (or the ghost's hem) touch logical y=70 in every frame; the last pixel row (y=71) stays transparent.
+   One scale per character for all its poses; seated poses are naturally shorter. Same face, colours and
+   proportions in every frame. Walk frames and the two typing frames must really differ (not duplicates).
+2. dashboard/public/office/characters/<id>-portrait.png for each id: 32x48 px, transparent, the character standing
+   and facing the camera, drawn natively at 32x48 (not a blurry downscale), like the existing *-portrait.png files.
+3. Add the eight sheets to dashboard/public/office/manifest.json under "characters48" (same key = id, value =
+   "office/characters48/<id>.png"), keeping every existing entry unchanged.
+4. design/office-style/C/characters48-batch2/: the high-resolution sources, one prompt file per character, an
+   export script (Pillow) that reproduces the sheets and portraits, validation.json, poses-review.png (front, left,
+   back, sit, wave, type for each new character) and cast-review.png (all SIXTEEN characters standing in a row, at
+   2x, on both a light and a dark background, so the new ones can be judged next to the old ones).
+5. Append a short section to design/office-style/REQUESTS.md: the eight new ids and their display labels (for the
+   skin picker), and anything the code must know.
+
+## Verify and report before you finish
+- Every sheet is exactly 192x360 with 20 frames of 48x72; every portrait is exactly 32x48; all have an alpha channel
+  and only fully opaque or fully transparent pixels.
+- Every opaque pixel uses a colour from palette.txt.
+- Bottom contact at y=70 in every standing/walking frame; y=71 transparent.
+- Existing files (the original eight sheets, portraits and the rest of manifest.json) are unchanged (compare
+  hashes and say so in validation.json).
+```
