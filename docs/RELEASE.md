@@ -66,6 +66,14 @@ hub (7400) on the office network.
 The repository is public, so anyone can download the package. That's fine: it contains no secrets (no admin key,
 no tokens, no data); the single-use join token from the admin is what lets a computer into the office.
 
+## Codex support (the `[codex]` extra)
+
+The node pins `openai-codex` exactly (`node-server/pyproject.toml`, extra `codex`) and `CODEX_PINNED` in
+`runtimes/codex.py`. Codex releases often, so before a release consider bumping both to the newest SDK. After a bump,
+re-run the Codex smoke (two node servers, a Codex agent: a message, an approval card, a denied command, an
+interrupt) as recorded in `docs/adr/0004-agent-runtime-chosen-at-creation.md`. Hosts with Codex get the extra from
+the installers automatically.
+
 ## Checking a release by hand
 
 ```sh

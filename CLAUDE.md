@@ -33,6 +33,9 @@ Each has its own CLAUDE.md. Commands live in the root `Makefile` (`make help`).
   Status, not content, crosses to the world server (`office.py` sends status-only views).
 - **Assignments (ADR 0002)**: the receiving owner accepts once; that widens only file edits in that conversation.
   Agent-to-agent messages on an agent's own initiative follow its `contact_policy` ("auto" / "ask").
+- **Agent runtime (ADR 0004)**: an agent runs on Claude or Codex (`runtime`), chosen at creation, never changed.
+  Both runtimes send every tool decision to `sessions.policy_decision`. Codex reaches the mesh tools through
+  `mesh_mcp.py` → `/api/internal/mesh` (loopback, per-conversation secret).
 - **Art vs code**: images, map plates, collision grid, seats and `dashboard/public/office/manifest.json` come from
   the art workflow (Codex, prompts in `docs/office/CODEX-PROMPTS.md`, rules in `design/office-style/`). Code reads
   the manifest and never hard-codes art. Art requests that need code go to `design/office-style/REQUESTS.md`.

@@ -147,6 +147,25 @@ Open the **Office shortcut** or http://127.0.0.1:9100 (bookmark it). Nothing els
 - **Permissions** (agent card): *Read only* / *Can edit files* / *Full access*; "Ask me before it contacts others".
 - **Claude usage** (agent card): how much of your Claude plan's 5-hour and weekly limits is used.
 
+### Agents on Codex (when Claude runs out)
+
+> The screens for this are still being built: the node supports Codex agents (API `runtime: "codex"`), but the
+> new-agent form doesn't offer the choice yet.
+
+An agent runs on **Claude** or **Codex**, chosen when you create it; it can't be switched later. When your Claude
+allowance is spent, create a second agent on Codex (for example `you/backend-codex`) and tell colleagues its ID.
+
+- Codex is offered only when this computer has Codex **installed and signed in** (`codex login` with your ChatGPT
+  account). The installer adds Codex support when it finds Codex; if you install Codex after the Office, take the
+  next update.
+- A Codex agent uses **your own Codex setup**: your `~/.codex` settings and `AGENTS.md`, plus the project's
+  `AGENTS.md`. Your personal MCP servers, ChatGPT apps and hooks are turned off for it.
+- Approvals work as for Claude agents: anything outside the agent's allowed list asks you in the Office. **Exception:
+  commands you saved as "always allow" in Codex also run here without asking.**
+- Its threads also appear in the Codex app. Read them there if you like, but reply in the Office, where approvals
+  apply.
+- Fork isn't available for Codex conversations yet.
+
 ### Going offline / online
 
 - **Go offline**: account menu (top right) → **Log out (go offline)**, or walk your agent to the entrance door.

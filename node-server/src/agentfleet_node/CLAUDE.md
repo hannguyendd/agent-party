@@ -3,7 +3,9 @@
 ## Request path
 
 Inbound: `a2a_bridge.A2AGateway` (`/a2a/<service>/`) → `MeshAgentExecutor` → `sessions.SessionManager.handle_inbound`
-→ `SessionWorker.run_turn` (Claude). Outbound: agent calls a `mesh_tools` tool → `a2a_bridge.OutboundClient` →
+→ `SessionWorker.run_turn` → the agent's `AgentRuntime` (`runtimes/`: `ClaudeRuntime` or `CodexRuntime`, by
+`agent.runtime`, ADR 0004). Codex mesh tools: Codex → `mesh_mcp.py` (stdio) → `POST /api/internal/mesh/{conv}/{tool}`
+(loopback, `SessionManager.register_mesh_token`) → `mesh_tools.MeshTools`. Outbound: agent calls a `mesh_tools` tool → `a2a_bridge.OutboundClient` →
 `mesh.MeshDirectory.resolve` (local agent, static peer, or mesh discovery) → remote node.
 
 Assignment: `POST /api/office/assign` → `OutboundClient.send(kind="assignment")` in the background (returns the new
@@ -42,6 +44,10 @@ original `a2a_bridge`, `sessions`, `mesh`, `mesh_tools`, `store`, `api`, `models
   A new persisted thing gets a `Store` method that publishes; the dashboard sees nothing written around it.
 - **One conversation per (agent_id, contextId)**, one `SessionWorker` and one Claude session per conversation;
   `run_turn` holds `_turn_lock`, so turns in a session are serialized.
+- **Every runtime decides through the worker**: `SessionWorker.policy` / `decide` (Claude's hook and
+  `can_use_tool`, Codex's approval handler, the internal mesh route). Codex commands reach the policy as `Bash`
+  with the unwrapped script, file changes as `Edit`. The Codex sandbox doesn't confine approved commands (known
+  issue, ADR 0004).
 - **Tool policy has one source of truth**: `sessions.policy_decision` (allow / deny / ask). Order: `denied_tools` →
   deny; contact tools (`send_message`, `share_file`) with `contact_policy == "ask"` → ask; other mesh tools,
   `ToolSearch` and `allowed_tools` → allow; in an **accepted Assignment** `Edit`/`Write`/`MultiEdit`/`NotebookEdit`

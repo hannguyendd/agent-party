@@ -59,6 +59,25 @@ launchd label `com.agentmesh.node`, shared by both. `/api/service/uninstall` (Se
 `agentfleet-node uninstall [--purge]` detached; `/api/setup` includes `claude` (installed / logged in, read from
 `~/.claude.json`, `~/.claude/.credentials.json` or `ANTHROPIC_API_KEY`).
 
+## Codex gotchas (openai-codex 0.163.0, found by prototype; spec "Prototype findings")
+
+- The SDK's **default approval handler accepts everything**; `SdkCodexSession` always passes ours. It runs on the
+  SDK's single stdout reader thread, so it hands decisions to the event loop with `run_coroutine_threadsafe`.
+- Only `approvalPolicy="untrusted"` makes **every** command ask (`on-request` runs sandboxed commands silently). An
+  approved command then runs **outside the file sandbox** (known issue); network limits still hold.
+- Never answer `acceptWithExecpolicyAmendment`: it writes an allow rule into `~/.codex/rules`, and such rules skip
+  the approval request entirely (no override turns them off).
+- `-c` overrides **merge** with `~/.codex/config.toml`: `mcp_servers={}` clears nothing. Disable each personal server
+  with `mcp_servers.<name>.enabled=false`. `features.apps=false` drops the ChatGPT connectors (`mcp__codex_apps__*`).
+- MCP tool calls ask too (`mcpServer/elicitation/request`, `_meta.codex_approval_kind="mcp_tool_call"`): answer
+  `{"action": "accept"|"decline"}`. Tool names are `mcp__<server>__<tool>`, the same as Claude's.
+- Command approvals carry `command` as one string (`/bin/zsh -lc '<script>'`); `command_for_policy` unwraps it.
+  File-change approvals carry only `itemId`; the paths come from the `fileChange` item.
+- The SDK runs on `mcp` 2.x; FastMCP is `mcp.server.mcpserver.MCPServer` there (`mesh_mcp.py` uses the lowlevel
+  `Server`).
+- Agents follow `MESH_PROMPT`: a Codex agent refuses to run commands just because a **peer** asked. Smoke-test
+  commands from an owner conversation.
+
 ## Real-stack smoke (for mesh, A2A or session changes)
 
 Unit tests use a fake Claude client and static peers, so they cannot catch the gotchas above. To exercise the

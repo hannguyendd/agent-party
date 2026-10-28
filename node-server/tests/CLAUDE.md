@@ -21,6 +21,11 @@ and assert on the store. Never spend real Claude calls in this suite.
   them, and limits (size, type, base64, empty message) return 422.
 - `test_setup.py`: the web join form (files written, owner lock, restart reads `setup.json`, office connects);
   `shutil.which` is patched so no real `agentmesh-node` starts.
+- `conftest.FakeCodex` replaces `runtimes.codex.SdkCodexSession` (passed as `codex_session_factory`); same prompt
+  words plus `EDIT`, `ESCALATE`, `CRASH`, `USAGE` (see its docstring). Approvals go through the runtime's real
+  handler from a worker thread. `test_codex_runtime.py` patches `codex_status` so no real Codex is needed;
+  `test_runtime_api.py` covers the runtime field, detection and `/api/codex/setup`; `test_internal_mesh.py` the
+  mesh route and the stdio proxy.
 - `test_party.py`: world Party rules as units, then three nodes (`Office`) for tagging + acceptance, share
   (one copy per owner, forged updates refused), hand-off and close, and Recaps (`recap.summarize` patched).
 - Anything holding a WebSocket open (e.g. a dashboard client) must close it before the server stops, or shutdown
