@@ -21,11 +21,9 @@ export interface Models3d {
   kit: Record<string, string>
 }
 
-/** The 3D art to draw. `?art3d=<name>` (design work) loads a variant from office/3d-variants/<name>/ instead of the
- *  manifest's, so different furniture sets can be compared in the real Office. */
+/** The manifest's 3D art: inline, or fetched from the models3d.json path the art pipeline keeps up to date. */
 export async function fetchModels3d(manifest: Manifest): Promise<Models3d | null> {
-  const variant = new URLSearchParams(location.search).get('art3d')
-  const ref = variant && /^[a-z0-9-]+$/.test(variant) ? `office/3d-variants/${variant}/models3d.json` : manifest.models3d
+  const ref = manifest.models3d
   if (!ref) return null
   if (typeof ref !== 'string') return ref
   const res = await fetch(ref)

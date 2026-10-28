@@ -12,38 +12,22 @@ import { distance, findPath, nearestFree } from '../pathfind'
 import { resolveTargets } from '../placement'
 import { REACH, type OfficeRenderer, type PeerClick, type SceneCallbacks, type SceneData } from '../renderer'
 import { ownerHue } from '../skins'
-import { disposeLook, inkMaterial, toon, wantsOutline } from './look'
+import { disposeLook, toon } from './look'
+import { Room, outline, toWorld, type Layout3d } from './room'
+import { TagLayer, type AgentTag } from './tags'
 
-// Camera: orthographic, looking down ~49°, turned in quarter steps.
-const ELEVATION = 0.86
+// Camera: orthographic, looking down ~35° (low enough to see faces under the big chibi heads), turned in quarter steps.
+const ELEVATION = 0.62
 const AZIMUTH = -0.42
 const WALK_SPEED = 4.7 // tiles per second, as in 2D (150 px/s at 32 px tiles)
 const NEARBY_STILL_S = 0.3
 const SYNC_MS = 250 // how often a keyboard-driven agent reports its tile, as in 2D
 const DRIVE_HOLD_MS = 1200 // after keys are released, keep local authority this long
 const BODY_RADIUS = 0.22 // tiles; the feet must stay on walkable tiles while driving
-const DOOR_REACH = 1.6 // tiles from a door's centre that open it
 const DRIVE_KEYS: Record<string, [number, number]> = {
   w: [0, -1], arrowup: [0, -1], s: [0, 1], arrowdown: [0, 1], a: [-1, 0], arrowleft: [-1, 0], d: [1, 0], arrowright: [1, 0],
 }
-const DOOR_MODELS = new Set(['door-glass', 'door-glass-double'])
-const CUT_AWAY = 0.6 // lower a wall whose outside faces the camera this much (dot of its outward normal)
 const FACE_ANGLE: Record<Facing, number> = { down: 0, right: Math.PI / 2, up: Math.PI, left: -Math.PI / 2 }
-const WALL_OUT: Record<string, [number, number]> = { north: [0, -1], south: [0, 1], west: [-1, 0], east: [1, 0] }
-
-interface Placement {
-  model: string
-  x: number
-  z: number
-  rot?: number
-  y?: number
-  facing?: string
-  panelGap?: boolean
-}
-interface Layout3d {
-  objects: Placement[]
-  walls: Placement[]
-}
 
 interface Agent3D {
   id: string
@@ -66,14 +50,11 @@ interface Agent3D {
   drivenUntil: number
   lastSync: number
   lastTile: string
-  tag: HTMLDivElement
-  name: HTMLSpanElement
-  icon: HTMLSpanElement
-  bubble: HTMLDivElement
-  top: THREE.Object3D | null
+  tag: AgentTag
+  /** Where the name tag hangs: the model's head-top node, else its root. */
+  top: THREE.Object3D
 }
 
-const toWorld = (x: number, y: number) => new THREE.Vector3(x - COLS / 2, 0, y - ROWS / 2)
 const tileKey = (p: Point) => `${p.x},${p.y}`
 const now = () => performance.now()
 
@@ -89,11 +70,11 @@ export class Office3D implements OfficeRenderer {
   private scene = new THREE.Scene()
   private camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 400)
   private clock = new THREE.Clock()
-  private overlay: HTMLDivElement
+  private tags: TagLayer
+  private room: Room
   private observer: ResizeObserver
   private models = new Map<string, GLTF>()
   private urls: Record<string, string> = {}
-  private walls: { group: THREE.Group; out: THREE.Vector2 }[] = []
   private agents = new Map<string, Agent3D>()
   private selected = new Set<string>()
   private deskMarks = new THREE.Group()
@@ -114,10 +95,8 @@ export class Office3D implements OfficeRenderer {
   private listeners: [EventTarget, string, EventListener][] = []
   private keys = new Set<string>()
   private lostTimer = 0
-  private deskTags = new Map<string, { el: HTMLDivElement; at: THREE.Vector3 }>()
   private zoomAnchor: { x: number; y: number } | null = null
   private perf = { frames: 0, time: 0 }
-  private doors: { root: THREE.Object3D; mixer: THREE.AnimationMixer; clips: THREE.AnimationClip[]; at: THREE.Vector2; open: boolean }[] = []
 
   private host: HTMLElement
 
@@ -135,9 +114,8 @@ export class Office3D implements OfficeRenderer {
     canvas.style.outline = 'none'
     host.appendChild(canvas)
     if (getComputedStyle(host).position === 'static') host.style.position = 'relative'
-    this.overlay = document.createElement('div')
-    this.overlay.className = 'o3d-overlay'
-    host.appendChild(this.overlay)
+    this.tags = new TagLayer(host)
+    this.room = new Room(this.scene, this.models)
 
     this.scene.add(new THREE.HemisphereLight(0xfff4ea, 0xd8c9ea, 1.9))
     const sun = new THREE.DirectionalLight(0xfff1e0, 2.3)
@@ -186,13 +164,10 @@ export class Office3D implements OfficeRenderer {
     for (const id of Object.keys(m3.characters)) needed.add(id)
     await this.loadModels([...needed], m3)
     if (this.disposed) return
-    this.buildRoom(layout)
+    this.room.build(layout)
     for (const d of DESKS) {
-      const el = document.createElement('div')
-      el.className = 'o3d-desk'
       const s = deskTagSpot(d)
-      this.overlay.prepend(el)
-      this.deskTags.set(d.id, { el, at: toWorld(s.x, s.y) })
+      this.tags.addDesk(d.id, toWorld(s.x, s.y))
     }
     this.ready = true
     this.sync()
@@ -218,106 +193,6 @@ export class Office3D implements OfficeRenderer {
       }),
     )
     if (!this.models.size) throw new Error(`no 3D models could be loaded (${m3.layout})`)
-  }
-
-  // ---- the room: one InstancedMesh per model mesh, walls grouped by the side they face
-
-  private buildRoom(layout: Layout3d) {
-    const byModel = (list: Placement[]) => list.reduce<Record<string, Placement[]>>((m, p) => ((m[p.model] ||= []).push(p), m), {})
-    for (const [model, list] of Object.entries(byModel(layout.objects))) {
-      if (DOOR_MODELS.has(model)) for (const p of list) this.door(p)
-      else this.instance(this.scene, model, list, !model.startsWith('floor'))
-    }
-    for (const [facing, out] of Object.entries(WALL_OUT)) {
-      const list = layout.walls.filter((w) => w.facing === facing)
-      if (!list.length) continue
-      const group = new THREE.Group()
-      this.scene.add(group)
-      for (const [model, l] of Object.entries(byModel(list))) this.instance(group, model, l, true)
-      this.walls.push({ group, out: new THREE.Vector2(...out) })
-    }
-  }
-
-  /** Glass doors are separate objects with their own open/close clips (leaves pivot at the hinges). */
-  private door(p: Placement) {
-    const gltf = this.models.get(p.model)
-    if (!gltf) return
-    const root = gltf.scene.clone(true)
-    root.position.copy(toWorld(p.x, p.z)).setY(p.y ?? 0)
-    root.rotation.y = ((p.rot ?? 0) * Math.PI) / 180
-    root.traverse((o) => {
-      if (o instanceof THREE.Mesh) o.castShadow = o.receiveShadow = true
-    })
-    this.outline(root, p.model)
-    this.scene.add(root)
-    this.doors.push({ root, mixer: new THREE.AnimationMixer(root), clips: gltf.animations, at: new THREE.Vector2(p.x, p.z), open: false })
-  }
-
-  /** Outline every mesh of a cloned model (characters, doors) with an ink child sharing its geometry. */
-  private outline(root: THREE.Object3D, model: string) {
-    const meshes: THREE.Mesh[] = []
-    root.traverse((o) => {
-      if (o instanceof THREE.Mesh && wantsOutline(model, o.material as THREE.Material)) meshes.push(o)
-    })
-    for (const m of meshes) {
-      const ink = new THREE.Mesh(m.geometry, inkMaterial())
-      ink.userData.ink = true
-      m.add(ink)
-    }
-  }
-
-  private updateDoors(dt: number) {
-    for (const d of this.doors) {
-      const near = [...this.agents.values()].some((s) => s.pos.distanceTo(d.at) <= DOOR_REACH)
-      if (near !== d.open) {
-        d.open = near
-        const clip = d.clips.find((c) => c.name === (near ? 'open' : 'close'))
-        if (clip) {
-          d.mixer.stopAllAction()
-          const a = d.mixer.clipAction(clip)
-          a.setLoop(THREE.LoopOnce, 1)
-          a.clampWhenFinished = true
-          a.reset().play()
-        }
-      }
-      d.mixer.update(dt)
-    }
-  }
-
-  private instance(parent: THREE.Object3D, model: string, list: Placement[], shadows: boolean) {
-    const gltf = this.models.get(model)
-    if (!gltf) return
-    const m = new THREE.Matrix4()
-    const q = new THREE.Quaternion()
-    const up = new THREE.Vector3(0, 1, 0)
-    const one = new THREE.Vector3(1, 1, 1)
-    gltf.scene.traverse((o) => {
-      if (!(o instanceof THREE.Mesh)) return
-      let gap = false
-      let held = false
-      for (let a: THREE.Object3D | null = o; a; a = a.parent) {
-        if (a.name === 'panel-gap') gap = true
-        if (a.name === 'held-items') held = true
-      }
-      if (held) return
-      const ps = gap ? list.filter((p) => p.panelGap) : list
-      if (!ps.length) return
-      const im = new THREE.InstancedMesh(o.geometry, o.material, ps.length)
-      ps.forEach((p, i) => {
-        const at = toWorld(p.x, p.z)
-        at.y = p.y ?? 0
-        m.compose(at, q.setFromAxisAngle(up, ((p.rot ?? 0) * Math.PI) / 180), one).multiply(o.matrixWorld)
-        im.setMatrixAt(i, m)
-      })
-      im.castShadow = shadows
-      im.receiveShadow = true
-      parent.add(im)
-      if (wantsOutline(model, o.material as THREE.Material)) {
-        const ink = new THREE.InstancedMesh(o.geometry, inkMaterial(), ps.length)
-        ink.instanceMatrix = im.instanceMatrix
-        parent.add(ink)
-      }
-    })
   }
 
   // ---- data from React
@@ -346,10 +221,10 @@ export class Office3D implements OfficeRenderer {
         s = this.spawn(a)
       }
       const present = d.owners[a.owner]?.present
-      s.name.textContent = a.name.split('/').pop() ?? a.name
-      s.tag.style.opacity = present ? '1' : '0.6'
-      s.icon.textContent = d.icons[a.agent_id] ?? ''
-      this.setBubble(s, d.bubbles[a.agent_id])
+      s.tag.name.textContent = a.name.split('/').pop() ?? a.name
+      s.tag.el.style.opacity = present ? '1' : '0.6'
+      s.tag.icon.textContent = d.icons[a.agent_id] ?? ''
+      TagLayer.setBubble(s.tag, d.bubbles[a.agent_id])
     }
     for (const id of [...this.selected]) if (!ids.has(id)) this.selected.delete(id)
     this.place()
@@ -371,31 +246,24 @@ export class Office3D implements OfficeRenderer {
         o.receiveShadow = true
       }
     })
-    this.outline(root, skin)
+    outline(root, skin)
+    // The owner-colour ring under the feet follows the character's size (characters grew with the room scale).
+    const width = new THREE.Box3().setFromObject(gltf.scene).getSize(new THREE.Vector3()).x
+    const r = Math.max(0.34, width * 0.38)
     const color = new THREE.Color().setHSL(ownerHue(a.owner) / 360, 0.7, 0.5)
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.34, 0.44, 32), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false }))
+    const ring = new THREE.Mesh(new THREE.RingGeometry(r, r * 1.28, 40), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false }))
     ring.rotation.x = -Math.PI / 2
     ring.position.y = 0.025
     root.add(ring)
     root.userData.agentId = a.agent_id
     this.scene.add(root)
 
-    const tag = document.createElement('div')
-    tag.className = 'o3d-tag'
-    const bubble = document.createElement('div')
-    bubble.className = 'o3d-bubble'
-    const line = document.createElement('div')
-    line.className = 'o3d-name'
-    const icon = document.createElement('span')
-    const name = document.createElement('span')
-    line.append(icon, name)
-    tag.append(bubble, line)
-    this.overlay.appendChild(tag)
+    const tag = this.tags.agent()
 
     const s: Agent3D = {
       id: a.agent_id, owner: a.owner, skin, root, mixer: new THREE.AnimationMixer(root), action: null, clip: '', ring,
       pos: new THREE.Vector2(SPAWN.x + 0.5, SPAWN.y + 0.5), heading: 0, path: [], dest: null, leaving: false, placed: false,
-      sent: null, driving: false, drivenUntil: 0, lastSync: 0, lastTile: '', tag, name, icon, bubble, top: root.getObjectByName('head-top') ?? null,
+      sent: null, driving: false, drivenUntil: 0, lastSync: 0, lastTile: '', tag, top: root.getObjectByName('head-top') ?? root,
     }
     this.agents.set(a.agent_id, s)
     return s
@@ -406,7 +274,7 @@ export class Office3D implements OfficeRenderer {
     s.mixer.stopAllAction()
     s.ring.geometry.dispose()
     ;(s.ring.material as THREE.Material).dispose()
-    s.tag.remove()
+    s.tag.el.remove()
     this.agents.delete(s.id)
     this.selected.delete(s.id)
     if (this.following === s.id) this.following = null
@@ -460,14 +328,6 @@ export class Office3D implements OfficeRenderer {
     return true
   }
 
-  private setBubble(s: Agent3D, text: string | undefined) {
-    s.bubble.hidden = !text
-    if (!text) return
-    const typing = text === '…'
-    s.bubble.classList.toggle('is-typing', typing)
-    s.bubble.textContent = typing ? '' : text
-  }
-
   // ---- selection, desks
 
   selectOnly(ids: string[]) {
@@ -481,16 +341,15 @@ export class Office3D implements OfficeRenderer {
       const on = this.selected.has(s.id)
       s.ring.scale.setScalar(on ? 1.25 : 1)
       ;(s.ring.material as THREE.MeshBasicMaterial).opacity = on ? 1 : 0.85
-      s.tag.classList.toggle('is-selected', on)
+      s.tag.el.classList.toggle('is-selected', on)
     }
     if (notify) this.callbacks?.onSelect([...this.selected])
   }
 
   private refreshDesks() {
-    for (const [id, tag] of this.deskTags) {
-      const owner = this.data.desks[id]
-      tag.el.textContent = owner ? `${id} · ${owner}` : id
-      tag.el.dataset.look = owner === this.data.me ? 'mine' : owner ? 'taken' : this.data.pickingDesk ? 'pick' : 'free'
+    for (const d of DESKS) {
+      const owner = this.data.desks[d.id]
+      this.tags.setDesk(d.id, owner ? `${d.id} · ${owner}` : d.id, owner === this.data.me ? 'mine' : owner ? 'taken' : this.data.pickingDesk ? 'pick' : 'free')
     }
     for (const c of this.deskMarks.children) (c as THREE.Mesh).geometry.dispose()
     this.deskMarks.clear()
@@ -711,7 +570,8 @@ export class Office3D implements OfficeRenderer {
 
   private viewHeight() {
     const aspect = this.host.clientWidth / Math.max(1, this.host.clientHeight)
-    return Math.max(30, 58 / aspect) / this.zoom
+    // Fit the whole room: turned by AZIMUTH it spans ~66 tiles across and ~38 tall on screen at this elevation.
+    return Math.max(32, 70 / aspect) / this.zoom
   }
 
   private resize() {
@@ -926,7 +786,6 @@ export class Office3D implements OfficeRenderer {
       this.drive(dt)
       for (const s of [...this.agents.values()]) this.step(s, dt)
       this.checkNearby(dt)
-      this.updateDoors(dt)
     }
     const followed = this.following ? this.agents.get(this.following) : undefined
     if (followed) {
@@ -943,12 +802,12 @@ export class Office3D implements OfficeRenderer {
       this.placeCamera()
     }
     const camDir = new THREE.Vector2(Math.sin(this.az), Math.cos(this.az))
-    for (const w of this.walls) {
-      const want = w.out.dot(camDir) > CUT_AWAY ? 0.1 : 1
-      w.group.scale.y += (want - w.group.scale.y) * Math.min(1, dt * 8)
-    }
+    this.room.update(dt, camDir, [...this.agents.values()].map((s) => s.pos))
     this.renderer.render(this.scene, this.camera)
-    if (this.ready) this.placeTags()
+    if (this.ready) {
+      const people = [...this.agents.values()].map((s) => ({ tag: s.tag, anchor: s.top }))
+      this.tags.place(this.camera, this.host.clientWidth, this.host.clientHeight, people)
+    }
   }
 
   /** Every 2 s of drawing: when frames average over ~22 ms (under 45 fps), drop the pixel ratio a step (2 → 1.5 →
@@ -1094,41 +953,6 @@ export class Office3D implements OfficeRenderer {
     s.clip = clip
   }
 
-  private placeTags() {
-    const w = this.host.clientWidth
-    const h = this.host.clientHeight
-    const v = new THREE.Vector3()
-    for (const tag of this.deskTags.values()) {
-      v.copy(tag.at).project(this.camera)
-      tag.el.style.transform = `translate(${(((v.x + 1) / 2) * w).toFixed(1)}px, ${(((1 - v.y) / 2) * h).toFixed(1)}px) translate(-50%, -50%)`
-    }
-    const spots: { s: Agent3D; x: number; y: number; w: number; h: number }[] = []
-    for (const s of this.agents.values()) {
-      ;(s.top ?? s.root).getWorldPosition(v)
-      v.y += 0.12
-      v.project(this.camera)
-      const x = ((v.x + 1) / 2) * w
-      const y = ((1 - v.y) / 2) * h
-      const off = x < -80 || y < -40 || x > w + 80 || y > h + 40
-      s.tag.hidden = off
-      if (!off) spots.push({ s, x, y, w: s.tag.offsetWidth, h: s.tag.offsetHeight })
-    }
-    // Nearest the camera first; a tag that would cover one already placed lifts above it (twice at most), so
-    // names of people standing together stay readable, like the 2D scene.
-    spots.sort((a, b) => b.y - a.y)
-    const placed: { x: number; top: number; bottom: number; w: number }[] = []
-    for (const p of spots) {
-      let bottom = p.y
-      for (let lifts = 0; lifts < 2; lifts++) {
-        const hit = placed.find((q) => Math.abs(q.x - p.x) < (q.w + p.w) / 2 + 3 && bottom > q.top - 1 && bottom - p.h < q.bottom + 1)
-        if (!hit) break
-        bottom = hit.top - 3
-      }
-      placed.push({ x: p.x, top: bottom - p.h, bottom, w: p.w })
-      p.s.tag.style.transform = `translate(${p.x.toFixed(1)}px, ${bottom.toFixed(1)}px) translate(-50%, -100%)`
-    }
-  }
-
   // ---- teardown
 
   destroy() {
@@ -1154,6 +978,6 @@ export class Office3D implements OfficeRenderer {
     // Give the context back now: browsers keep only a few, and the Office remounts on every visit.
     this.renderer.forceContextLoss()
     this.renderer.domElement.remove()
-    this.overlay.remove()
+    this.tags.destroy()
   }
 }
