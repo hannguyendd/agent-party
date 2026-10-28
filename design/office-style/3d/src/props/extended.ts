@@ -14,7 +14,7 @@ if(id==='stool'){c(.31,.12,'lavender',0,.44,0);for(let i=0;i<3;i++){const a=i*Ma
 if(id==='photo-frame'){b(.27,.33,.045,'wood',0,.165,0);m.mesh(new T.PlaneGeometry(.21,.25),'mint',[0,.165,.024],m.root,'photo');b(.1,.12,.1,'frame',0,.06,-.06);}
 if(id==='water-bottle'){c(.065,.28,'screen',0,.14,0);c(.043,.08,'screen',0,.31,0);c(.05,.045,'white',0,.367,0);}
 if(id==='figurine'){m.mesh(new T.IcosahedronGeometry(.09,1),'peach',[0,.21,0]);m.mesh(new T.IcosahedronGeometry(.085,1),'lavender',[0,.09,0]);b(.21,.03,.19,'wood',0,.015,0);}
-if(id==='reception-desk'){b(3.8,.18,1.2,'wood',0,.79,0);b(3.5,.7,.7,'peach',0,.35,-.1);b(3.5,.08,.8,'frame',0,.04,-.1);}
+if(id==='reception-desk'){b(3.2,.18,.88,'wood',0,.79,0);b(2.9,.7,.64,'peach',0,.35,-.02);b(2.9,.08,.68,'frame',0,.04,-.02);}
 if(id==='door-mat'||id==='rug-lavender'||id==='rug-mint'){b(id==='door-mat'?1.8:4,.025,id==='door-mat'?.8:3,id==='rug-lavender'?'lavender':'mint',0,.0125,0);}
 if(id==='cabinet'){b(1.8,1.2,.8,'wood',0,.6,0);for(const y of [.25,.65,1.02]){b(1.65,.04,.05,'peach',0,y,.42);b(.3,.055,.07,'white',0,y+.08,.46);}}
 if(id==='fridge'){b(1.6,2.4,1.5,'mint',0,1.2,0);b(1.46,.055,.05,'sage',0,1.55,.77);for(const y of [.95,1.9])b(.065,.38,.09,'white',.55,y,.81);}
@@ -34,4 +34,4 @@ if(id==='folding-table'){b(2.5,.1,1.4,'white',0,.69,0);for(const x of [-.9,.9]){
 if(id==='folding-chair'){b(.58,.09,.58,'white',0,.455,0);b(.58,.46,.09,'white',0,.78,-.24);legs(.5,.5,.41);}
 if(id==='card-mat'){b(3,.025,2,'sage',0,.0125,0);for(let i=0;i<5;i++)c(.09,.02,['cream','lavender','peach'][i%3],-.7+i*.35,.037,0);}
 if(id==='ludo-mat'){b(4,.025,4,'cream',0,.0125,0);for(let i=0;i<4;i++){const x=i%2?1:-1,z=i<2?-1:1;b(1.65,.014,1.65,['mint','lavender','peach','screen'][i],x,.032,z);for(const dx of [-.35,.35])for(const dz of [-.35,.35])c(.13,.015,'white',x+dx,.046,z+dz);}b(.55,.015,.55,'orange',0,.032,0);}
-return m;}
+if(['card-mat','ludo-mat'].includes(id))for(const n of m.root.listChildren()){const t=n.getTranslation();n.setTranslation([t[0],t[1]*.5,t[2]]).setScale([1,.5,1]);}return m;}

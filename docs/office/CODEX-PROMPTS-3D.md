@@ -82,8 +82,17 @@ is written below):
   seams. Do it as a tiny texture cell in the palette or as faint geometry seams, not a photo texture.
 - **Walls**: plain warm white, with a squared column where two wall runs meet. A white split air-conditioner unit
   high on one wall.
-- **Windows**: the whole outer wall is **floor-to-ceiling roller blinds**: tall light-grey panels side by side,
-  each about 2.5–3 tiles wide, with a thin dark vertical gap between panels. No visible glass or view outside.
+- **Which wall is what** (confirmed by the user, overrides the 2D plate's window drawings):
+  - top (north) wall: **plain solid wall**, no windows; the AC unit and picture frames hang here.
+  - left (west) wall: **windows** with floor-to-ceiling roller blinds, panels about 2.5–3 tiles wide with a thin
+    dark gap between them. Seen from outside in the default camera, so it must read as glass you can see through
+    (blinds rolled up into a slim box at the top) with daylight patches on the floor inside.
+  - right (east) and bottom (south) walls: plain solid wall.
+- **Entrance door** (tile 19, 4): a **double-leaf glass door**, two tiles wide, slim light aluminium frame, clear
+  glass leaves with a vertical pull handle each.
+- **Manager room**: not a walled room; it is built from **frosted glass** partitions (milky white, mostly opaque,
+  slim light aluminium frame, a thin clear strip near the top). Its doorway (upper part of its left side) has a
+  **glass door**.
 
 Colours sampled from the photos (fluorescent light, so treat as starting points and lift slightly):
 

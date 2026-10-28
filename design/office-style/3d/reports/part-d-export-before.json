@@ -1,0 +1,8 @@
+{
+  "../../../dashboard/public/office/map/background.png": "9237e89cfe2639aa0e9b1a7136ac5eaebbbec5da8cff5e735a57c5668f9724d6",
+  "../../../dashboard/public/office/map/foreground.png": "c9bf51eb4d97c9a5157a6da1b545f002833dde9a9b59e302cf09d79ef50b3adc",
+  "../../../dashboard/public/office/map/collision.png": "bbf25bc5530ebc134632108df4538439121abea48c8db3eea7ba0fcaefc3a3f4",
+  "../../../dashboard/public/office/map/collision@16x.png": "9fef80fccc8fad178fe2f9ee51c36ea521adf6ccc634fc83495f5524b1639239",
+  "../../../dashboard/public/office/map/seats.json": "cb4b631d346f487d680ae9c870df8205ebc0a402798a79a62c72c7922b96a1fd",
+  "../../../dashboard/public/office/manifest.json": "8bdb296c6518b486e2af88769dba53fe7c3f97b719132fcd9ded20452a98c4eb"
+}

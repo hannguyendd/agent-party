@@ -41,7 +41,7 @@
         0.0625
       ],
       "office": "#ecebe4",
-      "pastel": "#f5d6bc"
+      "pastel": "#f1eee6"
     },
     "blind": {
       "cell": [
@@ -354,6 +354,66 @@
       ],
       "office": "#d6bb88",
       "pastel": "#efd2b7"
+    },
+    "aluminium": {
+      "cell": [
+        5,
+        3
+      ],
+      "uv": [
+        0.6875,
+        0.4375
+      ],
+      "office": "#dfe5e4",
+      "pastel": "#e1e7e7"
+    },
+    "frost": {
+      "cell": [
+        6,
+        3
+      ],
+      "uv": [
+        0.8125,
+        0.4375
+      ],
+      "office": "#eaf0f0",
+      "pastel": "#eaf0f0"
+    },
+    "sunlight": {
+      "cell": [
+        7,
+        3
+      ],
+      "uv": [
+        0.9375,
+        0.4375
+      ],
+      "office": "#fff6d6",
+      "pastel": "#fff6d6"
+    },
+    "coral": {
+      "cell": [
+        0,
+        4
+      ],
+      "uv": [
+        0.0625,
+        0.5625
+      ],
+      "office": "#de8d84",
+      "pastel": "#e7aaa1"
+    },
+    "manager-floor": {
+      "cell": [
+        1,
+        4
+      ],
+      "uv": [
+        0.1875,
+        0.5625
+      ],
+      "office": "#d9efe1",
+      "pastel": "#d9efe1"
     }
   }
 }

@@ -1,3 +1,38 @@
+## Part E integration note
+
+The curated layout uses optional `scale: [x, 1, z]` on five bottom desk-long bridges, the central desk-long seam, and the lounge armchair. Consumers must apply this before computing/rendering footprints, as `src/viewer.html` and `src/layout.ts` do. This needs no collision, seat, or manifest change. No application source was edited.
+
+# Part D integration — current contract
+
+This section supersedes the historical A–C notes below. The delivery has **20 seats**, including HR, a manager room reaching row 34, solid north walls, clear west windows, and two animated glass-door openings. All 34 authorized collision changes are listed at the top of REPORT.md and in reports/map-d12.json. No other collision cells were edited.
+
+- Merge manifest-models3d.json; it registers every old and new model and the current layout. The shared manifest is untouched.
+- Perimeter height is 3.3; frosted manager glass height is 2.8. West windows remain full height in review views so they can be seen through from outside. Their rolled fabric is confined to the top 0.35. Show panel-gap only where layout panelGap is true (repeatEvery=3, phase=2).
+- Wall-mounted props have mount="wall", matching facing, wallId and y. Their origin is at the room-side wall face and centre bottom. They protrude <=0.12; deep props start >=1.7. Use wallId to coordinate visibility with their wall. All wall runs have decorative breaks within about four tiles.
+- Door exceptions are walkable:true, exception="door", restricted to door-glass-double at (19.5,4.5), rot 0 and door-glass at (40.5,16), rot 90. Both have leaf-l / leaf-r hinge nodes and open / close clips, 0.6s, 85° inward. Play LoopOnce, clamp at the final pose, and trigger open before an agent crosses. They add no collision obstacles.
+- Seat-chair exceptions are restricted to the 20 exact seats.json centres/faces. HR is (13.5,4.5), front south, with a shortened reception-desk and north-facing monitor. HR's top is 0.88 and has three plate-like items; all other 19 stations have 4–6 deterministic items at y=0.74. The +/-0.35 keyboard reach zone is clear.
+- The 12-triangle floor tile uses UVs across a patterned palette cell for seams and straight grain. Other models retain colour-cell-centre UVs. Mint floor-manager tiles extend throughout the larger manager room. Both floors top out at y=0.
+- Sun patches are flat, walkable:true, decal="sunlight", y=0.012 and vertex alpha 0.6. Fade toward eveningOpacity=0 in evening mode. The first patch is clipped to the inside north boundary.
+- The 2D export is reproduced through python3 design/office-style/C/map/export-map.py. Its scoped Part D adapter preserves the prior seat records, unrelated pixels, 32-colour palette and foreground stack. HR's original chair, monitor, left plant and window frame remain pixel-identical.
+- Door animation, cut-away, evening fading, pathfinding, indicators and the 3D theme UI remain app-owned. No dashboard/src or node-server code was edited by this asset task.
+
+## Requests only: extra pieces in currently walkable open areas
+
+These are **not placed and not blocked** in the delivered map. Each needs a coordinated 2D-plate/collision change before adding a raised model:
+
+| Proposal | Exact candidate tiles to block | Reason |
+|---|---|---|
+| Central lounge set | x=20..23, rows 18..20 (12 tiles) | A compact sofa + side table would give the open middle a gathering spot; retain a clear aisle around it. |
+| Extra meeting table | x=28..32, rows 7..9 (15 tiles) | A small shared table above M1/M2 would bring life to the large empty upper-middle area. |
+| Plant island | x=34..35, rows 18..19 (4 tiles) | A two-pot island would soften the wide approach to the manager room without constricting its doorway. |
+| Shoe rack beside entrance | (20,5), (21,5) | These are walkable today; a rack beside the actual entrance needs an explicit new footprint rather than visual obstruction. |
+
+The older folding-game-night request also remains unplaced. Only D12's lower manager lounge and the HR entry gap/seat were authorized shared-map changes in this run.
+
+---
+
+# Historical A–C integration notes
+
 # 3D theme assets
 
 Palette is decided: **pastel**. `office/3d/palette.png` is pastel, and every self-contained GLB embeds those exact bytes. `palette-office.png` is reference only. All new review images use pastel.

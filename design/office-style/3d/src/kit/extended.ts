@@ -1,9 +1,9 @@
-import {Model} from '../primitives';
+import * as T from 'three';import {Model,vertexAlpha} from '../primitives';
 export const extraKitIds=['wall-door','glass-wall','glass-post','air-conditioner','picture-frame'];
 export function extendedKit(id:string){const m=new Model(id),b=m.box.bind(m);
-if(id==='wall-door'){for(const x of [-.43,.43])b(.14,2.7,.18,'wall',x,1.35,0);b(1,.14,.18,'wall',0,2.63,0);b(.7,2.5,.1,'wood',0,1.25,0);b(.07,.07,.09,'white',.23,1.15,.09);}
-if(id==='glass-wall'){for(const y of [.07,2.63])b(1,.14,.14,'pants',0,y,0);for(const x of [-.45,.45])b(.1,2.7,.14,'frame',x,1.35,0);const pane=b(.8,2.42,.04,'glass',0,1.35,0,m.root,'glass-pane');const prim=pane.getMesh()!.listPrimitives()[0];const count=prim.getAttribute('POSITION')!.getCount();const rgba=new Float32Array(count*4);for(let i=0;i<count;i++)rgba.set([1,1,1,.22],i*4);prim.setAttribute('COLOR_0',m.d.createAccessor().setType('VEC4').setArray(rgba).setBuffer(m.b));m.mat.setAlphaMode('BLEND');}
-if(id==='glass-post')b(.18,2.7,.18,'frame',0,1.35,0);
-if(id==='air-conditioner'){b(.95,.36,.3,'white',0,.18,0);for(const y of [.1,.16])b(.8,.035,.03,'frame',0,y,.16);}
-if(id==='picture-frame'){b(.8,.66,.09,'wood',0,.33,0);b(.66,.52,.04,'cream',0,.33,.05);b(.3,.15,.03,'mint',-.1,.28,.08);b(.2,.24,.03,'lavender',.15,.3,.08);}
+if(id==='wall-door'){for(const x of [-.43,.43])b(.14,3.3,.18,'wall',x,1.65,0);b(1,1.2,.18,'wall',0,2.7,0,m.root,'solid-header');b(.7,2.05,.1,'wood',0,1.025,0);b(.07,.07,.09,'white',.23,1.05,.09);}
+if(id==='glass-wall'){for(const y of [.04,2.77])b(1,.06,.06,'aluminium',0,y,0,m.root,'slim-rail');for(const x of [-.48,.48])b(.04,2.8,.14,'aluminium',x,1.4,0,m.root,'light-frame');vertexAlpha(m,m.mesh(new T.PlaneGeometry(.92,2.38),'frost',[0,1.29,0],m.root,'frosted-pane'),.8);vertexAlpha(m,m.mesh(new T.PlaneGeometry(.92,.25),'glass',[0,2.605,0],m.root,'clear-strip'),.3);}
+if(id==='glass-post')b(.18,2.8,.18,'aluminium',0,1.4,0);
+if(id==='air-conditioner'){b(.95,.36,.09,'white',0,.18,.045);for(const y of [.1,.16])b(.8,.025,.015,'aluminium',0,y,.0975);}
+if(id==='picture-frame'){b(.8,.66,.035,'wood',0,.33,.0175);b(.66,.52,.015,'cream',0,.33,.0425);b(.3,.15,.01,'mint',-.1,.28,.055);b(.2,.24,.01,'lavender',.15,.3,.055);}
 return m;}

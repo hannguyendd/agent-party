@@ -1,0 +1,276 @@
+{
+  "models": 125,
+  "newModels": [
+    "document-tray",
+    "notebook",
+    "book-stack",
+    "pen-cup",
+    "headphones",
+    "desk-lamp",
+    "phone-stand",
+    "sticky-notes",
+    "snack-box",
+    "desk-cactus",
+    "tissue-box",
+    "microwave",
+    "kettle",
+    "toaster",
+    "fruit-bowl",
+    "cup-rack",
+    "paper-towels",
+    "filing-cabinet",
+    "storage-cube",
+    "archive-boxes",
+    "recycle-bin",
+    "water-dispenser",
+    "coat-rack",
+    "shoe-rack",
+    "bean-bag",
+    "floor-palm",
+    "printer-stand",
+    "counter-wide",
+    "counter-compact",
+    "desk-apron",
+    "desk-wing",
+    "desk-return",
+    "guest-chair",
+    "lounge-table",
+    "wall-clock",
+    "wall-shelf",
+    "corkboard",
+    "framed-poster",
+    "wall-tv",
+    "hanging-planter",
+    "company-sign",
+    "calendar",
+    "wall-whiteboard",
+    "sun-patch",
+    "sun-patch-edge",
+    "cable-cover",
+    "rug-meeting",
+    "floor-sticker",
+    "window-wall",
+    "wall-half",
+    "door-glass-double",
+    "door-glass",
+    "floor-manager"
+  ],
+  "uncoveredBefore": 169,
+  "uncoveredAfter": 118,
+  "allowed": 118,
+  "wallDecor": 46,
+  "deskItems": {
+    "D1": [
+      "tissue-box",
+      "figurine",
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus"
+    ],
+    "D2": [
+      "figurine",
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus",
+      "mug",
+      "notebook"
+    ],
+    "D3": [
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus",
+      "mug"
+    ],
+    "D4": [
+      "desk-lamp",
+      "desk-cactus",
+      "mug",
+      "notebook",
+      "headphones"
+    ],
+    "D5": [
+      "desk-cactus",
+      "mug",
+      "notebook",
+      "headphones",
+      "snack-box",
+      "water-bottle"
+    ],
+    "D6": [
+      "mug",
+      "notebook",
+      "headphones",
+      "snack-box"
+    ],
+    "D7": [
+      "notebook",
+      "headphones",
+      "snack-box",
+      "water-bottle",
+      "desk-plant"
+    ],
+    "D8": [
+      "headphones",
+      "snack-box",
+      "water-bottle",
+      "desk-plant",
+      "pen-cup",
+      "phone-stand"
+    ],
+    "D9": [
+      "snack-box",
+      "water-bottle",
+      "desk-plant",
+      "pen-cup"
+    ],
+    "D10": [
+      "phone-stand",
+      "tissue-box",
+      "figurine",
+      "book-stack"
+    ],
+    "D11": [
+      "tissue-box",
+      "figurine",
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus"
+    ],
+    "D12": [
+      "figurine",
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus",
+      "mug",
+      "notebook"
+    ],
+    "D13": [
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus",
+      "mug"
+    ],
+    "D14": [
+      "desk-lamp",
+      "desk-cactus",
+      "mug",
+      "notebook",
+      "headphones"
+    ],
+    "D15": [
+      "desk-cactus",
+      "mug",
+      "notebook",
+      "headphones",
+      "snack-box",
+      "water-bottle"
+    ],
+    "D16": [
+      "mug",
+      "notebook",
+      "headphones",
+      "snack-box"
+    ],
+    "M1": [
+      "desk-plant",
+      "pen-cup",
+      "phone-stand",
+      "tissue-box",
+      "figurine"
+    ],
+    "M2": [
+      "pen-cup",
+      "phone-stand",
+      "tissue-box",
+      "figurine",
+      "book-stack",
+      "desk-lamp"
+    ],
+    "MGR": [
+      "pen-cup",
+      "phone-stand",
+      "tissue-box",
+      "figurine",
+      "book-stack"
+    ],
+    "HR": [
+      "mug",
+      "desk-plant",
+      "document-tray"
+    ]
+  },
+  "staticTriangles": 180791,
+  "characterTriangles": 37992,
+  "sceneTriangles": 218783,
+  "longestBareWall": 3.2399999797344208,
+  "sharedMapChanges": 34,
+  "counts": {
+    "filing-cabinet": {
+      "before": 9,
+      "after": 0
+    },
+    "bean-bag": {
+      "before": 4,
+      "after": 0
+    },
+    "recycle-bin": {
+      "before": 0,
+      "after": 0
+    },
+    "shoe-rack": {
+      "before": 2,
+      "after": 0
+    },
+    "coat-rack": {
+      "before": 2,
+      "after": 0
+    },
+    "storage-cube": {
+      "before": 24,
+      "after": 0
+    },
+    "archive-boxes": {
+      "before": 12,
+      "after": 0
+    },
+    "water-dispenser": {
+      "before": 7,
+      "after": 1
+    },
+    "printer-stand": {
+      "before": 6,
+      "after": 0
+    },
+    "floor-palm": {
+      "before": 12,
+      "after": 3
+    },
+    "guest-chair": {
+      "before": 8,
+      "after": 2
+    },
+    "counter-wide": {
+      "before": 3,
+      "after": 1
+    },
+    "counter-compact": {
+      "before": 1,
+      "after": 1
+    },
+    "desk-apron": {
+      "before": 4,
+      "after": 0
+    },
+    "desk-wing": {
+      "before": 4,
+      "after": 0
+    },
+    "desk-return": {
+      "before": 2,
+      "after": 0
+    }
+  },
+  "allowedEmptyTiles": 118,
+  "allowedClusters": 23,
+  "bottomBenchSegments": 5
+}

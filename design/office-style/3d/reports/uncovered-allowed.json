@@ -1,0 +1,612 @@
+[
+  {
+    "id": "e-padding-1",
+    "tiles": [
+      [
+        10,
+        4
+      ],
+      [
+        11,
+        4
+      ],
+      [
+        12,
+        4
+      ]
+    ],
+    "reason": "Floor/shadow padding around the reception or pantry cabinets drawn on the plate. Nearest real piece: reception-desk at (12.3, 5.45)."
+  },
+  {
+    "id": "e-padding-2",
+    "tiles": [
+      [
+        31,
+        4
+      ],
+      [
+        32,
+        4
+      ]
+    ],
+    "reason": "Floor/shadow padding around the reception or pantry cabinets drawn on the plate. Nearest real piece: shelf at (34.5, 4.5)."
+  },
+  {
+    "id": "e-padding-3",
+    "tiles": [
+      [
+        36,
+        4
+      ],
+      [
+        37,
+        4
+      ],
+      [
+        36,
+        5
+      ],
+      [
+        37,
+        5
+      ],
+      [
+        35,
+        5
+      ],
+      [
+        34,
+        5
+      ]
+    ],
+    "reason": "Floor/shadow padding around the reception or pantry cabinets drawn on the plate. Nearest real piece: shelf at (34.5, 4.5)."
+  },
+  {
+    "id": "e-padding-4",
+    "tiles": [
+      [
+        39,
+        4
+      ],
+      [
+        40,
+        4
+      ],
+      [
+        41,
+        4
+      ],
+      [
+        42,
+        4
+      ],
+      [
+        42,
+        5
+      ],
+      [
+        42,
+        6
+      ],
+      [
+        43,
+        6
+      ],
+      [
+        44,
+        6
+      ],
+      [
+        45,
+        6
+      ],
+      [
+        46,
+        6
+      ],
+      [
+        47,
+        6
+      ],
+      [
+        48,
+        6
+      ],
+      [
+        49,
+        6
+      ],
+      [
+        50,
+        6
+      ],
+      [
+        49,
+        5
+      ],
+      [
+        50,
+        5
+      ],
+      [
+        49,
+        4
+      ],
+      [
+        50,
+        4
+      ]
+    ],
+    "reason": "Pantry furniture padding and floor/shadow gaps drawn between counter, fridge and table. Nearest real piece: counter at (46, 5)."
+  },
+  {
+    "id": "e-padding-5",
+    "tiles": [
+      [
+        52,
+        6
+      ],
+      [
+        53,
+        6
+      ]
+    ],
+    "reason": "Pantry furniture padding and floor/shadow gaps drawn between counter, fridge and table. Nearest real piece: counter-wide at (53, 9.5)."
+  },
+  {
+    "id": "e-padding-6",
+    "tiles": [
+      [
+        9,
+        7
+      ],
+      [
+        10,
+        7
+      ],
+      [
+        11,
+        7
+      ],
+      [
+        12,
+        7
+      ],
+      [
+        13,
+        7
+      ],
+      [
+        14,
+        7
+      ]
+    ],
+    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: reception-desk at (12.3, 5.45)."
+  },
+  {
+    "id": "e-padding-7",
+    "tiles": [
+      [
+        39,
+        7
+      ],
+      [
+        40,
+        7
+      ]
+    ],
+    "reason": "Floor/shadow padding around the central workstations and plants; no storage boxes on the plate. Nearest real piece: fridge at (40.5, 6)."
+  },
+  {
+    "id": "e-padding-8",
+    "tiles": [
+      [
+        46,
+        8
+      ]
+    ],
+    "reason": "Pantry furniture padding and floor/shadow gaps drawn between counter, fridge and table. Nearest real piece: stool at (44.5, 9.5)."
+  },
+  {
+    "id": "e-padding-9",
+    "tiles": [
+      [
+        47,
+        10
+      ],
+      [
+        48,
+        10
+      ]
+    ],
+    "reason": "Pantry furniture padding and floor/shadow gaps drawn between counter, fridge and table. Nearest real piece: stool at (47.5, 9.5)."
+  },
+  {
+    "id": "e-padding-10",
+    "tiles": [
+      [
+        9,
+        11
+      ]
+    ],
+    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: desk at (9.55, 9.5)."
+  },
+  {
+    "id": "e-padding-11",
+    "tiles": [
+      [
+        13,
+        11
+      ],
+      [
+        14,
+        11
+      ]
+    ],
+    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: pc-tower at (14.389999999999999, 10.3)."
+  },
+  {
+    "id": "e-padding-12",
+    "tiles": [
+      [
+        36,
+        11
+      ]
+    ],
+    "reason": "Floor/shadow padding around the central workstations and plants; no storage boxes on the plate. Nearest real piece: water-dispenser at (41.5, 7.5)."
+  },
+  {
+    "id": "e-padding-13",
+    "tiles": [
+      [
+        24,
+        12
+      ],
+      [
+        25,
+        12
+      ],
+      [
+        26,
+        12
+      ],
+      [
+        27,
+        12
+      ],
+      [
+        28,
+        12
+      ],
+      [
+        29,
+        12
+      ],
+      [
+        30,
+        12
+      ]
+    ],
+    "reason": "Floor/shadow padding around the central workstations and plants; no storage boxes on the plate. Nearest real piece: plant-small at (27.5, 11.5)."
+  },
+  {
+    "id": "e-padding-14",
+    "tiles": [
+      [
+        9,
+        15
+      ],
+      [
+        10,
+        15
+      ],
+      [
+        11,
+        15
+      ],
+      [
+        12,
+        15
+      ],
+      [
+        13,
+        15
+      ],
+      [
+        14,
+        15
+      ]
+    ],
+    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: desk-long at (11.05, 13.5)."
+  },
+  {
+    "id": "e-padding-15",
+    "tiles": [
+      [
+        26,
+        15
+      ],
+      [
+        27,
+        15
+      ],
+      [
+        28,
+        15
+      ]
+    ],
+    "reason": "Floor/shadow padding around the central workstations and plants; no storage boxes on the plate. Nearest real piece: desk-long at (27.5, 14)."
+  },
+  {
+    "id": "e-padding-16",
+    "tiles": [
+      [
+        48,
+        17
+      ],
+      [
+        49,
+        17
+      ],
+      [
+        48,
+        18
+      ],
+      [
+        50,
+        17
+      ],
+      [
+        49,
+        18
+      ],
+      [
+        48,
+        19
+      ],
+      [
+        51,
+        17
+      ],
+      [
+        50,
+        18
+      ],
+      [
+        48,
+        20
+      ],
+      [
+        51,
+        18
+      ],
+      [
+        52,
+        18
+      ],
+      [
+        53,
+        18
+      ],
+      [
+        53,
+        17
+      ]
+    ],
+    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: floor-palm at (52.5, 17.5)."
+  },
+  {
+    "id": "e-padding-17",
+    "tiles": [
+      [
+        9,
+        19
+      ],
+      [
+        10,
+        19
+      ],
+      [
+        11,
+        19
+      ],
+      [
+        12,
+        19
+      ],
+      [
+        13,
+        19
+      ],
+      [
+        14,
+        19
+      ]
+    ],
+    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: desk-long at (11.05, 17.5)."
+  },
+  {
+    "id": "e-padding-18",
+    "tiles": [
+      [
+        41,
+        20
+      ],
+      [
+        42,
+        20
+      ],
+      [
+        41,
+        21
+      ],
+      [
+        42,
+        21
+      ]
+    ],
+    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: bookshelf at (42, 23.5)."
+  },
+  {
+    "id": "e-padding-19",
+    "tiles": [
+      [
+        44,
+        20
+      ]
+    ],
+    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: floor-palm at (44.5, 19.5)."
+  },
+  {
+    "id": "e-padding-20",
+    "tiles": [
+      [
+        9,
+        23
+      ],
+      [
+        10,
+        23
+      ],
+      [
+        11,
+        23
+      ],
+      [
+        12,
+        23
+      ],
+      [
+        13,
+        23
+      ],
+      [
+        14,
+        23
+      ]
+    ],
+    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: desk-long at (11.05, 21.5)."
+  },
+  {
+    "id": "e-padding-21",
+    "tiles": [
+      [
+        45,
+        23
+      ],
+      [
+        46,
+        23
+      ],
+      [
+        47,
+        23
+      ],
+      [
+        47,
+        24
+      ],
+      [
+        48,
+        24
+      ],
+      [
+        47,
+        25
+      ],
+      [
+        49,
+        24
+      ],
+      [
+        48,
+        25
+      ],
+      [
+        47,
+        26
+      ],
+      [
+        49,
+        25
+      ],
+      [
+        47,
+        27
+      ],
+      [
+        49,
+        26
+      ],
+      [
+        48,
+        27
+      ],
+      [
+        50,
+        26
+      ],
+      [
+        49,
+        27
+      ],
+      [
+        51,
+        26
+      ],
+      [
+        50,
+        27
+      ],
+      [
+        52,
+        26
+      ],
+      [
+        53,
+        26
+      ],
+      [
+        52,
+        27
+      ],
+      [
+        53,
+        25
+      ],
+      [
+        53,
+        27
+      ],
+      [
+        53,
+        24
+      ]
+    ],
+    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: guest-chair at (48.5, 26.5)."
+  },
+  {
+    "id": "e-padding-22",
+    "tiles": [
+      [
+        51,
+        23
+      ]
+    ],
+    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: armchair at (51.5, 22.5)."
+  },
+  {
+    "id": "e-padding-23",
+    "tiles": [
+      [
+        41,
+        25
+      ],
+      [
+        42,
+        25
+      ]
+    ],
+    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: bookshelf at (42, 23.5)."
+  }
+]

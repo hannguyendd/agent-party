@@ -1,0 +1,71 @@
+{
+  "counts": {
+    "filing-cabinet": {
+      "before": 9,
+      "after": 0
+    },
+    "bean-bag": {
+      "before": 4,
+      "after": 0
+    },
+    "recycle-bin": {
+      "before": 0,
+      "after": 0
+    },
+    "shoe-rack": {
+      "before": 2,
+      "after": 0
+    },
+    "coat-rack": {
+      "before": 2,
+      "after": 0
+    },
+    "storage-cube": {
+      "before": 24,
+      "after": 0
+    },
+    "archive-boxes": {
+      "before": 12,
+      "after": 0
+    },
+    "water-dispenser": {
+      "before": 7,
+      "after": 1
+    },
+    "printer-stand": {
+      "before": 6,
+      "after": 0
+    },
+    "floor-palm": {
+      "before": 12,
+      "after": 3
+    },
+    "guest-chair": {
+      "before": 8,
+      "after": 2
+    },
+    "counter-wide": {
+      "before": 3,
+      "after": 1
+    },
+    "counter-compact": {
+      "before": 1,
+      "after": 1
+    },
+    "desk-apron": {
+      "before": 4,
+      "after": 0
+    },
+    "desk-wing": {
+      "before": 4,
+      "after": 0
+    },
+    "desk-return": {
+      "before": 2,
+      "after": 0
+    }
+  },
+  "allowedEmptyTiles": 118,
+  "allowedClusters": 23,
+  "bottomBenchSegments": 5
+}
