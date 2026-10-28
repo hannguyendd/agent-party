@@ -636,6 +636,24 @@ async def plan_usage(request: Request) -> dict[str, Any]:
     return {"usage": _node(request).usage.usage}
 
 
+# notifications (the bell; notifications.py)
+
+
+class ReadIn(BaseModel):
+    ids: list[str] | None = None  # None: all
+
+
+@router.get("/notifications")
+async def list_notifications(request: Request, limit: int = 100) -> list[dict[str, Any]]:
+    return [dump(n) for n in _node(request).store.list_notifications(max(1, min(limit, 500)))]
+
+
+@router.post("/notifications/read")
+async def read_notifications(body: ReadIn, request: Request) -> dict[str, bool]:
+    _node(request).store.mark_notifications_read(body.ids)
+    return {"ok": True}
+
+
 # online / offline (presence.py)
 
 

@@ -166,6 +166,21 @@ class Recap(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utcnow)
 
 
+class Notification(SQLModel, table=True):
+    """Something that pinged (or would have pinged) the owner; the bell shows the history (notifications.py)."""
+
+    __tablename__ = "notifications"
+
+    id: str = Field(default_factory=new_id, primary_key=True)
+    kind: str  # approval | assignment | inbound | reply | waiting | error | party | recap
+    title: str
+    body: str = ""
+    conversation_id: str | None = Field(default=None, index=True)
+    agent_id: str | None = None
+    read: bool = False
+    created_at: datetime = Field(default_factory=utcnow, index=True)
+
+
 class AuditLog(SQLModel, table=True):
     __tablename__ = "audit_log"
 

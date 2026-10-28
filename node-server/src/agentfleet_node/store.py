@@ -20,6 +20,7 @@ from agentfleet_node.models import (
     FileRecord,
     Message,
     Mode,
+    Notification,
     Recap,
     utcnow,
 )
@@ -226,6 +227,34 @@ class Store:
                 self.update_conversation(conv.id, status=ConversationStatus.INTERRUPTED, mode=Mode.AUTO)
                 changed += 1
         return changed
+
+    # notifications (the bell)
+
+    def add_notification(self, kind: str, title: str, body: str = "", conversation_id: str | None = None,
+                         agent_id: str | None = None) -> Notification:
+        n = Notification(kind=kind, title=title[:200], body=body, conversation_id=conversation_id, agent_id=agent_id)
+        with self.db.session() as s:
+            s.add(n)
+            s.commit()
+            s.refresh(n)
+        self.bus.publish({"type": "notification", "notification": dump(n)})
+        return n
+
+    def list_notifications(self, limit: int = 100) -> list[Notification]:
+        with self.db.session() as s:
+            return list(s.exec(select(Notification).order_by(col(Notification.created_at).desc()).limit(limit)))
+
+    def mark_notifications_read(self, ids: list[str] | None = None) -> None:
+        """Mark these (or, with None, all) as read."""
+        with self.db.session() as s:
+            q = select(Notification).where(Notification.read == False)  # noqa: E712
+            if ids is not None:
+                q = q.where(col(Notification.id).in_(ids))
+            for n in s.exec(q):
+                n.read = True
+                s.add(n)
+            s.commit()
+        self.bus.publish({"type": "notifications_read", "ids": ids})
 
     # recaps
 

@@ -23,6 +23,7 @@ from agentfleet_node.sessions import SessionManager
 from agentfleet_node.store import EventBus, Store
 from agentfleet_node.usage import UsageTracker
 from agentfleet_node.titles import TitleService
+from agentfleet_node.notifications import NotificationService
 
 # A repo checkout serves dashboard/dist (the latest `bun run build`); the installed package has no repo around it
 # and carries the built dashboard in agentfleet_node/static instead (`make bundle`).
@@ -46,6 +47,7 @@ class Node:
     usage: UsageTracker
     titles: TitleService
     presence: Presence | None = None
+    notifications: NotificationService | None = None
 
 
 def build_node(settings: Settings, client_factory: Callable | None = None) -> Node:
@@ -91,11 +93,15 @@ def create_app(settings: Settings | None = None, client_factory: Callable | None
         node.store.recover_after_restart()
         node.directory.sync_node_config()
         node.titles.start()
+        node.notifications = NotificationService(node.store, node.bus)
+        node.notifications.start()
         # Online (the default): world link + mesh node (a no-op with a reason if agentmesh-node isn't installed).
         await node.presence.apply()
         yield
         await node.meshproc.stop()
         await node.titles.stop()
+        if node.notifications:
+            await node.notifications.stop()
         await node.world.stop()
         await node.sessions.shutdown()
 
