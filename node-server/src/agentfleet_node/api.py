@@ -10,6 +10,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Literal
 
+import httpx
 from fastapi import APIRouter, HTTPException, Request, WebSocket
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -622,6 +623,38 @@ async def recap_file(recap_id: str, request: Request) -> FileResponse:
 @router.post("/recaps/{recap_id}/share")
 async def share_recap(recap_id: str, request: Request) -> dict[str, list[str]]:
     return await _party_call(_node(request).recaps.share(recap_id))
+
+
+# updates (installed nodes only; see service.py)
+
+
+@router.get("/update")
+async def update_info(request: Request) -> dict[str, Any]:
+    """Is a newer build waiting on the office server? (A repo checkout is never offered one.)"""
+    from agentfleet_node import service
+
+    out: dict[str, Any] = {"installed": service.installed(), "build": service.build_id(), "latest": None, "available": False}
+    base = service.server_base()
+    if out["installed"] and base:
+        try:
+            async with httpx.AsyncClient(timeout=3) as hc:
+                out["latest"] = (await hc.get(f"{base}/info")).json().get("build")
+        except (httpx.HTTPError, ValueError):
+            pass
+        out["available"] = bool(out["latest"]) and out["latest"] != out["build"]
+    return out
+
+
+@router.post("/update")
+async def start_update(request: Request) -> dict[str, str]:
+    """Re-run the office server's installer in the background; it restarts this node on the new build."""
+    from agentfleet_node import service
+
+    if not service.installed():
+        raise HTTPException(409, "this node runs from a repo checkout; update it with git pull")
+    if not service.update(detached=True):
+        raise HTTPException(409, "no office server configured yet")
+    return {"status": "updating"}
 
 
 # Keep references to fire-and-forget tasks so they are not garbage-collected mid-flight.

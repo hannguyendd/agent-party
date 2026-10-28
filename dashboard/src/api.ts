@@ -327,6 +327,9 @@ export const api = {
   recapFileUrl: (id: string) => `/api/recaps/${enc(id)}/file`,
   shareRecap: (id: string) => req<{ sent: string[]; failed: string[] }>('POST', `/api/recaps/${enc(id)}/share`),
 
+  updateInfo: () => req<{ installed: boolean; build: string; latest: string | null; available: boolean }>('GET', '/api/update'),
+  startUpdate: () => req<{ status: string }>('POST', '/api/update'),
+
   approvals: () => req<Approval[]>('GET', '/api/approvals'),
   decide: (id: string, allow: boolean, reason = '') =>
     req<{ status: string }>('POST', `/api/approvals/${enc(id)}`, { allow, reason }),

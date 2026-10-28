@@ -54,7 +54,10 @@ server: bundle ## Run hub + Office world server and serve the staff installer (H
 bundle: ## Build what the staff installer serves: node package with the dashboard inside (+ this OS's agentmesh-node)
 	cd $(DASH_DIR) && bun install --frozen-lockfile >/dev/null && bun run build
 	rm -rf $(NODE_DIR)/src/agentfleet_node/static && cp -R $(DASH_DIR)/dist $(NODE_DIR)/src/agentfleet_node/static
+	@# A build id per bundle: installed nodes compare it with the server's to offer an update.
+	@printf '{"build": "%s-%s"}\n' "$$(git rev-parse --short HEAD 2>/dev/null || echo local)" "$$(date +%Y%m%d%H%M%S)" > $(NODE_DIR)/src/agentfleet_node/static/build.json
 	mkdir -p dist/downloads && rm -f dist/downloads/agentfleet_node-*.whl
+	cp $(NODE_DIR)/src/agentfleet_node/static/build.json dist/downloads/build.json
 	cd $(NODE_DIR) && uv build --wheel --out-dir ../dist/downloads >/dev/null
 	@if command -v agentmesh-node >/dev/null; then \
 	  cp "$$(command -v agentmesh-node)" "dist/downloads/agentmesh-node-$$(uname -s | tr '[:upper:]' '[:lower:]')-$$(uname -m)"; fi

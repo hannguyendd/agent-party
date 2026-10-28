@@ -82,9 +82,17 @@ Quick reference (`make help` lists every target):
 `agentmesh-node-<os>-<arch>`. Put binaries for other platforms next to it (`agentmesh-node-darwin-arm64`,
 `agentmesh-node-linux-x86_64`, `agentmesh-node-windows-amd64.exe`). The world server serves `/install` (bash),
 `/install.ps1` (PowerShell) and `/downloads/*`. The script installs uv if needed, the node with `uv tool install`,
-agentmesh-node into `~/.local/bin`, starts the node at login (launchd / systemd user unit / Windows scheduled task)
-with its data in `~/.agentfleet`, and opens the setup page with the server prefilled. Staff only need Claude Code
-installed and logged in. `ORG` names the organization: every dashboard then says "Taggle Office".
+agentmesh-node into `~/.local/bin`, starts the node in the background with its data in `~/.agentfleet`, asks
+whether to start it at login (default no), adds an Office shortcut (macOS Applications, Windows Start menu +
+Desktop, Linux app menu) and opens the setup page with the server prefilled. Staff only need Claude Code installed
+and logged in.
+
+**On a staff machine afterwards** `agentfleet-node` (no arguments) opens a menu: start in the background, run in
+this window, stop, open the Office, start at login on/off, update, show the log. The same as commands:
+`agentfleet-node status | start | stop | restart | open | autostart on|off | update | logs | uninstall [--purge]`.
+**Updates**: after the admin runs `make server` (or `make bundle`) again, each dashboard shows *Update available*
+in the app bar; one click re-runs the installer in the background (keeps `~/.agentfleet` and the start-at-login
+choice) and the page reloads on the new build. `ORG` names the organization: every dashboard then says "Taggle Office".
 
 **Joining from the browser.** On first run the dashboard shows a setup page: your name (the owner in agent IDs),
 the office server (the hub machine's IP or hostname; the hub URL `:7400` and world URL `:7500` are derived from

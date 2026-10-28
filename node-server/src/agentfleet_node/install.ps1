@@ -1,8 +1,9 @@
 # Agent Mesh: install this machine's node on Windows. Served by the team's world server:
 #   irm http://__SERVER__/install.ps1 | iex
-# Installs uv (if missing), the node server (dashboard included) and agentmesh-node, starts the node at sign-in,
-# then opens the dashboard so you can join the team. Safe to run again to update.
-# $env:AGENTMESH_NO_SERVICE=1 starts the node for this session only; $env:AGENTMESH_NO_OPEN=1 skips the browser.
+# Installs uv (if missing), the node server (dashboard included) and agentmesh-node, starts the node, asks whether
+# to start it at sign-in, adds Office shortcuts and opens the dashboard so you can join. Run it again to update.
+# $env:AGENTMESH_AUTOSTART='on' starts it at sign-in without asking; $env:AGENTMESH_NO_OPEN=1 skips the browser;
+# $env:AGENTMESH_UPDATE=1 (the in-app Update) keeps the current choice and asks nothing.
 $ErrorActionPreference = 'Stop'
 $Server = '__SERVER__'      # the world server this script came from (host:port)
 $Office = '__HOST__'        # prefilled as "Office server" in the setup form
@@ -37,7 +38,7 @@ $Tmp = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid())
 New-Item -ItemType Directory -Path $Tmp | Out-Null
 $WheelPath = Join-Path $Tmp $Wheel
 Invoke-WebRequest "$Base/downloads/$Wheel" -OutFile $WheelPath -UseBasicParsing
-uv tool install --force --python 3.12 $WheelPath | Out-Null
+uv tool install --force --reinstall --python 3.12 $WheelPath | Out-Null
 $Node = (Get-Command agentfleet-node -ErrorAction SilentlyContinue).Source
 if (-not $Node) { $Node = Join-Path $Bin 'agentfleet-node.exe' }
 if (-not (Test-Path $Node)) { Die 'agentfleet-node was not installed' }
@@ -60,29 +61,14 @@ if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
   Warn 'Claude Code is not installed. Install it and log in (https://docs.claude.com/claude-code); your agents need it.'
 }
 
-# 5. Start the node now and at every sign-in (hidden window). It keeps its data in %USERPROFILE%\.agentfleet.
-Say 'Starting the node'
-$Run = Join-Path $HomeDir 'run-node.ps1'
-@"
-`$env:Path = '$Bin;' + `$env:Path
-`$env:AGENTFLEET_DATA_DIR = '$HomeDir\data'
-`$env:AGENTFLEET_MESH_NODE_CONFIG_PATH = '$HomeDir\data\agentmesh-node.yaml'
-Set-Location '$HomeDir'
-& '$Node' serve *>> '$HomeDir\node.log'
-"@ | Set-Content -Encoding UTF8 $Run
-Get-Process -Name agentfleet-node -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-$PsArgs = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$Run`""
-if (-not $env:AGENTMESH_NO_SERVICE) {
-  try {
-    $Action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $PsArgs
-    $Trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
-    $Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
-    Register-ScheduledTask -TaskName 'AgentMeshNode' -Action $Action -Trigger $Trigger -Settings $Settings -Force | Out-Null
-  } catch {
-    Warn "Could not register a sign-in task ($_). The node runs now; start it again after a restart by running this installer."
-  }
+# 5. Run it. Starting at sign-in is your choice (off unless you say yes); `agentfleet-node` shows a menu any time.
+uv tool update-shell 2>$null | Out-Null   # puts the tool folder on PATH for new terminals
+$Auto = $env:AGENTMESH_AUTOSTART
+if (-not $env:AGENTMESH_UPDATE -and -not $Auto) {
+  $Answer = Read-Host "Start $Title automatically when you sign in? [y/N]"
+  if ($Answer -match '^[yY]') { $Auto = 'on' }
 }
-Start-Process powershell.exe -ArgumentList $PsArgs -WindowStyle Hidden
+if ($Auto -eq 'on') { & $Node autostart on | Out-Null } else { & $Node restart | Out-Null }
 
 $Ready = $false
 for ($i = 0; $i -lt 40; $i++) {
@@ -90,7 +76,18 @@ for ($i = 0; $i -lt 40; $i++) {
 }
 if (-not $Ready) { Die "The node did not start; see $HomeDir\node.log" }
 
+# 6. Shortcuts (Start menu + Desktop) that open the Office and start the node if it isn't running.
+$Shell = New-Object -ComObject WScript.Shell
+foreach ($Dir in @("$env:APPDATA\Microsoft\Windows\Start Menu\Programs", [Environment]::GetFolderPath('Desktop'))) {
+  $Lnk = $Shell.CreateShortcut((Join-Path $Dir "$Title.lnk"))
+  $Lnk.TargetPath = $Node
+  $Lnk.Arguments = 'open'
+  $Lnk.WindowStyle = 7
+  $Lnk.Description = "Open $Title"
+  $Lnk.Save()
+}
+
 $Url = "http://127.0.0.1:$Port/?server=$Office"
-Say "Done. Opening $Url to join the team."
+Say "Done. $Title is running at http://127.0.0.1:$Port"
+Write-Host "    Open it any time from the '$Title' shortcut, or run: agentfleet-node   (menu: start, stop, start at sign-in, update)"
 if (-not $env:AGENTMESH_NO_OPEN) { Start-Process $Url }
-Write-Host "If no browser opened, visit $Url"

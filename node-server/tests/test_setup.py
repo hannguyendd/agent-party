@@ -89,3 +89,11 @@ async def test_join_token_is_used_until_the_node_has_really_enrolled(tmp_path, m
     await m.start()
     assert "--bootstrap-token-path" in seen[-1]
     assert "already used" in (m._failure_from_log())
+
+
+async def test_a_repo_checkout_is_never_offered_an_update(node_factory):
+    a = node_factory("kien", os_notifications=False)
+    async with a, httpx.AsyncClient(base_url=a.url) as c:
+        info = (await c.get("/api/update")).json()
+        assert info["installed"] is False and info["available"] is False and info["build"] == "dev"
+        assert (await c.post("/api/update")).status_code == 409

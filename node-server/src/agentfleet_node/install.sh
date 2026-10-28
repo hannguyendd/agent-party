@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Agent Mesh: install this machine's node. Served by the team's world server:
 #   curl -fsSL http://__SERVER__/install | bash
-# Installs uv (if missing), the node server (dashboard included) and agentmesh-node, starts the node at login,
-# then opens the dashboard so you can join the team. Safe to run again to update.
-# AGENTMESH_NO_SERVICE=1 starts the node for this session only; AGENTMESH_NO_OPEN=1 skips opening the browser.
+# Installs uv (if missing), the node server (dashboard included) and agentmesh-node, starts the node, asks whether
+# to start it at login, adds an Office shortcut and opens the dashboard so you can join. Run it again to update.
+# AGENTMESH_AUTOSTART=on starts it at login without asking; AGENTMESH_NO_OPEN=1 skips opening the browser;
+# AGENTMESH_UPDATE=1 (the in-app Update) keeps the current start-at-login choice and asks nothing.
 set -euo pipefail
 
 SERVER="__SERVER__"   # the world server this script came from (host:port)
@@ -14,7 +15,7 @@ TITLE="${ORG:+$ORG }Office"
 BASE="http://$SERVER"
 HOME_DIR="$HOME/.agentfleet"
 BIN="$HOME/.local/bin"
-PORT=9100
+PORT="${AGENTFLEET_PORT:-9100}"
 
 say() { printf '\033[1;36m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!! \033[0m %s\n' "$*"; }
@@ -40,7 +41,7 @@ say "Installing the Agent Mesh node ($WHEEL)"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 curl -fsSL "$BASE/downloads/$WHEEL" -o "$tmp/$WHEEL"
-uv tool install --force --python 3.12 "$tmp/$WHEEL" >/dev/null
+uv tool install --force --reinstall --python 3.12 "$tmp/$WHEEL" >/dev/null
 NODE="$(command -v agentfleet-node || echo "$BIN/agentfleet-node")"
 [ -x "$NODE" ] || die "agentfleet-node was not installed"
 
@@ -57,68 +58,46 @@ fi
 # 4. Claude Code runs the agents; it needs a login on this machine.
 command -v claude >/dev/null 2>&1 || warn "Claude Code is not installed. Install it and log in (https://docs.claude.com/claude-code); your agents need it."
 
-# 5. Start the node now and at every login. It keeps its data in ~/.agentfleet.
-say "Starting the node"
-if [ -n "${AGENTMESH_NO_SERVICE:-}" ]; then
-  START_ONCE=1
-elif [ "$OS" = darwin ]; then
-  PLIST="$HOME/Library/LaunchAgents/com.agentmesh.node.plist"
-  mkdir -p "$(dirname "$PLIST")"
-  cat > "$PLIST" <<PLIST
+# 5. Run it. Starting at login is your choice (off unless you say yes); `agentfleet-node` shows a menu any time.
+uv tool update-shell >/dev/null 2>&1 || true   # puts ~/.local/bin on PATH for new terminals
+if [ -z "${AGENTMESH_UPDATE:-}" ] && [ -z "${AGENTMESH_AUTOSTART:-}" ] && { : </dev/tty; } 2>/dev/null; then
+  printf '\033[1;36m?? \033[0m Start %s automatically when you log in? [y/N] ' "$TITLE" >/dev/tty
+  read -r answer </dev/tty || answer=""
+  case "$answer" in [yY]*) AGENTMESH_AUTOSTART=on ;; esac
+fi
+if [ "${AGENTMESH_AUTOSTART:-}" = on ]; then
+  "$NODE" autostart on
+else
+  "$NODE" restart >/dev/null   # in the background, for this session (or under start-at-login if it was on)
+fi
+curl -fsS "http://127.0.0.1:$PORT/api/node" >/dev/null 2>&1 || die "The node did not start; see $HOME_DIR/node.log"
+
+# 6. A shortcut that opens the Office (and starts the node if it isn't running).
+if [ "$OS" = darwin ]; then
+  APP="$HOME/Applications/$TITLE.app"
+  mkdir -p "$APP/Contents/MacOS"
+  printf '#!/bin/bash\n"%s" open\n' "$NODE" > "$APP/Contents/MacOS/agentmesh-open"
+  chmod +x "$APP/Contents/MacOS/agentmesh-open"
+  cat > "$APP/Contents/Info.plist" <<APPPLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>Label</key><string>com.agentmesh.node</string>
-  <key>ProgramArguments</key><array><string>$NODE</string><string>serve</string></array>
-  <key>WorkingDirectory</key><string>$HOME_DIR</string>
-  <key>EnvironmentVariables</key><dict>
-    <key>PATH</key><string>$PATH:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
-    <key>AGENTFLEET_DATA_DIR</key><string>$HOME_DIR/data</string>
-    <key>AGENTFLEET_MESH_NODE_CONFIG_PATH</key><string>$HOME_DIR/data/agentmesh-node.yaml</string>
-  </dict>
-  <key>RunAtLoad</key><true/>
-  <key>KeepAlive</key><true/>
-  <key>StandardOutPath</key><string>$HOME_DIR/node.log</string>
-  <key>StandardErrorPath</key><string>$HOME_DIR/node.log</string>
+  <key>CFBundleName</key><string>$TITLE</string>
+  <key>CFBundleIdentifier</key><string>com.agentmesh.office</string>
+  <key>CFBundleExecutable</key><string>agentmesh-open</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>LSUIElement</key><true/>
 </dict></plist>
-PLIST
-  launchctl bootout "gui/$(id -u)" "$PLIST" 2>/dev/null || true
-  launchctl bootstrap "gui/$(id -u)" "$PLIST"
-elif command -v systemctl >/dev/null 2>&1 && systemctl --user show-environment >/dev/null 2>&1; then
-  UNIT="$HOME/.config/systemd/user/agentmesh-node.service"
-  mkdir -p "$(dirname "$UNIT")"
-  cat > "$UNIT" <<UNIT
-[Unit]
-Description=Agent Mesh node
-[Service]
-ExecStart=$NODE serve
-WorkingDirectory=$HOME_DIR
-Environment=PATH=$PATH:/usr/local/bin:/usr/bin:/bin
-Environment=AGENTFLEET_DATA_DIR=$HOME_DIR/data
-Environment=AGENTFLEET_MESH_NODE_CONFIG_PATH=$HOME_DIR/data/agentmesh-node.yaml
-Restart=on-failure
-[Install]
-WantedBy=default.target
-UNIT
-  systemctl --user daemon-reload
-  systemctl --user enable --now agentmesh-node.service >/dev/null
-  systemctl --user restart agentmesh-node.service
+APPPLIST
 else
-  warn "No launchd/systemd user session: starting the node for this session only."
-  START_ONCE=1
+  mkdir -p "$HOME/.local/share/applications"
+  printf '[Desktop Entry]\nType=Application\nName=%s\nExec="%s" open\nTerminal=false\nCategories=Office;\n' "$TITLE" "$NODE" \
+    > "$HOME/.local/share/applications/agentmesh-office.desktop"
 fi
-if [ -n "${START_ONCE:-}" ]; then
-  (cd "$HOME_DIR" && AGENTFLEET_DATA_DIR="$HOME_DIR/data" AGENTFLEET_MESH_NODE_CONFIG_PATH="$HOME_DIR/data/agentmesh-node.yaml" \
-    nohup "$NODE" serve </dev/null >>"$HOME_DIR/node.log" 2>&1 &)  # detached: a piped `curl | bash` can end
-fi
-
-for _ in $(seq 1 40); do
-  curl -fsS "http://127.0.0.1:$PORT/api/node" >/dev/null 2>&1 && break
-  sleep 0.5
-done
-curl -fsS "http://127.0.0.1:$PORT/api/node" >/dev/null 2>&1 || die "The node did not start; see $HOME_DIR/node.log"
 
 URL="http://127.0.0.1:$PORT/?server=$OFFICE"
-say "Done. Opening $URL to join the team."
-if [ -n "${AGENTMESH_NO_OPEN:-}" ]; then :; elif [ "$OS" = darwin ]; then open "$URL"; elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$URL" >/dev/null 2>&1 || true; fi
-echo "If no browser opened, visit $URL"
+say "Done. $TITLE is running at http://127.0.0.1:$PORT"
+echo "    Open it any time from the '$TITLE' shortcut, or run: agentfleet-node   (menu: start, stop, start at login, update)"
+if [ -z "${AGENTMESH_NO_OPEN:-}" ]; then
+  if [ "$OS" = darwin ]; then open "$URL"; elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$URL" >/dev/null 2>&1 || true; fi
+fi

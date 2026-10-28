@@ -1001,3 +1001,12 @@ a.o-file:hover { border-color: var(--o-line); }
 .o-toolgroup small { font-size: 11px; }
 .o-toolgroup small.is-err { color: #b0442a; }
 .o-toolgroup .o-tool { margin-top: 4px; }
+
+/* "Update available" in the app bar */
+.office-update {
+  height: 30px; padding: 0 12px; font-size: 13px; font-weight: 800; border-radius: 999px; cursor: pointer;
+  background: #f2c45a; color: #4a3206; border: 2px solid #c99a2e; box-shadow: 0 2px 0 #8a6a1e;
+}
+.office-update:hover:not(:disabled) { background: #f6d277; }
+.office-update.updating { opacity: .8; cursor: progress; }
+.office-update.failed { background: #f8d9cf; border-color: #c4583a; color: #7a3b25; }

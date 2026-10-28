@@ -465,6 +465,14 @@ def latest_wheel(downloads: Path | None) -> str:
     return wheels[-1].name if wheels else ""
 
 
+def latest_build(downloads: Path | None) -> str:
+    """Build id of the package in downloads (`make bundle` writes build.json next to it); nodes compare to update."""
+    try:
+        return str(json.loads((downloads / "build.json").read_text())["build"]) if downloads else ""
+    except (OSError, ValueError, KeyError):
+        return ""
+
+
 def create_world_app(data_path: Path | None = None, downloads: Path | None = None, org: str = "") -> FastAPI:
     hub = WorldHub(WorldState(data_path, org.strip()[:60]))
     app = FastAPI(title="agentfleet world")
@@ -494,7 +502,7 @@ def create_world_app(data_path: Path | None = None, downloads: Path | None = Non
 
     @app.get("/info")
     def info() -> dict[str, Any]:
-        return {"org": hub.state.org, "installer": bool(latest_wheel(downloads))}
+        return {"org": hub.state.org, "installer": bool(latest_wheel(downloads)), "build": latest_build(downloads)}
 
     @app.get("/downloads/{name}")
     def download(name: str) -> FileResponse:

@@ -1,5 +1,7 @@
 // The one app bar: Office (the only working screen) and Settings (configuration).
 
+import { useEffect, useState } from 'react'
+import { api } from '../api'
 import type { View } from '../App'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
@@ -7,6 +9,41 @@ import { ownerCss } from './skins'
 
 /** "Taggle Office" when the admin named the organization on the server, else the product name. */
 const brand = (org?: string) => (org ? `${org} Office` : 'Agent Mesh')
+
+/** When the office server has a newer build: one click updates this machine, then the page reloads on it. */
+function UpdateButton() {
+  const [info, setInfo] = useState<{ available: boolean; build: string; latest: string | null } | null>(null)
+  const [phase, setPhase] = useState<'idle' | 'updating' | 'failed'>('idle')
+  useEffect(() => {
+    const check = () => api.updateInfo().then(setInfo).catch(() => {})
+    check()
+    const t = setInterval(check, 30 * 60 * 1000)
+    return () => clearInterval(t)
+  }, [])
+  if (!info?.available && phase === 'idle') return null
+  const update = async () => {
+    setPhase('updating')
+    try {
+      await api.startUpdate()
+    } catch {
+      setPhase('failed')
+      return
+    }
+    // The installer restarts the node: wait for it to come back on the new build, then reload.
+    const before = info?.build
+    for (let i = 0; i < 120; i++) {
+      await new Promise((r) => setTimeout(r, 2000))
+      const now = await api.updateInfo().catch(() => null)
+      if (now && now.build !== before) return location.reload()
+    }
+    setPhase('failed')
+  }
+  return (
+    <button className={`office-update ${phase}`} disabled={phase === 'updating'} onClick={() => void update()} title={info?.latest ? `New build ${info.latest}` : undefined}>
+      {phase === 'updating' ? 'Updating…' : phase === 'failed' ? 'Update failed: try again' : 'Update available'}
+    </button>
+  )
+}
 
 export function AppBar({ state, view, go, onApprovals }: { state: LiveState; view: View; go: (v: View) => void; onApprovals?: () => void }) {
   const pending = Object.values(state.approvals).filter((a) => a.status === 'pending').length
@@ -36,6 +73,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
         </button>
       </div>
       <div className="office-right">
+        <UpdateButton />
         <button
           className={`office-health ${healthy ? 'is-ok' : 'is-warn'}`}
           onClick={() => go({ kind: 'settings', section: 'mesh' })}
