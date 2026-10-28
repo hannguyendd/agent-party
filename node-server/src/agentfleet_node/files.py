@@ -44,6 +44,15 @@ def save_to_inbox(settings: Settings, working_dir: str, context_id: str, filenam
     return target
 
 
+def file_ref(rec, working_dir: str) -> dict:
+    """How a stored file appears in a message's data: enough for the dashboard to show and fetch it."""
+    try:
+        rel = str(Path(rec.path).relative_to(working_dir))
+    except ValueError:
+        rel = Path(rec.path).name
+    return {"id": rec.id, "name": rec.filename, "media_type": rec.media_type, "size": rec.size, "path": rel}
+
+
 def read_for_sharing(settings: Settings, working_dir: str, rel_path: str) -> tuple[str, bytes, str]:
     """Read a file inside the agent's working directory for sending."""
     root = Path(working_dir).resolve()

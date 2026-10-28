@@ -12,6 +12,8 @@ interface Props {
   placeholder?: string
   disabled?: boolean
   maxHeight?: number
+  /** Files pasted into the box (e.g. a screenshot). */
+  onPasteFiles?: (files: File[]) => void
 }
 
 /** The "@query" right before the caret, if any. */
@@ -20,7 +22,7 @@ function mentionAt(text: string, caret: number): { start: number; query: string 
   return m ? { start: caret - m[2].length - 1, query: m[2].toLowerCase() } : null
 }
 
-export function MentionInput({ value, onChange, onSubmit, candidates, placeholder, disabled, maxHeight = 160 }: Props) {
+export function MentionInput({ value, onChange, onSubmit, candidates, placeholder, disabled, maxHeight = 160, onPasteFiles }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null)
   const [caret, setCaret] = useState(0)
   const [pick, setPick] = useState(0)
@@ -92,6 +94,13 @@ export function MentionInput({ value, onChange, onSubmit, candidates, placeholde
           setPick(0)
         }}
         onSelect={(e) => setCaret(e.currentTarget.selectionStart)}
+        onPaste={(e) => {
+          const files = Array.from(e.clipboardData.files)
+          if (files.length && onPasteFiles) {
+            e.preventDefault()
+            onPasteFiles(files)
+          }
+        }}
         onKeyDown={(e) => {
           if (options.length) {
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {

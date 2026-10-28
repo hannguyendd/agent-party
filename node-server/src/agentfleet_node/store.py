@@ -213,6 +213,10 @@ class Store:
             s.refresh(rec)
         return rec
 
+    def get_file(self, file_id: str) -> FileRecord | None:
+        with self.db.session() as s:
+            return s.get(FileRecord, file_id)
+
     def audit(self, event: str, **fields: Any) -> None:
         top = {k: fields.pop(k, None) for k in ("agent_id", "peer_agent_id", "context_id", "task_id")}
         with self.db.session() as s:

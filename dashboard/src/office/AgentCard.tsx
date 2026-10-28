@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { Conversation, OfficeAgent } from '../api'
 import { Icon } from './Icon'
+import type { Limits } from './attachments'
 import type { Who } from './people'
 import { MessageAgent } from './SideLists'
 import { SKINS } from './skins'
@@ -22,6 +23,7 @@ interface Props {
   onSettings: () => void
   /** Other people's agents, offered when typing @. */
   candidates: Who[]
+  limits?: Limits
   /** "auto": goes ahead and messages others; "ask": asks me first. Undefined in preview. */
   contactPolicy?: 'auto' | 'ask'
   onContactPolicy?: (p: 'auto' | 'ask') => void
@@ -49,7 +51,7 @@ export function AgentCard(p: Props) {
         </div>
       </div>
 
-      {!p.preview && <MessageAgent agentId={a.agent_id} name={a.name} candidates={p.candidates} onStarted={p.onStarted} onError={p.onError} />}
+      {!p.preview && <MessageAgent agentId={a.agent_id} name={a.name} candidates={p.candidates} limits={p.limits} onStarted={p.onStarted} onError={p.onError} />}
 
       {p.contactPolicy && (
         <div className="o-policy" role="radiogroup" aria-label="Before contacting other agents">

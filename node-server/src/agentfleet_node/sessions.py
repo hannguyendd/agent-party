@@ -277,15 +277,19 @@ class SessionWorker:
             )
             return result
 
-    async def inject(self, text: str) -> None:
-        """Owner adds context. Mid-turn it is picked up at the agent's next step;
-        when idle it starts a local turn the peer never sees."""
-        self.store.add_message(self.conv_id, "owner", text)
+    async def inject(self, text: str, files: list[dict[str, Any]] | None = None) -> None:
+        """Owner adds context (optionally with files already saved to the agent's inbox). Mid-turn it is picked up
+        at the agent's next step; when idle it starts a local turn the peer never sees."""
+        self.store.add_message(self.conv_id, "owner", text, **({"files": files} if files else {}))
+        prompt = text
+        if files:
+            paths = ", ".join(f["path"] for f in files)
+            prompt = (text + "\n\n" if text else "") + f"Your owner attached files, saved in your working directory: {paths}. Read them as needed."
         if self.turn_active and self.client is not None:
             self._pending += 1
-            await self.client.query(text)
+            await self.client.query(prompt)
         else:
-            asyncio.create_task(self._local_turn(text))
+            asyncio.create_task(self._local_turn(prompt))
 
     async def _local_turn(self, text: str) -> None:
         try:

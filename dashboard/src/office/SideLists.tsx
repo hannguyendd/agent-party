@@ -7,6 +7,8 @@ import { ApprovalCard } from '../components/ApprovalCard'
 import { StatusBadge, errMsg, timeAgo } from '../components/ui'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
+import { AttachBar } from './AttachBar'
+import { dropTarget, useAttachments, type Limits } from './attachments'
 import { MentionInput } from './MentionInput'
 import type { Who } from './people'
 
@@ -77,17 +79,20 @@ export function ApprovalsList({ approvals, state, onOpen }: { approvals: Approva
 }
 
 /** Start a private conversation with one of my agents (what the old "Start session" page did). */
-export function MessageAgent({ agentId, name, candidates, onStarted, onError }: {
-  agentId: string; name?: string; candidates: Who[]; onStarted: (id: string) => void; onError: (msg: string) => void
+export function MessageAgent({ agentId, name, candidates, limits, onStarted, onError }: {
+  agentId: string; name?: string; candidates: Who[]; limits?: Limits; onStarted: (id: string) => void; onError: (msg: string) => void
 }) {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
+  const att = useAttachments(limits)
+  const ready = (!!text.trim() || att.files.length > 0) && !busy
   const start = async () => {
-    if (!text.trim() || busy) return
+    if (!ready) return
     setBusy(true)
     try {
-      onStarted((await api.startConversation(agentId, text.trim())).id)
+      onStarted((await api.startConversation(agentId, text.trim(), att.payload())).id)
       setText('')
+      att.clear()
     } catch (e) {
       onError(errMsg(e))
     } finally {
@@ -95,15 +100,19 @@ export function MessageAgent({ agentId, name, candidates, onStarted, onError }: 
     }
   }
   return (
-    <div className="office-message-agent">
-      <MentionInput
-        value={text}
-        onChange={setText}
-        onSubmit={() => void start()}
-        candidates={candidates}
-        placeholder={`Ask ${name ?? 'your agent'} anything · @ to pick a colleague's agent`}
-      />
-      <button className="btn-primary" disabled={busy || !text.trim()} onClick={start} aria-label="Send to agent">
+    <div className="office-message-agent" {...dropTarget(att)}>
+      <div className="o-compose-box">
+        <MentionInput
+          value={text}
+          onChange={setText}
+          onSubmit={() => void start()}
+          onPasteFiles={(f) => void att.add(f)}
+          candidates={candidates}
+          placeholder={`Ask ${name ?? 'your agent'} anything · @ a colleague's agent · drop files`}
+        />
+        <AttachBar att={att} />
+      </div>
+      <button className="btn-primary" disabled={!ready} onClick={start} aria-label="Send to agent">
         <Icon name="send" />
       </button>
     </div>

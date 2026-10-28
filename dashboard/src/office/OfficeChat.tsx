@@ -2,7 +2,7 @@
 // the right, tool calls folded into one line each.
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { Conversation, Message } from '../api'
+import { api, type Conversation, type FileRef, type Message } from '../api'
 import { Json, clockTime } from '../components/ui'
 import type { LiveState } from '../useLiveState'
 import { who, type Who } from './people'
@@ -21,6 +21,27 @@ export function Avatar({ w, size = 28 }: { w: Who | 'me'; size?: number }) {
     <span className="o-avatar o-avatar-letter" style={{ width: size, height: size, background: ownerCss(w.owner || w.id) }}>
       {(SKIN_BY_ID[w.skin ?? '']?.emoji ?? w.name[0] ?? '?').toUpperCase()}
     </span>
+  )
+}
+
+/** Files on a message: images as thumbnails, everything else as a download chip. Older rows stored plain paths. */
+function Attachments({ files }: { files: unknown }) {
+  if (!Array.isArray(files) || !files.length) return null
+  const refs = files.map((f): Partial<FileRef> => (typeof f === 'string' ? { name: f.split('/').pop(), path: f } : (f as FileRef)))
+  return (
+    <div className="o-files">
+      {refs.map((f, i) =>
+        f.id && f.media_type?.startsWith('image/') ? (
+          <a key={i} className="o-file-img" href={api.fileUrl(f.id)} target="_blank" rel="noreferrer" title={f.name}>
+            <img src={api.fileUrl(f.id)} alt={f.name} loading="lazy" />
+          </a>
+        ) : f.id ? (
+          <a key={i} className="o-file" href={api.fileUrl(f.id)} title={f.path}>📎 {f.name}</a>
+        ) : (
+          <span key={i} className="o-file" title={f.path}>📎 {f.name}</span>
+        ),
+      )}
+    </div>
   )
 }
 
@@ -179,7 +200,11 @@ export function OfficeChat({ state, conv, messages, partial }: { state: LiveStat
                   <time>{clockTime(m.created_at)}</time>
                 </div>
               )}
-              <div className="o-msg-bubble">{m.content}</div>
+              {(m.content || !Array.isArray(m.data.files)) && <div className="o-msg-bubble">{m.content}</div>}
+              <Attachments files={m.data.files} />
+              {Array.isArray(m.data.rejected_files) && m.data.rejected_files.length > 0 && (
+                <span className="o-msg-state is-rejected">Not accepted: {(m.data.rejected_files as string[]).join('; ')}</span>
+              )}
               {state_ && state_ !== 'completed' && <span className={`o-msg-state is-${state_}`}>{state_.replace('_', ' ')}</span>}
             </div>
           </div>

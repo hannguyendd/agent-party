@@ -1,14 +1,18 @@
 """Dashboard API: REST for actions, one WebSocket for the live event stream."""
 
 import asyncio
+import base64
+import binascii
 import uuid
 from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Request, WebSocket
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from agentfleet_node.models import DEFAULT_ALLOWED_TOOLS, Agent, Direction
+from agentfleet_node.files import FileRejected, file_ref, save_to_inbox
 from agentfleet_node.mesh import AgentOffline
 from agentfleet_node.naming import InvalidAgentId, owner_of, validate_agent_id
 from agentfleet_node.store import dump
@@ -45,9 +49,21 @@ class TextIn(BaseModel):
     text: str = Field(min_length=1)
 
 
-class StartIn(BaseModel):
+class FileIn(BaseModel):
+    """A file attached by the owner, base64-encoded (inline; same limits as files from peers)."""
+
+    name: str = Field(min_length=1)
+    media_type: str = ""
+    data: str
+
+
+class InjectIn(BaseModel):
+    text: str = ""
+    files: list[FileIn] = Field(default_factory=list, max_length=10)
+
+
+class StartIn(InjectIn):
     agent_id: str
-    text: str = Field(min_length=1)
 
 
 class DeskIn(BaseModel):
@@ -78,7 +94,13 @@ class DecisionIn(BaseModel):
 @router.get("/node")
 async def node_info(request: Request) -> dict[str, Any]:
     node = _node(request)
-    return {"owner": node.settings.owner, "base_url": node.settings.public_base_url, "mesh": await node.directory.node_status()}
+    s = node.settings
+    return {
+        "owner": s.owner,
+        "base_url": s.public_base_url,
+        "mesh": await node.directory.node_status(),
+        "files": {"max_bytes": s.max_inline_file_bytes, "suffixes": s.allowed_file_suffixes},
+    }
 
 
 @router.post("/mesh/sync")
@@ -170,9 +192,36 @@ async def start_conversation(body: StartIn, request: Request) -> dict[str, Any]:
     agent = node.store.get_agent(body.agent_id)
     if agent is None or not agent.enabled:
         raise HTTPException(404, "no such agent")
-    conv = node.store.create_conversation(agent.id, f"local-{uuid.uuid4().hex}", Direction.LOCAL, title=body.text[:80])
-    await node.sessions.worker(conv.id).inject(body.text)
+    _need_content(body)
+    conv = node.store.create_conversation(agent.id, f"local-{uuid.uuid4().hex}", Direction.LOCAL, title=(body.text or body.files[0].name)[:80])
+    files = _save_attachments(node, conv, body.files)
+    await node.sessions.worker(conv.id).inject(body.text, files)
     return dump(conv)
+
+
+def _need_content(body: InjectIn) -> None:
+    if not body.text.strip() and not body.files:
+        raise HTTPException(422, "send some text or at least one file")
+
+
+def _save_attachments(node, conv, files: list[FileIn]) -> list[dict[str, Any]]:
+    """Decode and store the owner's attachments in the agent's inbox; 422 on a bad or disallowed file."""
+    agent = node.store.get_agent(conv.agent_id)
+    out = []
+    for f in files:
+        try:
+            data = base64.b64decode(f.data, validate=True)
+        except (binascii.Error, ValueError):
+            raise HTTPException(422, f"{f.name}: not valid base64") from None
+        try:
+            path = save_to_inbox(node.settings, agent.working_dir, conv.context_id, f.name, data)
+        except FileRejected as e:
+            raise HTTPException(422, f"{f.name}: {e}") from None
+        rec = node.store.add_file(conv.id, "owner", f.name, str(path), len(data), f.media_type)
+        out.append(file_ref(rec, agent.working_dir))
+    if out:
+        node.store.audit("owner_attached_files", agent_id=conv.agent_id, context_id=conv.context_id, count=len(out))
+    return out
 
 
 def _conv_or_404(node, conv_id: str):
@@ -194,11 +243,27 @@ def get_conversation(conv_id: str, request: Request) -> dict[str, Any]:
 
 
 @router.post("/conversations/{conv_id}/inject")
-async def inject(conv_id: str, body: TextIn, request: Request) -> dict[str, str]:
+async def inject(conv_id: str, body: InjectIn, request: Request) -> dict[str, str]:
     node = _node(request)
-    _conv_or_404(node, conv_id)
-    await node.sessions.worker(conv_id).inject(body.text)
+    conv = _conv_or_404(node, conv_id)
+    _need_content(body)
+    files = _save_attachments(node, conv, body.files)
+    await node.sessions.worker(conv_id).inject(body.text, files)
     return {"status": "sent"}
+
+
+@router.get("/files/{file_id}")
+def get_file(file_id: str, request: Request) -> FileResponse:
+    """A file recorded in one of this node's conversations (attachments, files from peers). Images show inline."""
+    node = _node(request)
+    rec = node.store.get_file(file_id)
+    conv = node.store.get_conversation(rec.conversation_id) if rec else None
+    agent = node.store.get_agent(conv.agent_id) if conv else None
+    path = Path(rec.path).resolve() if rec else None
+    if not rec or not agent or not path or not path.is_file() or not path.is_relative_to(Path(agent.working_dir).resolve()):
+        raise HTTPException(404, "no such file")
+    inline = (rec.media_type or "").startswith("image/")
+    return FileResponse(path, media_type=rec.media_type or None, filename=rec.filename, content_disposition_type="inline" if inline else "attachment")
 
 
 @router.post("/conversations/{conv_id}/interrupt")

@@ -669,3 +669,22 @@
 .o-exchange-wait { font-size: 12px; color: var(--o-muted); display: flex; align-items: center; gap: 8px; }
 .o-exchange-err { font-size: 12px; color: #a54a2a; }
 .o-chat-more { margin-right: 8px; font-weight: 800; color: var(--o-mint-ink); cursor: pointer; }
+
+/* attachments */
+.o-compose-box { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.o-compose-box .o-mention textarea { padding-right: 42px; }
+.o-attach-btn { position: absolute; right: 6px; bottom: 6px; width: 28px; height: 28px; font-size: 15px; box-shadow: none; border-width: 1.5px; }
+.o-attach-btn.is-disabled { opacity: 0.4; pointer-events: none; }
+.o-attach-list { display: flex; flex-wrap: wrap; gap: 6px; order: -1; }
+.o-attach-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 200px; padding: 3px 4px 3px 3px; font-size: 12px; background: var(--o-panel-2); border: 1.5px solid var(--o-soft-line); border-radius: 8px; }
+.o-attach-chip img { width: 28px; height: 28px; object-fit: cover; border-radius: 5px; }
+.o-attach-ext { display: grid; place-items: center; width: 28px; height: 28px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: var(--o-lav); border-radius: 5px; }
+.o-attach-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.o-attach-chip button { width: 18px; height: 18px; font-weight: 800; color: var(--o-muted); cursor: pointer; border-radius: 4px; }
+.o-attach-chip button:hover { background: var(--o-panel); color: var(--o-ink); }
+.o-attach-error { flex-basis: 100%; font-size: 12px; color: #a54a2a; }
+.o-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.o-msg.is-mine .o-files { justify-content: flex-end; }
+.o-file-img img { display: block; max-width: 220px; max-height: 160px; border-radius: 10px; border: 1.5px solid var(--o-soft-line); }
+.o-file { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; font-size: 12px; font-weight: 700; background: var(--o-panel); border: 1.5px solid var(--o-soft-line); border-radius: 999px; color: var(--o-ink); }
+a.o-file:hover { border-color: var(--o-line); }

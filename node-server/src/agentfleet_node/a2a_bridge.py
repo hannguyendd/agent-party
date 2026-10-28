@@ -36,7 +36,7 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 
 from agentfleet_node.config import Settings
-from agentfleet_node.files import FileRejected, save_to_inbox
+from agentfleet_node.files import FileRejected, file_ref, save_to_inbox
 from agentfleet_node.mesh import MeshDirectory, local_a2a_url
 from agentfleet_node.models import Agent, ConversationKind, ConversationStatus, Direction
 from agentfleet_node.naming import InvalidAgentId, from_service_name, validate_agent_id
@@ -135,14 +135,14 @@ class MeshAgentExecutor(AgentExecutor):
             if p.HasField("raw"):
                 try:
                     path = save_to_inbox(self.settings, agent.working_dir, task.context_id, p.filename or "file", p.raw)
-                    rel = str(path.relative_to(agent.working_dir))
-                    saved.append(rel)
-                    self.store.add_file(conv.id, "received", p.filename, str(path), len(p.raw), p.media_type)
+                    rec = self.store.add_file(conv.id, "received", p.filename or path.name, str(path), len(p.raw), p.media_type)
+                    saved.append(file_ref(rec, agent.working_dir))
                 except FileRejected as e:
                     rejected.append(f"{p.filename}: {e}")
             elif p.HasField("url"):
                 rejected.append(f"{p.url}: URL file parts are not fetched in v1")
         self.store.add_message(conv.id, "peer", text, sender=sender, files=saved, rejected_files=rejected)
+        saved_paths = [f["path"] for f in saved]
 
         await up.start_work()
 
@@ -158,7 +158,7 @@ class MeshAgentExecutor(AgentExecutor):
                 return
 
         try:
-            result = await self.sessions.handle_inbound(conv.id, format_prompt(sender, text, saved, rejected), status_hook)
+            result = await self.sessions.handle_inbound(conv.id, format_prompt(sender, text, saved_paths, rejected), status_hook)
         except TurnTimeout as e:
             await up.failed(up.new_agent_message([Part(text=str(e))]))
             return

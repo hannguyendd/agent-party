@@ -281,6 +281,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           onSkin={skin => isPreview ? setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin } : a)) : void perform(() => api.setSkin(picked.agent_id, skin))}
           onSettings={() => go({ kind: 'settings', section: 'agents', agentId: picked.agent_id })}
           candidates={agents.filter(a => a.owner !== me).map(a => who(state, a.agent_id))}
+          limits={state.node?.files}
           contactPolicy={isPreview ? undefined : (state.agents[picked.agent_id]?.contact_policy ?? 'auto')}
           onContactPolicy={policy => { const full = state.agents[picked.agent_id]; if (full) void perform(() => api.saveAgent({ ...full, contact_policy: policy })) }}
         />}

@@ -39,6 +39,24 @@ export interface NodeInfo {
   owner: string
   base_url: string
   mesh: MeshStatus
+  /** Limits for attachments (same as files from peers). */
+  files?: { max_bytes: number; suffixes: string[] }
+}
+
+/** A file the owner attaches to a message, base64-encoded. */
+export interface FileIn {
+  name: string
+  media_type: string
+  data: string
+}
+
+/** How a stored file appears in a message's `data.files`. */
+export interface FileRef {
+  id: string
+  name: string
+  media_type: string
+  size: number
+  path: string
 }
 
 export interface DirectoryEntry {
@@ -217,10 +235,12 @@ export const api = {
 
   conversations: (agentId?: string) =>
     req<Conversation[]>('GET', `/api/conversations${agentId ? `?agent_id=${enc(agentId)}` : ''}`),
-  startConversation: (agent_id: string, text: string) =>
-    req<Conversation>('POST', '/api/conversations', { agent_id, text }),
+  startConversation: (agent_id: string, text: string, files: FileIn[] = []) =>
+    req<Conversation>('POST', '/api/conversations', { agent_id, text, files }),
   conversation: (id: string) => req<ConversationDetail>('GET', `/api/conversations/${enc(id)}`),
-  inject: (id: string, text: string) => req<{ status: string }>('POST', `/api/conversations/${enc(id)}/inject`, { text }),
+  inject: (id: string, text: string, files: FileIn[] = []) =>
+    req<{ status: string }>('POST', `/api/conversations/${enc(id)}/inject`, { text, files }),
+  fileUrl: (id: string) => `/api/files/${enc(id)}`,
   interrupt: (id: string) => req<{ status: string }>('POST', `/api/conversations/${enc(id)}/interrupt`),
   takeover: (id: string) => req<{ status: string }>('POST', `/api/conversations/${enc(id)}/takeover`),
   handback: (id: string) => req<{ status: string }>('POST', `/api/conversations/${enc(id)}/handback`),
