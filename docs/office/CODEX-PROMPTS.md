@@ -1,14 +1,19 @@
-# Prompts giao Codex vẽ asset Office
+# Codex prompts for the Office art
 
-Giao theo thứ tự. Duyệt **Bước 1 (style test)** xong mới giao bước tiếp theo, và gửi kèm ảnh đã duyệt làm mẫu.
-Chi tiết kích thước đầy đủ: `docs/office/ASSET-BRIEF.md`.
+Hand these over in order. Approve **Step 1 (style test)** before the next step, and attach the approved images as the
+reference. Full size specs: `docs/office/ASSET-BRIEF.md`.
+
+> What actually shipped: steps 0 and 1–2 (characters), then the **map batch** (background plate, collision grid,
+> seats) and the **UI batch** (icons, logo, bubbles, markers) described in `ASSET-BRIEF.md`. Steps 3–4 (tileset and
+> separate objects) were replaced by the map plate. Codex works on assets only; code requests go to
+> `design/office-style/REQUESTS.md`.
 
 ---
 
-## Bước 0: Mẫu layout phòng + nhân vật (làm trước tiên)
+## Step 0: Room layout and character samples (first)
 
-Chỉ là ảnh mẫu để duyệt look, chưa cần đúng spritesheet hay đúng pixel. Chọn 1 hướng (hoặc ghép, ví dụ "màu của B,
-nhân vật của A"), rồi giao Bước 1 kèm ảnh đã chọn.
+Samples to judge the look only; no sprite-sheet layout or exact pixels yet. Pick one direction (or a mix, e.g. "B's
+colours with A's characters"), then hand over Step 1 with the chosen images. Direction C (pastel) was approved.
 
 ```text
 Create STYLE SAMPLES for "Office", an original top-down 2D pixel-art virtual office where AI agents appear as cute
@@ -61,10 +66,10 @@ In your report, list the files and one sentence per direction on what makes it d
 
 ---
 
-## Bước 1: Style test
+## Step 1: Style test
 
-Đầu prompt, thêm một dòng nói hướng đã chọn, ví dụ: `Use direction B "Clean tech" from design/office-style/B/
-as the visual reference, with its palette.` Đính kèm `scene@3x.png` và `cast@3x.png` của hướng đó.
+Start the prompt with one line naming the chosen direction, e.g. `Use direction C "Pastel playful" from
+design/office-style/C/ as the visual reference, with its palette.` Attach that direction's `scene@3x.png` and `cast@3x.png`.
 
 ```text
 You are producing original pixel-art game assets for "Office", a top-down 2D virtual office where AI agents
@@ -122,9 +127,9 @@ palette) and commit that script too under tools/office-assets/, so the assets ca
 
 ---
 
-## Bước 2: 7 skin còn lại
+## Step 2: The other 7 skins
 
-Gửi kèm `char-dev-hoodie.png` và `palette.txt` đã duyệt.
+Attach the approved `char-dev-hoodie.png` and `palette.txt`.
 
 ```text
 Using the approved style test as the reference (same palette from palette.txt, same proportions, outline, light
@@ -148,7 +153,7 @@ standing in a row (characters/preview-cast.png).
 
 ---
 
-## Bước 3: Tileset + bàn đầy đủ
+## Step 3: Tileset and desks (superseded by the map plate)
 
 ```text
 Using the approved palette and style, produce:
@@ -170,7 +175,7 @@ Verify seamless floors (4x4 repeat preview), sizes, alpha and palette.
 
 ---
 
-## Bước 4: Pantry, Manager Room, decor
+## Step 4: Pantry, manager room, decor (superseded by the map plate)
 
 ```text
 Using the approved palette and style, produce sheets in dashboard/public/office/objects/, each object in its
@@ -187,7 +192,7 @@ own grid-aligned cell, transparent background, plus an objects-*.json with name 
 
 ---
 
-## Bước 5: UI và hiệu ứng
+## Step 5: UI and effects
 
 ```text
 Using the approved palette, produce pixel-art UI pieces in dashboard/public/office/ui/ (transparent PNG, no text

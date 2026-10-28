@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -49,28 +49,28 @@
 </head>
 <body>
 <header>
-  <h1>Internal Agent Fleet — kiến trúc</h1>
-  <p>Claude Code agent của từng người nói chuyện với nhau qua A2A trên Agent Mesh. Ghi chú chữ: <code>docs/NOTES.md</code>.</p>
+  <h1>Internal Agent Fleet — architecture</h1>
+  <p>Each teammate's Claude Code agents talk to each other over A2A on Agent Mesh. Written notes: <code>docs/NOTES.md</code>; the Office (game-like map) is described there and in <code>CONTEXT.md</code>.</p>
 </header>
 <nav><div class="inner" role="tablist" id="tabs"></div></nav>
 <main>
 
 <section id="topology" data-title="Topology">
-  <h2>Topology: hub, máy, agent</h2>
-  <p class="lead">Một hub cho cả team. Mỗi máy chạy hai tiến trình: <code>agentmesh-node</code> (mạng) và node-server (agent + dashboard).</p>
+  <h2>Topology: hub, machines, agents</h2>
+  <p class="lead">One hub per team (plus the Office world server). Each machine runs two processes: <code>agentmesh-node</code> (network) and the node server (agents + dashboard).</p>
   <div class="card"><pre class="mermaid">
 flowchart LR
-  subgraph HUB["Hub — máy LAN luôn bật"]
+  subgraph HUB["Hub — always-on LAN machine"]
     ONE["agentmesh-one :7400<br/>control plane · router · console<br/>policy.json · join token"]
   end
-  subgraph A["Máy của han"]
+  subgraph A["han's machine"]
     direction TB
-    DA["Dashboard (React)<br/>served ở /"] -->|REST /api + WS /api/ws| NA["node-server :9100<br/>FastAPI + Claude Agent SDK"]
+    DA["Office (React + Phaser)<br/>served at /"] -->|REST /api + WS /api/ws| NA["node-server :9100<br/>FastAPI + Claude Agent SDK"]
     NA -->|ClaudeSDKClient| CA["Claude CLI sessions"]
     NA -->|discover · /mesh proxy| MA["agentmesh-node :8080"]
     MA -->|"/a2a/han.backend-agent/"| NA
   end
-  subgraph B["Máy của bob"]
+  subgraph B["bob's machine"]
     direction TB
     NB["node-server :9100"] --> MB["agentmesh-node :8080"]
     MB --> NB
@@ -80,15 +80,15 @@ flowchart LR
   MA <-.->|A2A qua mesh| MB
   </pre></div>
   <div class="notes">
-    <div class="note"><b>Tên service</b><code>han/backend-agent</code> → <code>han.backend-agent</code> (mesh không cho <code>/</code>). Logic ở <code>naming.py</code>.</div>
-    <div class="note"><b>Restart mesh node</b>Thêm/xoá agent → node-server ghi lại <code>agentmesh-node.yaml</code> → phải restart <code>agentmesh-node</code>.</div>
-    <div class="note"><b>Vì sao cần agentmesh-node</b>Python SDK của mesh gọi được nhưng không publish service được.</div>
+    <div class="note"><b>Service names</b><code>han/backend-agent</code> → <code>han.backend-agent</code> (the mesh doesn't allow <code>/</code>). Only <code>naming.py</code> does this.</div>
+    <div class="note"><b>Restart the mesh node</b>Adding/removing agents rewrites <code>agentmesh-node.yaml</code>; <code>agentmesh-node</code> must be restarted.</div>
+    <div class="note"><b>Why agentmesh-node</b>The mesh's Python SDK can call but cannot publish services.</div>
   </div>
 </section>
 
 <section id="inbound" data-title="Inbound">
-  <h2>Inbound: peer gọi agent của mình</h2>
-  <p class="lead">Mỗi A2A message thành một lượt của Claude session gắn với <code>contextId</code>.</p>
+  <h2>Inbound: a peer calls my agent</h2>
+  <p class="lead">Each A2A message becomes one turn of the Claude session bound to its <code>contextId</code>.</p>
   <div class="card"><pre class="mermaid">
 sequenceDiagram
   autonumber
@@ -104,10 +104,10 @@ sequenceDiagram
   G->>X: execute()
   X->>X: find/create Conversation(agent_id, contextId)
   X->>X: turn_count ≥ 20? → reject
-  X->>X: lưu file inline vào inbox/
+  X->>X: save inline files to inbox/
   X->>S: handle_inbound(format_prompt → mesh_message)
   alt mode = manual
-    S->>S: _wait_for_owner (owner trả lời tay)
+    S->>S: _wait_for_owner (owner answers by hand)
   else mode = auto
     S->>W: run_turn(prompt) [_turn_lock]
     W->>C: query()
@@ -117,7 +117,7 @@ sequenceDiagram
   alt error
     X-->>P: failed
   else needs_input
-    X-->>P: input-required (peer gửi tiếp cùng contextId + taskId)
+    X-->>P: input-required (peer continues with the same contextId + taskId)
   else
     X-->>P: completed
   end
@@ -125,116 +125,116 @@ sequenceDiagram
 </section>
 
 <section id="outbound" data-title="Outbound">
-  <h2>Outbound: agent của mình gọi peer</h2>
-  <p class="lead">Agent dùng mesh tool. Địa chỉ được resolve theo thứ tự: local → static peer → mesh discovery.</p>
+  <h2>Outbound: my agent calls a peer</h2>
+  <p class="lead">The agent uses a mesh tool. The address is resolved in order: local → static peer → mesh discovery.</p>
   <div class="card"><pre class="mermaid">
 flowchart TD
-  T["Claude gọi mcp__mesh__send_message / share_file"] --> O["OutboundClient.send"]
+  T["Claude calls mcp__mesh__send_message / share_file"] --> O["OutboundClient.send"]
   O --> R{"MeshDirectory.resolve(to)"}
-  R -->|agent cùng máy| L["Gọi thẳng /a2a/&lt;service&gt;/ local"]
-  R -->|owner có trong static_peers| SP["Gọi thẳng node kia (dev/test)"]
+  R -->|agent on this machine| L["Call /a2a/&lt;service&gt;/ locally"]
+  R -->|owner in static_peers| SP["Call that node directly (dev/test)"]
   R -->|GET /mesh/service/discover| D["Proxy /mesh/&lt;peer-id&gt;/a2a/&lt;service&gt;/"]
-  R -->|không thấy| OFF["AgentOffline — fail ngay, không queue"]
-  L --> H["HTTP blocking, chờ hết lượt bên kia<br/>(≤ outbound_timeout_s 900s)"]
+  R -->|not found| OFF["AgentOffline — fails at once, no queue"]
+  L --> H["Blocking HTTP for the whole remote turn<br/>(≤ outbound_timeout_s 900s)"]
   SP --> H
   D --> H
-  H --> REP["Trả tool result: reply · state · context_id · task_id"]
+  H --> REP["Tool result: reply · state · context_id · task_id"]
   REP --> T
   </pre></div>
   <div class="notes">
-    <div class="note"><b>Tiếp tục hội thoại</b>Truyền lại <code>context_id</code>; nếu state là <code>input_required</code> thì truyền cả <code>task_id</code>.</div>
-    <div class="note"><b>Danh tính</b>Người nhận chỉ thấy <code>agentfleet.from_agent</code> trong metadata — lời khai, không được xác thực.</div>
+    <div class="note"><b>Continuing</b>Pass the same <code>context_id</code>; when the state is <code>input_required</code>, pass <code>task_id</code> too.</div>
+    <div class="note"><b>Identity</b>The receiver only sees <code>agentfleet.from_agent</code> in metadata — a claim, not verified.</div>
   </div>
 </section>
 
 <section id="policy" data-title="Tool policy">
   <h2>Tool policy: allow / deny / ask</h2>
-  <p class="lead">Một nguồn sự thật: <code>sessions.policy_decision</code>, gọi từ cả hook <code>PreToolUse</code> và <code>can_use_tool</code>.</p>
+  <p class="lead">One source of truth: <code>sessions.policy_decision</code>, called from both the <code>PreToolUse</code> hook and <code>can_use_tool</code>. Contact tools follow the agent's contact policy; an accepted Assignment also allows file edits.</p>
   <div class="card"><pre class="mermaid">
 flowchart TD
-  U["Claude muốn dùng tool"] --> HK["PreToolUse hook<br/>(luôn chạy)"]
-  U --> CU["can_use_tool<br/>(CLI bỏ qua với lệnh read-only)"]
+  U["Claude wants a tool"] --> HK["PreToolUse hook<br/>(always runs)"]
+  U --> CU["can_use_tool<br/>(CLI skips it for read-only commands)"]
   HK --> PD{"policy_decision"}
   CU --> PD
   PD -->|match denied_tools| DENY["deny"]
   PD -->|mcp__mesh__* · ToolSearch · match allowed_tools| ALLOW["allow"]
-  PD -->|còn lại| ASK["ask → tạo Approval<br/>status = awaiting_approval"]
-  ASK --> OW{"Owner bấm trên dashboard"}
+  PD -->|otherwise| ASK["ask → create Approval<br/>status = awaiting_approval"]
+  ASK --> OW{"Owner decides in the Office"}
   OW -->|Approve| ALLOW
   OW -->|Deny| DENY
-  OW -->|hết 300s| TO["timed_out → deny"]
+  OW -->|after 300s| TO["timed_out → deny"]
   </pre></div>
   <div class="notes">
-    <div class="note"><b>Chặn nối lệnh</b><code>Bash(ls*)</code> không match <code>ls; rm -rf ~</code>: có <code>; &amp; | ` &lt; &gt; $(</code> hoặc xuống dòng là không match.</div>
-    <div class="note"><b>Allow mặc định</b><code>Read</code>, <code>Bash(ls*)</code>, <code>Bash(rg *)</code>, <code>Bash(grep *)</code>, <code>Bash(git status*|log*|diff*)</code>.</div>
-    <div class="note"><b>Không có Glob/Grep</b>CLI hiện tại không có hai tool này; tìm kiếm đi qua Bash.</div>
+    <div class="note"><b>No chaining</b><code>Bash(ls*)</code> never matches <code>ls; rm -rf ~</code>: any <code>; &amp; | ` &lt; &gt; $(</code> or newline fails the match.</div>
+    <div class="note"><b>Default allow list</b><code>Read</code>, <code>Bash(ls*)</code>, <code>Bash(rg *)</code>, <code>Bash(grep *)</code>, <code>Bash(git status*|log*|diff*)</code>.</div>
+    <div class="note"><b>No Glob/Grep</b>The current CLI has neither tool; search goes through Bash.</div>
   </div>
 </section>
 
-<section id="states" data-title="Trạng thái">
-  <h2>Trạng thái conversation</h2>
-  <p class="lead">Field <code>status</code> trong bảng <code>conversations</code>. Dashboard tô màu theo trạng thái này.</p>
+<section id="states" data-title="States">
+  <h2>Conversation status</h2>
+  <p class="lead">The <code>status</code> field of <code>conversations</code>. The Office shows it as a coloured chip.</p>
   <div class="card"><pre class="mermaid">
 stateDiagram-v2
   [*] --> idle
-  idle --> running: run_turn / message tới
-  running --> awaiting_approval: tool cần duyệt
+  idle --> running: run_turn / message arrives
+  running --> awaiting_approval: tool needs approval
   awaiting_approval --> running: approve / deny / timeout
   running --> idle: ResultMessage OK
-  running --> error: lỗi / turn timeout 600s
+  running --> error: failure / turn timeout 600s
   running --> interrupted: Stop / Take over
-  interrupted --> awaiting_owner: inbound đang chờ
-  idle --> awaiting_owner: mode = manual khi message tới
+  interrupted --> awaiting_owner: inbound waiting
+  idle --> awaiting_owner: mode = manual when a message arrives
   awaiting_owner --> idle: owner reply / hand back / timeout 900s
-  idle --> running: hand back → agent chạy tiếp
+  idle --> running: hand back → agent continues
   </pre></div>
   <div class="notes">
-    <div class="note"><b>Direction</b><code>inbound</code> (peer mở), <code>outbound</code> (agent mình mở), <code>local</code> (owner chạy riêng hoặc fork).</div>
-    <div class="note"><b>Mode</b><code>auto</code>: agent trả lời. <code>manual</code>: owner trả lời tay.</div>
+    <div class="note"><b>Direction</b><code>inbound</code> (a peer started it), <code>outbound</code> (my agent started it), <code>local</code> (owner only, or a fork).</div>
+    <div class="note"><b>Mode</b><code>auto</code>: the agent answers. <code>manual</code>: the owner answers by hand.</div>
   </div>
 </section>
 
 <section id="owner" data-title="Owner controls">
   <h2>Owner controls</h2>
-  <p class="lead">Mọi nút trên dashboard là một REST call; kết quả quay về qua WebSocket.</p>
+  <p class="lead">Every control is a REST call; the result comes back over the WebSocket.</p>
   <div class="card"><pre class="mermaid">
 sequenceDiagram
   participant O as Owner (dashboard)
   participant API as /api
   participant S as SessionManager
   participant W as SessionWorker
-  participant P as Peer đang chờ
+  participant P as Waiting peer
   O->>API: POST /takeover
   API->>S: mode = manual
   S->>W: interrupt()
-  Note over S,P: Inbound đang chạy → _wait_for_owner
-  alt Owner trả lời tay
+  Note over S,P: Inbound in progress → _wait_for_owner
+  alt Owner answers by hand
     O->>API: POST /reply {text}
     API->>S: manual_reply → resolve gate
-    S-->>P: text của owner
-  else Trả lại cho agent
+    S-->>P: owner's text
+  else Hand back to the agent
     O->>API: POST /handback
     API->>S: mode = auto → resolve gate
     S->>W: run_turn("Continue where you left off…")
-    W-->>P: câu trả lời của agent
+    W-->>P: agent's answer
   end
   </pre></div>
   <div class="card" style="margin-top:16px">
     <table>
-      <tr><th>Nút</th><th>Endpoint</th><th>Hiệu ứng</th></tr>
-      <tr><td>Inject</td><td><code>/inject</code></td><td>Đang chạy: chèn vào lượt hiện tại. Rảnh: lượt local, peer không thấy.</td></tr>
-      <tr><td>Stop</td><td><code>/interrupt</code></td><td><code>client.interrupt()</code>, inbound chuyển sang chờ owner.</td></tr>
-      <tr><td>Take over / Hand back</td><td><code>/takeover</code> · <code>/handback</code></td><td>Đổi mode manual ↔ auto.</td></tr>
-      <tr><td>Reply</td><td><code>/reply</code></td><td>Trả lời peer bằng tay. 409 nếu không ai chờ.</td></tr>
-      <tr><td>Fork</td><td><code>/fork</code></td><td>Copy Claude session thành conversation local mới.</td></tr>
-      <tr><td>Approve / Deny</td><td><code>/api/approvals/{id}</code></td><td>Quyết định tool đang chờ.</td></tr>
+      <tr><th>Control</th><th>Endpoint</th><th>Effect</th></tr>
+      <tr><td>Inject</td><td><code>/inject</code></td><td>While running: added to the current turn. When idle: a private turn the peer never sees.</td></tr>
+      <tr><td>Stop</td><td><code>/interrupt</code></td><td><code>client.interrupt()</code>; an inbound turn then waits for the owner.</td></tr>
+      <tr><td>Take over / Hand back</td><td><code>/takeover</code> · <code>/handback</code></td><td>Switch mode manual ↔ auto (inbound only in the Office).</td></tr>
+      <tr><td>Reply</td><td><code>/reply</code></td><td>Answer the peer by hand. 409 when nobody is waiting.</td></tr>
+      <tr><td>Fork</td><td><code>/fork</code></td><td>Copy the Claude session into a new private conversation.</td></tr>
+      <tr><td>Approve / Deny</td><td><code>/api/approvals/{id}</code></td><td>Decide a waiting tool use or Assignment.</td></tr>
     </table>
   </div>
 </section>
 
-<section id="data" data-title="Dữ liệu & event">
-  <h2>Dữ liệu và luồng event</h2>
-  <p class="lead">Mọi ghi đi qua <code>Store</code>: lưu SQLite rồi publish lên EventBus → WebSocket → reducer duy nhất ở dashboard.</p>
+<section id="data" data-title="Data & events">
+  <h2>Data and event flow</h2>
+  <p class="lead">Every write goes through <code>Store</code>: saved to SQLite, then published on the EventBus → WebSocket → the dashboard's single reducer.</p>
   <div class="card"><pre class="mermaid">
 erDiagram
   agents ||--o{ conversations : "agent_id"
@@ -242,7 +242,7 @@ erDiagram
   conversations ||--o{ approvals : "conversation_id"
   conversations ||--o{ files : "conversation_id"
   agents { string id PK "owner/name" string working_dir json allowed_tools json denied_tools bool enabled "soft delete" }
-  conversations { string id PK string agent_id FK string context_id "unique với agent_id" string direction string session_id "Claude session" string status string mode int turn_count }
+  conversations { string id PK string agent_id FK string context_id "unique with agent_id" string direction string session_id "Claude session" string status string mode int turn_count }
   messages { string id PK string role "peer agent owner tool system" string kind "text tool_use tool_result status file" string content json data }
   approvals { string id PK string tool_name json tool_input string status "pending allowed denied timed_out" }
   files { string id PK string direction "received sent" string path int size }
@@ -253,15 +253,15 @@ flowchart LR
   W["SessionWorker / Executor / API"] -->|add_message, set_status…| ST["store.Store"]
   ST --> DB[("SQLite data/node.db")]
   ST -->|publish| BUS["EventBus"]
-  W -->|"stream_delta (không lưu)"| BUS
+  W -->|"stream_delta (not stored)"| BUS
   BUS -->|/api/ws| WS["useLiveState<br/>applyEvent reducer"]
   REST["REST snapshot"] --> WS
   WS --> UI["Components"]
   </pre></div>
   <div class="notes">
     <div class="note"><b>Event types</b><code>hello</code> · <code>agent</code> · <code>agent_removed</code> · <code>conversation</code> · <code>message</code> · <code>delta</code> · <code>approval</code> · <code>mesh</code></div>
-    <div class="note"><b>Mirror viết tay</b><code>dashboard/src/api.ts</code> phải khớp <code>api.py</code>, <code>models.py</code>, event trong <code>store.py</code>. Sửa cả hai trong một commit.</div>
-    <div class="note"><b>Audit</b><code>store.redact</code> bỏ mọi key chứa text/content/body/prompt/input/message. PHI không được vào audit.</div>
+    <div class="note"><b>Hand-kept mirror</b><code>dashboard/src/api.ts</code> must match <code>api.py</code>, <code>models.py</code> and the events in <code>store.py</code>. Change both in one commit.</div>
+    <div class="note"><b>Audit</b><code>store.redact</code> drops any key containing text/content/body/prompt/input/message. No PHI in the audit log.</div>
   </div>
 </section>
 

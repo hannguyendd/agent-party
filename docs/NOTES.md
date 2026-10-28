@@ -1,35 +1,40 @@
-# Internal Agent Fleet — ghi chú đọc hiểu
+# Internal Agent Fleet: reading notes
 
-> Mục đích: tóm tắt những gì cần nhớ về repo này để sau không phải đọc lại từ đầu.
-> Sơ đồ trực quan: mở [`docs/architecture.html`](./architecture.html) trong trình duyệt.
-> Đọc ngày 2026-10-28, commit gốc `d31d4e0` (branch `main`).
+> A summary of what to remember about this repo, so it doesn't need re-reading from scratch.
+> Diagrams: open [`docs/architecture.html`](./architecture.html) in a browser.
+> Glossary for the Office: [`CONTEXT.md`](../CONTEXT.md). Decisions: [`docs/adr/`](./adr/).
 
-## 1. Repo này làm gì (1 câu)
+## 1. What the repo does (one sentence)
 
-Mỗi thành viên trong team chạy các **Claude Code agent** trên máy mình; các agent **nói chuyện qua lại với nhau** bằng giao thức **A2A** (Agent-to-Agent) qua mạng **Agent Mesh** (Google `agentmesh`). Chủ agent (owner) theo dõi và điều khiển agent của mình qua **dashboard web**.
+Each teammate runs **Claude Code agents** on their own machine; the agents **talk to each other** over **A2A**
+(Agent-to-Agent) on **Agent Mesh** (Google `agentmesh`), and every owner watches and steers their agents in the
+**Office**: a shared, game-like map of the real office where each online agent is a character.
 
-Design doc gốc: "Agent Mesh Architecture" — https://claude.ai/artifact/DWhMzELPYpbMb1n5bpgDdP (đọc trước khi đổi topology / protocol / guardrail).
+Original design doc: "Agent Mesh Architecture", https://claude.ai/artifact/DWhMzELPYpbMb1n5bpgDdP (read it before
+changing topology, protocol or guardrails).
 
-## 2. Ba thành phần
+## 2. Components
 
-| Thư mục | Chạy ở đâu | Công nghệ | Vai trò |
+| Directory | Runs where | Stack | Role |
 |---|---|---|---|
-| `hub/` | 1 máy LAN luôn bật (cả team dùng chung) | `agentmesh-one` binary | Control plane + router + console. Cấp token, giữ policy |
-| `node-server/` | Mỗi máy 1 cái | Python 3.12, FastAPI, Claude Agent SDK, `a2a-sdk` 1.3, SQLModel/SQLite, uv | Chạy agent, nhận/gửi A2A, API cho dashboard |
-| `dashboard/` | Được node-server serve ở `/` (port 9100) | React 19, Vite, Tailwind v4, bun | UI cho owner |
+| `hub/` | One always-on LAN machine | `agentmesh-one` binary | Mesh control plane + router + console; join tokens and policy |
+| `node-server/` | Every machine | Python 3.12, FastAPI, Claude Agent SDK, `a2a-sdk` 1.3, SQLModel/SQLite, uv | Runs the agents, sends/receives A2A, dashboard API |
+| `node-server` → `agentfleet-node world` | The hub machine | Same package | **World server** for the Office: positions, presence, desks, skins |
+| `dashboard/` | Served by the node server at `/` (port 9100) | React 19, Vite, Tailwind v4, Phaser 3, bun | The Office screen and Settings |
 
-Ngoài ra mỗi máy còn chạy **`agentmesh-node`** (binary của Agent Mesh, port 8080) cạnh node-server — lo identity, policy, discovery, relay. Python SDK của mesh **không publish service được**, nên bắt buộc phải có `agentmesh-node`.
+Every machine also runs **`agentmesh-node`** (Agent Mesh binary, port 8080) next to the node server: identity,
+policy, discovery, relay. The mesh's Python SDK can't publish services, so `agentmesh-node` is required.
 
-## 3. Quy ước tên (quan trọng)
+## 3. Naming (important)
 
-- Agent ID: `owner/name`, ví dụ `han/backend-agent`. Regex `[A-Za-z0-9_-]+/[A-Za-z0-9_-]+`.
-- Agent tạo trên máy nào phải bắt đầu bằng `AGENTFLEET_OWNER` của máy đó.
-- Tên service trên mesh không cho `/` → đổi thành `.`: `han.backend-agent`. File duy nhất lo việc này: `node-server/src/agentfleet_node/naming.py`.
-- Endpoint A2A local: `http://127.0.0.1:9100/a2a/<owner>.<name>/` — **bắt buộc dấu `/` cuối**, thiếu là bị 307 và client fail.
+- Agent ID: `owner/name`, e.g. `han/backend-agent` (regex `[A-Za-z0-9_-]+/[A-Za-z0-9_-]+`).
+- Agents created on a machine must start with that machine's `AGENTFLEET_OWNER`.
+- Mesh service names can't contain `/`, so it becomes `.`: `han.backend-agent`. Only `naming.py` does this.
+- Local A2A endpoint: `http://127.0.0.1:9100/a2a/<owner>.<name>/`. **The trailing `/` is required** (else 307).
 
-## 4. Luồng chính
+## 4. Main flows
 
-### Inbound (peer gọi agent của mình)
+### Inbound (a peer calls my agent)
 ```
 peer → agentmesh-node (relay) → /a2a/<service>/  A2AGateway
      → MeshAgentExecutor.execute       (a2a_bridge.py)
@@ -37,151 +42,170 @@ peer → agentmesh-node (relay) → /a2a/<service>/  A2AGateway
      → SessionWorker.run_turn          → ClaudeSDKClient (Claude CLI)
      → reply: completed | input-required | failed | rejected
 ```
-- Text peer được bọc `<mesh_message from="...">` (`format_prompt`) → agent coi là input không tin cậy.
-- File đính kèm (inline raw part) lưu vào `<working_dir>/inbox/<contextId[:12]>/`. URL part bị từ chối.
-- Vượt `max_turns_per_context` (20) → reject.
+- Peer text is wrapped in `<mesh_message from="...">` (`format_prompt`): untrusted input.
+- Inline file parts are saved to `<working_dir>/inbox/<contextId[:12]>/`; URL parts are refused.
+- Over `max_turns_per_context` (20) → rejected.
 
-### Outbound (agent mình gọi peer)
+### Outbound (my agent calls a peer)
 ```
-Claude gọi tool mcp__mesh__send_message / share_file
+Claude calls mcp__mesh__send_message / share_file
   → OutboundClient.send                (a2a_bridge.py)
   → MeshDirectory.resolve              (mesh.py)
-       1. agent local trên cùng máy  → gọi thẳng
-       2. static_peers (dev/test)    → gọi thẳng
-       3. mesh discover              → qua proxy /mesh/<peer-id>/a2a/<service>/
-       không thấy                    → AgentOffline (không có hàng đợi offline)
-  → HTTP blocking chờ hết lượt bên kia (tối đa outbound_timeout_s = 900s)
+       1. local agent on this machine → call directly
+       2. static_peers (dev/test)     → call directly
+       3. mesh discovery              → via proxy /mesh/<peer-id>/a2a/<service>/
+       not found                      → AgentOffline (no offline queue)
+  → blocking HTTP for the whole remote turn (up to outbound_timeout_s = 900s)
 ```
 
-### Mapping session
-- **1 conversation = 1 cặp (agent_id, contextId) = 1 SessionWorker = 1 Claude session.**
-- Các lượt trong 1 session chạy tuần tự (`_turn_lock`).
-- Muốn hỏi tiếp cùng cuộc hội thoại: truyền lại `context_id` (và `task_id` khi bên kia đang `input-required`).
+### Assignment (work handed to another agent)
+```
+Office "Assign work" → POST /api/office/assign (background; returns the conversation id)
+  → peer sees agentfleet.kind = assignment → Accept / Decline card for the peer's owner (woken if away)
+  → accepted: that conversation may edit files without asking (ADR 0002); declined/timeout: rejected
+```
 
-## 5. Mesh tools agent có sẵn (`mesh_tools.py`)
+### Sessions
+- **One conversation = one (agent_id, contextId) = one SessionWorker = one Claude session.**
+- Turns in a session run one at a time (`_turn_lock`).
+- To continue a conversation, pass the same `context_id` (and `task_id` when the peer is `input-required`).
 
-| Tool | Làm gì |
+## 5. Mesh tools every agent has (`mesh_tools.py`)
+
+| Tool | Does |
 |---|---|
-| `list_agents` | Liệt kê agent: local + static peers + mesh discovery |
-| `send_message` | Gửi tin cho agent khác, chờ trả lời |
-| `share_file` | Gửi file trong working dir (chặn path thoát ra ngoài) |
-| `needs_input` | Đánh dấu câu trả lời là câu hỏi → A2A `input-required` |
+| `list_agents` | Lists agents (local + static peers + mesh) with description and skills |
+| `send_message` | Messages another agent and waits for the reply |
+| `share_file` | Sends a file from the working directory (paths can't escape it) |
+| `needs_input` | Marks the reply as a question → A2A `input-required` |
 
-Mesh tools và `ToolSearch` luôn được phép.
+Agents are told to pick the best-matching agent when asked to find someone, and to talk to exactly the agent their
+owner @mentions. Per-agent **contact policy**: "Go ahead" (default) or "Ask me first" (each `send_message` /
+`share_file` waits for the owner's approval).
 
-## 6. Guardrails (đừng phá)
+## 6. Guardrails (don't break)
 
-1. **Tool policy** — nguồn sự thật duy nhất: `sessions.policy_decision` → `allow` / `deny` / `ask`.
-   - Thứ tự: `denied_tools` → deny; mesh tool / ToolSearch / `allowed_tools` → allow; còn lại → ask owner.
-   - `ask` hết hạn (`approval_timeout_s` = 300s) → **deny**.
-   - Áp dụng qua **cả hai** đường: hook `PreToolUse` **và** `can_use_tool`. Lý do: Claude CLI tự duyệt lệnh read-only (vd `ls`) và bỏ qua `can_use_tool` → chỉ hook mới chặn được.
-   - Pattern `Bash(prefix*)` không bao giờ match lệnh nối chuỗi (`;`, `&&`, `|`, `` ` ``, `$(`, `<`, `>`, xuống dòng).
-   - Mặc định allow: `Read`, `Bash(ls*)`, `Bash(rg *)`, `Bash(grep *)`, `Bash(git status*|log*|diff*)`.
-   - CLI hiện tại **không có tool `Glob`/`Grep`** → tìm kiếm qua Bash.
-2. **Chống loop**: `max_turns_per_context`=20, `max_agent_turns_per_message`=30, `turn_timeout_s`=600.
-3. **Peer không tin cậy**: ID người gửi lấy từ metadata `agentfleet.from_agent` — **chỉ là lời khai, mesh không xác thực**.
-4. **File**: chỉ inline, ≤ 5MB, whitelist đuôi file, không bao giờ execute.
-5. **Audit log chỉ metadata** (`store.redact` bỏ key chứa text/content/body/prompt/input/message). Bối cảnh health-tech: PHI không được vào audit.
+1. **Tool policy**, one source of truth: `sessions.policy_decision` → `allow` / `deny` / `ask`.
+   - Order: `denied_tools` → deny; contact tools with policy "ask" → ask; mesh tools, `ToolSearch`,
+     `allowed_tools` → allow; accepted Assignment + `Edit`/`Write`/`MultiEdit`/`NotebookEdit` → allow; else ask.
+   - `ask` times out (`approval_timeout_s` = 300s) → **deny**.
+   - Enforced by **both** the `PreToolUse` hook **and** `can_use_tool`: the CLI auto-approves read-only commands
+     (e.g. `ls`) and skips `can_use_tool`, so only the hook catches them.
+   - `Bash(prefix*)` patterns never match chained commands (`;`, `&&`, `|`, `` ` ``, `$(`, `<`, `>`, newline).
+   - Default allow list: `Read`, `Bash(ls*)`, `Bash(rg *)`, `Bash(grep *)`, `Bash(git status*|log*|diff*)`.
+   - The current CLI has **no `Glob`/`Grep` tools**; search goes through Bash.
+2. **Loop protection**: `max_turns_per_context`=20, `max_agent_turns_per_message`=30, `turn_timeout_s`=600.
+3. **Untrusted peers**: the sender ID (`agentfleet.from_agent`) and kind (`agentfleet.kind`) are **claims**, not
+   verified by the mesh. Only the receiving owner's acceptance widens permissions.
+4. **Files**: inline only, ≤ 5 MB, allow-listed extensions, never executed.
+5. **Audit log is metadata only** (`store.redact` drops text/content/body/prompt/input/message keys). Health-tech
+   context: no PHI in the audit log.
+6. **Office privacy**: the world server never receives message content; other people see only typing dots.
 
-## 7. Owner controls (dashboard)
+## 7. The Office (dashboard)
 
-| Nút | API | Hiệu ứng |
-|---|---|---|
-| Inject | `POST /api/conversations/{id}/inject` | Đang chạy: chèn prompt vào lượt hiện tại. Rảnh: chạy lượt local, peer không thấy |
-| Stop | `/interrupt` | `client.interrupt()` → inbound chuyển sang chờ owner |
-| Take over | `/takeover` | mode = manual, ngắt lượt; tin peer tới sẽ chờ owner trả lời tay |
-| Reply | `/reply` | Owner trả lời peer bằng tay (409 nếu không ai đang chờ) |
-| Hand back | `/handback` | mode = auto, agent chạy tiếp |
-| Fork | `/fork` | Copy Claude session ra conversation local mới |
-| Approve/Deny | `POST /api/approvals/{id}` | Quyết định tool đang chờ |
+- One working screen (map + side column) and one Settings screen. No other pages.
+- **Map**: background plate, `collision.png` and `seats.json` from `dashboard/public/office/manifest.json`
+  (art by Codex). 18 desks (D1–D16, M1, M2), HR spot, entrance door, pantry, manager room.
+- **Moving**: select your agent, then WASD/arrows, or click the floor; click someone's agent to walk over; stop next
+  to them and their menu opens (Ask / Assign work / Open conversation); `E` reopens it; `H` back to desk.
+- **Roaming**: when an agent starts talking to someone on its own, its character walks over and comes back after.
+- **Side column tabs**: Agents (your agents, message box with @mentions, contact policy, look), Chats (every
+  conversation, opens the panel), Approvals (tool approvals and assignments).
+- **Conversation panel**: avatars and names, my side on the right, mesh activity as events ("Asked API agent"),
+  Stop / Take over (inbound only) / Hand back, Fork and Widen in the ⋯ menu.
+- **Waking owners**: browser notification while a tab is open; OS notification from the node when none is.
+- **Settings**: agents (create/edit, incl. contact policy), mesh & office status + directory, notification tests.
 
-Chờ owner quá `manual_reply_timeout_s` (900s) → trả peer câu "owner did not respond in time".
+## 8. Conversation status
 
-## 8. Trạng thái conversation
+`idle` → `running` → (`awaiting_approval` | `awaiting_owner` | `interrupted` | `error` | `idle` | `done`).
+A declined assignment ends as `done` with a "Declined: …" note. Mode: `auto` | `manual` (who answers the peer).
+Direction: `inbound` | `outbound` | `local`. Kind: `''` | `inquiry` | `assignment`.
 
-`idle` → `running` → (`awaiting_approval` | `awaiting_owner` | `interrupted` | `error` | `idle`). Có enum `done` nhưng code hiện chưa set. Mode: `auto` | `manual`. Direction: `inbound` | `outbound` | `local`.
+## 9. Data (SQLite `data/node.db`, WAL)
 
-## 9. Dữ liệu (SQLite `data/node.db`, WAL)
+Tables: `agents` (incl. `contact_policy`), `conversations` (unique `agent_id+context_id`, `kind`, `accepted`),
+`messages` (role: peer/agent/owner/tool/system; kind: text/tool_use/tool_result/status/file), `approvals`, `files`,
+`audit_log`. Deleting an agent is a soft delete. New columns are added on startup (`db._add_missing_columns`).
 
-Bảng: `agents`, `conversations` (unique `agent_id+context_id`), `messages` (role: peer/agent/owner/tool/system; kind: text/tool_use/tool_result/status/file), `approvals`, `files`, `audit_log`.
-Xoá agent = soft delete (`enabled=False`).
+**Invariant**: every write goes through `store.Store`, which saves and publishes an `EventBus` event → `/api/ws`
+→ dashboard. Event types: `hello`, `agent`, `agent_removed`, `conversation`, `message`, `delta` (live text, not
+stored), `approval`, `mesh`, `office` (relayed from the world server).
 
-**Invariant**: mọi ghi đều qua `store.Store` — vừa lưu SQLite vừa publish event lên `EventBus` → WebSocket `/api/ws` → dashboard. Ghi vòng qua Store thì dashboard không thấy gì.
+## 10. Configuration (`AGENTFLEET_*` env / `.env`, `config.py`)
 
-Event types: `hello`, `agent`, `agent_removed`, `conversation`, `message`, `delta` (text đang stream, không lưu DB), `approval`, `mesh`.
-
-## 10. Dashboard
-
-- `src/api.ts` là **bản mirror viết tay** của `api.py` + `models.py` + event trong `store.py`. Đổi backend phải đổi cả hai trong cùng commit.
-- `src/useLiveState.ts`: store duy nhất — REST snapshot + WS event qua 1 reducer (`applyEvent`), tự reconnect có backoff. Component không tự mở socket.
-- Điều hướng bằng React state (`View` trong `App.tsx`), không có router.
-- Màu dùng token trong `index.css` (tự đổi dark mode).
-
-## 11. Cấu hình (`AGENTFLEET_*` env / `.env`, file `config.py`)
-
-| Biến | Mặc định |
+| Variable | Default |
 |---|---|
 | `OWNER` | `me` |
 | `HOST` / `PORT` | `127.0.0.1` / `9100` |
 | `DATA_DIR` | `./data` |
 | `MESH_NODE_URL` | `http://127.0.0.1:8080` |
-| `MESH_API_TOKEN_PATH` | — (thường `./data/mesh-api-token`) |
-| `STATIC_PEERS` | `{}` (dev/test: bỏ qua mesh) |
+| `MESH_API_TOKEN_PATH` | — (usually `./data/mesh-api-token`) |
+| `WORLD_URL` | — (e.g. `ws://<hub>:7500/world/ws`; unset = no Office) |
+| `STATIC_PEERS` | `{}` (dev/test: skip the mesh) |
+| `ASSIGNMENT_ACCEPT_TIMEOUT_S` | 900 |
+| `OS_NOTIFICATIONS` | true |
 | `MAX_INLINE_FILE_BYTES` | 5 MB |
 
-## 12. Chạy
+## 11. Running
 
 ```sh
-# Hub (1 lần, máy luôn bật)
+# Hub (once, always-on machine)
 make hub HUB_HOST=<lan ip>
-make hub-token DEVICE="han laptop"      # token dùng 1 lần, gửi riêng cho từng người
+make hub-token DEVICE="han laptop"      # single-use token, send privately to each person
+make world                              # Office world server (port 7500)
 
-# Mỗi máy
+# Each machine
 make install
-make env OWNER=<tên>
-# lưu token vào node-server/data/bootstrap-token
-make serve                               # node-server + dashboard: http://127.0.0.1:9100
-make mesh-node HUB_HOST=<lan ip>         # agentmesh-node
+make env OWNER=<name>                   # then add AGENTFLEET_WORLD_URL to node-server/.env
+# save the token to node-server/data/bootstrap-token
+make serve                              # node server + dashboard: http://127.0.0.1:9100
+make mesh-node HUB_HOST=<lan ip>        # agentmesh-node
 
-# Dev
-make dev     # hot reload :5173
-make test    # pytest, dùng FakeClaude, không tốn tiền Claude
-make build   # build dashboard (chạy tsc -b)
+# Development
+make dev     # hot reload on :5173
+make test    # pytest with FakeClaude, no real Claude calls
+make build   # dashboard build (runs tsc -b)
 ```
 
-"Done" = `make test` + `make build` pass. Đổi mesh/A2A/session thì chạy thêm real-stack smoke (xem `node-server/CLAUDE.md`).
+"Done" = `make test` + `make build` pass and `bun run lint` is clean. Mesh/A2A/session changes also need the
+real-stack smoke in `node-server/CLAUDE.md`.
 
-## 13. Gotchas (đã dính rồi mới biết)
+## 12. Gotchas (learned the hard way)
 
-- **Thêm/xoá agent xong phải restart `agentmesh-node`** — nó chỉ đọc `services` lúc khởi động. Dashboard hiện banner khi `config_dirty`.
-- `a2a-sdk` 1.3 dùng **protobuf**, không phải pydantic: `HasField`, `msg.metadata.update(...)`, `MessageToDict`, enum kiểu `TaskState.TASK_STATE_COMPLETED`. Ví dụ cũ trên mạng không áp dụng.
-- Hub: `--policy-file` chỉ seed ở **lần boot đầu**; sau đó DB của hub là nguồn sự thật. Đổi policy bằng `POST /policies` (thay **toàn bộ** document).
-- Policy thiếu `allowed_targets` → mọi call bị 403. Thiếu `allowed_labels: owner=*` → enroll fail "Label not permitted".
-- Node pull policy 15 phút/lần → restart node để áp ngay.
-- Kết thúc lượt: dựa vào `ResultMessage`. Prompt inject giữa lượt có thể bị gộp vào cùng result → timer `INJECT_GRACE_S` = 3s chốt lượt. Chỉ sửa khi đã test với CLI thật.
-- Test: `FakeClaude` hành xử theo từ khoá trong prompt (`TOOL:<Name>`, `SLOW`, `ASK`, còn lại echo). Không bao giờ gọi Claude thật trong test.
+- **Restart `agentmesh-node` after adding/removing agents**: it reads `services` only at startup.
+- `a2a-sdk` 1.3 uses **protobuf**, not pydantic (`HasField`, `msg.metadata.update(...)`, `MessageToDict`).
+- Hub: `--policy-file` seeds only on **first boot**; afterwards change policy with `POST /policies` (replaces the
+  **whole** document). No `allowed_targets` → every call is 403; no `allowed_labels: owner=*` → enrollment fails.
+- Nodes pull policy every 15 minutes; restart nodes to apply immediately.
+- Turn completion relies on `ResultMessage`; an injected prompt may fold into the same result, and the
+  `INJECT_GRACE_S` = 3s timer closes the turn. Change only with a real-CLI check.
+- The dashboard WebSocket must also read, or closed tabs are never noticed.
+- Phaser: size the canvas yourself (`Scale.NONE` + `ResizeObserver`), give text LINEAR filtering in a pixel-art game,
+  use a Zone (not a Container) as the hit area, focus the canvas host on pointerdown for keys.
+- Tests: `FakeClaude` behaves by prompt keywords (`TOOL:<Name>`, `SLOW`, `ASK`, otherwise echo). Never real Claude.
 
-## 14. Known gaps (v1)
+## 13. Known gaps
 
-- Danh tính người gửi không được mesh xác thực.
-- Outbound là HTTP blocking cả lượt → lượt dài qua relay có thể bị cắt.
-- Chưa có upload file lớn qua hub, chưa có MCP adapter độc lập.
-- Dashboard API chưa phân trang message.
-- v1 chỉ LAN, hub http thường, không hàng đợi offline.
+- The sender's identity isn't verified by the mesh; the world server trusts the owner name a node claims.
+- Outbound calls block for the whole remote turn; long turns through the relay may hit limits.
+- No large-file upload via the hub, no standalone MCP adapter, no message paging.
+- v1 is LAN only, plain http, no offline queue. Party and Recap are designed (`CONTEXT.md`) but not built.
 
-## 15. Bản đồ file backend (`node-server/src/agentfleet_node/`)
+## 14. Backend file map (`node-server/src/agentfleet_node/`)
 
-| File | Dòng | Nội dung |
-|---|---|---|
-| `sessions.py` | 461 | SessionWorker/Manager, policy, approval, takeover, fork — **file lõi** |
-| `a2a_bridge.py` | 290 | A2AGateway, MeshAgentExecutor (inbound), OutboundClient |
-| `api.py` | 257 | REST `/api/*` + WebSocket `/api/ws` |
-| `store.py` | 220 | Store + EventBus + redact |
-| `mesh.py` | 154 | MeshDirectory: discover/resolve, sinh `agentmesh-node.yaml` |
-| `models.py` | 136 | Bảng SQLModel + enum |
-| `mesh_tools.py` | 106 | 4 MCP tool in-process |
-| `app.py` | 66 | `build_node` wiring, mount `/a2a` và dashboard |
-| `config.py` | 58 | Settings |
-| `files.py` | 57 | Kiểm tra/lưu file |
-| `naming.py` | 33 | `/` ↔ `.` |
-| `cli.py` | 30 | `serve`, `mesh-config` |
+| File | Contents |
+|---|---|
+| `sessions.py` | SessionWorker/Manager, tool policy, approvals, acceptance, takeover, fork (**core**) |
+| `a2a_bridge.py` | A2AGateway, MeshAgentExecutor (inbound + assignment gate), OutboundClient |
+| `api.py` | REST `/api/*` (incl. `/office/*`, `/notify/test`) + WebSocket `/api/ws` |
+| `world.py` | Team world server (WorldState rules + WorldHub sockets) |
+| `office.py` | Node ↔ world link (WorldClient) |
+| `store.py` | Store + EventBus + redact |
+| `mesh.py` | MeshDirectory: discover/resolve, writes `agentmesh-node.yaml` |
+| `models.py` | SQLModel tables and enums |
+| `mesh_tools.py` | The four in-process MCP tools |
+| `notify.py` | OS notifications |
+| `app.py` | `build_node` wiring, mounts `/a2a` and the dashboard |
+| `config.py`, `db.py`, `files.py`, `naming.py`, `cli.py` | Settings, engine + column migration, files, IDs, CLI |
