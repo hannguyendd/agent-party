@@ -97,7 +97,8 @@ owner @mentions. Per-agent **contact policy**: "Go ahead" (default) or "Ask me f
 2. **Loop protection**: `max_turns_per_context`=20, `max_agent_turns_per_message`=30, `turn_timeout_s`=600.
 3. **Untrusted peers**: the sender ID (`agentfleet.from_agent`) and kind (`agentfleet.kind`) are **claims**, not
    verified by the mesh. Only the receiving owner's acceptance widens permissions.
-4. **Files**: inline only, ≤ 5 MB, allow-listed extensions, never executed.
+4. **Files**: inline A2A parts and owner attachments only, ≤ 5 MB, allow-listed extensions, never executed;
+   `GET /api/files/{id}` serves only recorded files inside the agent's working directory.
 5. **Audit log is metadata only** (`store.redact` drops text/content/body/prompt/input/message keys). Health-tech
    context: no PHI in the audit log.
 6. **Office privacy**: the world server never receives message content; other people see only typing dots.
@@ -110,8 +111,10 @@ owner @mentions. Per-agent **contact policy**: "Go ahead" (default) or "Ask me f
 - **Moving**: select your agent, then WASD/arrows, or click the floor; click someone's agent to walk over; stop next
   to them and their menu opens (Ask / Assign work / Open conversation); `E` reopens it; `H` back to desk.
 - **Roaming**: when an agent starts talking to someone on its own, its character walks over and comes back after.
-- **Side column tabs**: Agents (your agents, message box with @mentions, contact policy, look), Chats (every
-  conversation, opens the panel), Approvals (tool approvals and assignments).
+- **Side column tabs**: Agents (your agents, message box with @mentions and attachments, contact policy, look),
+  Chats (every conversation, opens the panel), Approvals (tool approvals and assignments).
+- **Attachments**: 📎, drag-and-drop or paste a screenshot into a message for your own agent. Files go to the agent's
+  `inbox/` (≤ 5 MB, allowed types only, never executed); images show as thumbnails in the chat.
 - **Conversation panel**: avatars and names, my side on the right, mesh activity as events ("Asked API agent"),
   Stop / Take over (inbound only) / Hand back, Fork and Widen in the ⋯ menu.
 - **Waking owners**: browser notification while a tab is open; OS notification from the node when none is.
@@ -199,7 +202,7 @@ real-stack smoke in `node-server/CLAUDE.md`.
 |---|---|
 | `sessions.py` | SessionWorker/Manager, tool policy, approvals, acceptance, takeover, fork (**core**) |
 | `a2a_bridge.py` | A2AGateway, MeshAgentExecutor (inbound + assignment gate), OutboundClient |
-| `api.py` | REST `/api/*` (incl. `/office/*`, `/notify/test`) + WebSocket `/api/ws` |
+| `api.py` | REST `/api/*` (incl. `/office/*`, `/files/{id}`, `/notify/test`) + WebSocket `/api/ws` |
 | `world.py` | Team world server (WorldState rules + WorldHub sockets) |
 | `office.py` | Node ↔ world link (WorldClient) |
 | `store.py` | Store + EventBus + redact |

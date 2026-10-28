@@ -2,12 +2,17 @@
 
 Implements the "Agent Mesh Architecture" design: each teammate's Claude Code agents hold
 back-and-forth A2A conversations with teammates' agents over [Agent Mesh](https://github.com/google/agentmesh),
-and each owner watches and controls their own agents from a web dashboard.
+and each owner watches and steers their own agents in the **Office**: a shared, game-like map of the real office
+where every online agent is a character that walks over to whoever it talks to.
 
 ```
 hub/           agentmesh-one (control plane + router + console) config and scripts — runs on one always-on LAN machine
-node-server/   Python node server, one per device: FastAPI + Claude Agent SDK + a2a-sdk + SQLite
-dashboard/     React + Vite + Tailwind owner dashboard (served by the node server once built)
+node-server/   Python node server, one per device: FastAPI + Claude Agent SDK + a2a-sdk + SQLite.
+               Also the team world server for the Office (`agentfleet-node world`, on the hub machine)
+dashboard/     React + Phaser app served by the node server: the Office screen and Settings
+docs/          NOTES.md (overview), adr/ (decisions), office/ (art brief, Codex prompts), architecture.html (diagrams)
+design/        Office art sources and export scripts
+CONTEXT.md     Office glossary (Steering, Roaming, Inquiry, Assignment, Party, …)
 ```
 
 ## How it fits together
@@ -22,21 +27,36 @@ dashboard/     React + Vite + Tailwind owner dashboard (served by the node serve
 - Agents get in-process mesh tools: `list_agents`, `send_message`, `share_file`, `needs_input`
   (marks the reply as a question → A2A `input-required`).
 
-### Owner controls (dashboard)
+### The Office
 
-Live stream (text deltas, tool calls, results) · inject a prompt mid-turn · Stop (`interrupt()`) ·
-Take over (owner answers the peer by hand) / Hand back · Fork · Approve/deny tool use.
+- **One working screen**: the map plus a side column with **Agents** (message your agent, @mention a colleague's
+  agent, attach files and images, contact policy, look), **Chats** (every conversation) and **Approvals**.
+  **Settings** is the only other screen (agents, mesh & office status, notifications).
+- **Moving**: select your agent, then WASD/arrows or click the floor. Click someone's agent to walk over; stop next
+  to it and its menu opens (Ask / Assign work / Open conversation).
+- **Roaming**: when an agent starts talking to someone on its own, its character walks over and comes back after.
+- **Conversation panel**: live stream, mesh activity shown as events, inject a prompt mid-turn, Stop, Take over
+  (answer the peer by hand) / Hand back, Fork, approvals inline, attachments.
+- **Ask vs Assign**: *Ask* has your agent put a question to the peer. *Assign work* sends a task the peer's owner
+  must accept; once accepted the peer may edit files in that conversation (ADR 0002).
+- **Contact policy** per agent: "Go ahead" or "Ask me first" before it messages another agent on its own.
+- **Waking owners**: a browser notification while a tab is open, a system notification from the node otherwise.
+- **Privacy**: only the owners in a conversation see its words; the world server never receives message content
+  (ADR 0001). Everyone else sees typing dots.
 
 ### Guardrails
 
 - **Tool policy per agent**: `allowed_tools` run freely, `denied_tools` are refused, everything else waits for
-  owner approval and is **denied on timeout**. Enforced by a `PreToolUse` hook *and* `can_use_tool`
+  owner approval and is **denied on timeout**. An accepted Assignment additionally allows file edits (only) in that
+  conversation; an agent with contact policy "Ask me first" needs approval for each message to another agent. Enforced by a `PreToolUse` hook *and* `can_use_tool`
   (the CLI skips `can_use_tool` for commands it considers read-only, so the hook is what makes the policy hold).
   `Bash(prefix*)` patterns never match chained commands (`;`, `&&`, `|`, `$(`, redirects).
   Note: the current Claude CLI has no `Glob`/`Grep` tools; searching goes through Bash (`Bash(rg *)`).
 - **Loop protection**: max turns per contextId, max agent turns per message, turn timeout.
 - **Untrusted peers**: peer text is wrapped in `<mesh_message from=…>` and the system prompt says it carries no owner authority.
-- **Files**: inline A2A parts only, size and type limits, saved under `<working dir>/inbox/`, never executed. URL parts are not fetched.
+- **Files**: inline A2A parts and owner attachments only, size and type limits, saved under `<working dir>/inbox/`,
+  never executed. URL parts are not fetched. `GET /api/files/{id}` serves only recorded files inside the agent's
+  working directory.
 - **Audit log**: metadata only (who, when, contextId, taskId, sizes); message bodies are dropped.
 - **No offline queue**: a message to an agent that isn't on the mesh fails immediately with "agent offline".
 
@@ -46,8 +66,8 @@ Quick reference (`make help` lists every target):
 
 | Where | Command |
 |---|---|
-| Hub machine | `make hub HUB_HOST=<lan ip>` · `make hub-token DEVICE="han laptop"` |
-| Each device, once | `make install` · `make env OWNER=han` · save the join token to `node-server/data/bootstrap-token` |
+| Hub machine | `make hub HUB_HOST=<lan ip>` · `make hub-token DEVICE="han laptop"` · `make world` (Office, port 7500) |
+| Each device, once | `make install` · `make env OWNER=han` · add `AGENTFLEET_WORLD_URL=ws://<hub>:7500/world/ws` to `node-server/.env` · save the join token to `node-server/data/bootstrap-token` |
 | Each device | `make serve` (node server + built dashboard on :9100) · `make mesh-node HUB_HOST=<lan ip>` |
 | Development | `make dev` (node server + Vite hot reload on :5173) · `make test` · `make build` |
 
@@ -73,6 +93,7 @@ uv sync
 cat > .env <<'ENV'
 AGENTFLEET_OWNER=han
 AGENTFLEET_MESH_API_TOKEN_PATH=./data/mesh-api-token
+AGENTFLEET_WORLD_URL=ws://<hub>:7500/world/ws
 ENV
 uv run agentfleet-node serve                 # node server on 127.0.0.1:9100
 
@@ -80,9 +101,14 @@ uv run agentfleet-node serve                 # node server on 127.0.0.1:9100
 HUB_URL=http://<hub>:7400 ./scripts/start-mesh-node.sh
 ```
 
-Open http://127.0.0.1:9100, create an agent (ID must start with `<owner>/`), then **restart
-`start-mesh-node.sh`** — `agentmesh-node` only reads its services at startup; the dashboard shows a banner when
-the config changed. The bootstrap token is used only on first enrollment; restarts use the stored identity.
+Open http://127.0.0.1:9100. The Office shows a "Get started" checklist: create an agent in Settings (ID must start
+with `<owner>/`), pick your desk on the map, turn on notifications. Then **restart `start-mesh-node.sh`**:
+`agentmesh-node` only reads its services at startup (the app bar says "Restart mesh" when the config changed). The
+bootstrap token is used only on first enrollment; restarts use the stored identity.
+
+The world server (`make world` on the hub machine) is what makes the Office shared. Without
+`AGENTFLEET_WORLD_URL` a node still works over the mesh but shows no Office. Add `?preview` to the URL to see the
+Office with sample agents (design work only).
 
 Dashboard development: `cd dashboard && bun install && bun dev` (proxies `/api` to `VITE_NODE_URL`, default `:9100`).
 Build with `bun run build`; the node server then serves `dashboard/dist`.
@@ -96,7 +122,13 @@ cd node-server && uv run pytest
 ```
 
 Two node servers talk A2A in-process with a fake Claude client (multi-turn input-required, approvals,
-timeouts, takeover/hand-back, turn limits, files, offline targets, the dashboard event stream).
+timeouts, takeover/hand-back, turn limits, files, offline targets, the dashboard event stream), plus the world
+server (rules and two nodes sharing an Office), assignments (accept / decline / timeout, permission widening,
+contact policy) and owner attachments. Dashboard: `cd dashboard && bun run build && bun run lint`.
+
+The Office additions (world server, assignments, contact policy, attachments) have been exercised with two node
+servers on one machine (`static_peers`) and a headless browser, **not yet through a real `agentmesh` stack**; run
+the real-stack smoke in `node-server/CLAUDE.md` before relying on them across machines.
 
 ## Verified against the real stack (2026-10-27, agentmesh v0.1.0-rc.10, Claude CLI 2.1.311)
 
@@ -118,3 +150,9 @@ Local hub + two `agentmesh-node`s + two node servers:
   through the mesh proxy may hit relay limits.
 - Large-file upload to a hub file store and the standalone MCP adapter are not built (deferred in the design).
 - No message paging in the dashboard API.
+- **World server has no auth**: a node's owner name is a claim, so anyone on the LAN could move another owner's
+  agents or take a desk (no message content is exposed). A shared world token is the planned fix.
+- **Party and Recap** are designed (`CONTEXT.md`, ADR 0003) but not built.
+- The map's foreground plate is unused (it covered agents standing in front of desks); proper occlusion needs
+  per-object art. Characters are 32×48 sheets drawn at 1.5×; native 48×72 sheets are requested from the art workflow.
+- Agents cannot assign work on their own initiative (only the owner can, from the Office).

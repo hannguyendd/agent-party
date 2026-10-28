@@ -39,7 +39,10 @@ original `a2a_bridge`, `sessions`, `mesh`, `mesh_tools`, `store`, `api`, `models
   sender ID comes from message metadata (`SENDER_KEY`) and is a claim, not a verified identity.
 - **Audit rows carry metadata only**: `store.redact` drops content-like keys; pass sizes and states, not bodies
   (health-tech context: PHI stays out of the audit log).
-- **Files**: inline parts only, checked by `files.check_file`, written under `<working_dir>/inbox/`, never executed.
+- **Files**: inline parts and owner attachments only (base64 in `POST /api/conversations` / `…/inject`), checked by
+  `files.check_file`, written under `<working_dir>/inbox/`, never executed. Each stored file is a `FileRecord`;
+  messages carry `files.file_ref(...)` dicts (`id, name, media_type, size, path`). `GET /api/files/{id}` serves only
+  recorded files that resolve inside the agent's working directory. The agent is told the saved paths in its prompt.
 
 ## Turn completion
 
