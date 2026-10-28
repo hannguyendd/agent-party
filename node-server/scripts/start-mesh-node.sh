@@ -28,7 +28,7 @@ args=(
 # v1 is LAN-only over plain http: trust the hub on this network.
 [[ "$HUB_URL" == http://* ]] && args+=(--insecure-control-plane)
 # Enroll with the single-use token only until this node has an identity.
-[[ -f "$DATA_DIR/bootstrap-token" && ! -f "$DATA_DIR/mesh-node/agent.db" ]] && args+=(--bootstrap-token-path "$DATA_DIR/bootstrap-token")
+[[ -s "$DATA_DIR/bootstrap-token" && ! -f "$DATA_DIR/mesh-node/agent.db" ]] && args+=(--bootstrap-token-path "$DATA_DIR/bootstrap-token")
 [[ -n "${MESH_LISTEN:-}" ]] && args+=(--listen "$MESH_LISTEN")
 
 exec agentmesh-node run "${args[@]}"
