@@ -27,7 +27,8 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 
 ## Rules
 
-- **No build step, no dependencies.** Plain HTML/CSS/JS in old-browser-safe syntax; fonts from Google Fonts.
+- **No build step.** Plain HTML/CSS/JS (old-browser-safe in `index.html` and `office.js`; `office3d.js` is a
+  modern ES module); fonts from Google Fonts. The only library is three.js, pinned in the import map, 3D only.
   `oxlint` does not cover this folder, so check the console in a browser.
 - **Art paths are named directly** (the one exception to "code reads the manifest", see the root CLAUDE.md):
   `office/map/{background.png,collision.png,seats.json}`, `office/characters48/*.png` (48x72 sheets, 4 columns x 5
