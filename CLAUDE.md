@@ -12,9 +12,11 @@ Assignment, Party, Present, Recap…) is defined in `CONTEXT.md`; use those word
 - `node-server/`: Python node server, one per device. Runs the agents and speaks A2A. The same package also runs
   the team **world server** (`agentfleet-node world`, `make world`) on the hub machine for the Office.
 - `dashboard/`: React app served by the node server: the Office screen plus Settings.
-- `site/`: the public intro page, published to GitHub Pages by `.github/workflows/pages.yml` (it copies the Office
-  art in from `dashboard/public/office` at build time). Plain HTML + `office.js`, no build step.
-- `docs/`: `GUIDE.md` (how admins and staff run and use the Office), `RELEASE.md` (publishing versions), `NOTES.md` (repo overview), `adr/` (decisions),
+- `site/`: the public intro page (the repo's About link), published to GitHub Pages by `.github/workflows/pages.yml`.
+  Plain HTML + `office.js` with a demo office; `make site` previews it. See `site/CLAUDE.md`.
+- `docs/`: `GUIDE.md` (how admins and staff run and use the Office), `HOW-IT-WORKS.md` (the technical reference the
+  README links to: architecture, guardrails, manual setup, tests, known gaps), `RELEASE.md` (publishing versions),
+  `NOTES.md` (repo overview), `adr/` (decisions), `plans/` (future work, not started), `images/` (README banner),
   `office/` (art brief and Codex prompts).
 - `design/office-style/`: art sources and export scripts for the Office (owned by the art workflow, see below).
 - `CONTEXT.md`: domain glossary for the Office.
@@ -38,6 +40,11 @@ Each has its own CLAUDE.md. Commands live in the root `Makefile` (`make help`).
 - **Art vs code**: images, map plates, collision grid, seats and `dashboard/public/office/manifest.json` come from
   the art workflow (Codex, prompts in `docs/office/CODEX-PROMPTS.md`, rules in `design/office-style/`). Code reads
   the manifest and never hard-codes art. Art requests that need code go to `design/office-style/REQUESTS.md`.
+  One exception: `site/` is a standalone demo and names the sprite and icon files it uses (listed in
+  `site/CLAUDE.md`); if the art workflow renames or removes one of them, update `site/` in the same change.
+- **Product copy**: the README, `site/index.html` and the dashboard describe the same product. When a user-visible
+  feature changes, check the README's feature list and the site's "What happens here" still hold. Technical
+  detail goes in `docs/HOW-IT-WORKS.md`, not the README.
 
 ## Branches
 
@@ -57,5 +64,6 @@ Details and the agent checklist: `docs/RELEASE.md`.
 
 `make test` passes and `make build` passes (and `cd dashboard && bun run lint` is clean). For changes to the mesh,
 A2A or Claude session paths, also run the real-stack smoke described in `node-server/CLAUDE.md`. For Office UI
-changes, look at it in a browser (two node servers + `make world` give you two owners on one machine).
+changes, look at it in a browser (two node servers + `make world` give you two owners on one machine). For `site/`
+changes, `make site` and check it at desktop and phone width (the intro, Come in, walking, 2D/3D).
 Commit messages follow Conventional Commits (`feat(node-server): …`).

@@ -5,7 +5,7 @@ name: Pages
 on:
   push:
     branches: [develop]
-    paths: ["site/**", "dashboard/public/office/**", ".github/workflows/pages.yml"]
+    paths: ["site/**", "dashboard/public/office/**", "scripts/build-site.sh", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -27,11 +27,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Assemble the site
-        run: |
-          mkdir -p _site/office
-          cp -R site/. _site/
-          for d in map characters characters48 ui; do cp -R "dashboard/public/office/$d" _site/office/; done
-          touch _site/.nojekyll
+        run: scripts/build-site.sh _site
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

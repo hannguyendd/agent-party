@@ -1,0 +1,54 @@
+# site
+
+The public intro page for Party Agent: the repo's About link, published to GitHub Pages
+(`https://hannguyendd.github.io/agent-party/`). It is a marketing page with a playable demo, not part of the
+product: nothing here talks to a node, the mesh or the world server, and every agent on it is made up.
+
+## Files
+
+- `index.html`: the whole page (styles and page script inline). Two layers:
+  - the **intro** (`#intro`): logo, the name "Party Agent" dropping in letter by letter, **Come in**, a parade of
+    walking characters. Come in (click anywhere or any key) shrinks the name to the middle and turns it into the
+    loader (`.intro.loading`); when the office is ready the letters fly off (`.intro.done`) and the intro hides.
+    `#office` in the URL skips the welcome and goes straight to loading.
+  - the **office**: header (brand, GitHub, Star with a live count from the GitHub API), a chip bar (live stats,
+    key hints, 2D/3D), the map, a bottom bar (office gossip + the crew), and the side panel (slogan, Play now,
+    What happens here, House rules).
+- `office.js`: the demo simulation, exposed as `window.AgentParty.start()`. `officeSim` holds 12 made-up agents
+  (nicknames like Segfault, Flexbox, Root, with a role each) seated at real seats from `seats.json`; they walk to
+  each other with A* over `collision.png`, talk in typing dots, take coffee breaks, and go back. The visitor's
+  character (`You`) spawns at the door on the first WASD key or floor click; `E` says hi to the agent in reach.
+  `mapView` draws the map and sprites with DOM elements (2D, or a CSS tilt for "3D").
+
+## Rules
+
+- **No build step, no dependencies.** Plain HTML/CSS/JS in old-browser-safe syntax; fonts from Google Fonts.
+  `oxlint` does not cover this folder, so check the console in a browser.
+- **Art paths are named directly** (the one exception to "code reads the manifest", see the root CLAUDE.md):
+  `office/map/{background.png,collision.png,seats.json}`, `office/characters48/*.png` (48x72 sheets, 4 columns x 5
+  rows), `office/characters/*-portrait.png`, and `office/ui/{logo@2x,typing,desk@2x,inquiry@2x,assignment@2x,
+  party@2x,takeover@2x}.png`. `scripts/build-site.sh` copies `map`, `characters`, `characters48` and `ui` from
+  `dashboard/public/office`; if the page needs another folder, add it there too.
+- **Keys belong to the intro until the office shows**: `office.controls(view)` is attached on reveal, so WASD on
+  the welcome screen enters instead of spawning the character.
+- **The map always fits between the chip bar and the bottom bar**: the page script `layout()` sizes the left
+  column from the height (ResizeObserver on the main area and both bars); CSS (`.mapfit`, container units) does
+  the rest. Don't size the map anywhere else.
+- **3D is a placeholder**: a CSS `rotateX` tilt of the 2D map. The real 3D office (three.js models under
+  `dashboard/public/office/3d`) replaces it later; keep the 2D/3D switch and its `party-agent-view` storage key.
+- **Links**: Play now goes to the README's `#install`; GitHub and Star to the repo. If the repo moves, change
+  `REPO` and the links in `index.html` (and the URL in `.github/workflows/pages.yml`, the README and here).
+- English copy, playful but plain. Reduced motion: every animation has a static fallback; keep it that way.
+
+## Preview and publish
+
+```sh
+make site                  # assembles dist/site like the workflow does and serves it at http://localhost:8090
+```
+
+Check desktop and phone width: the intro, Come in, walking with WASD and saying hi with E, 2D/3D.
+
+Publishing is automatic: a push to `develop` that touches `site/`, `dashboard/public/office/` or
+`scripts/build-site.sh` runs `.github/workflows/pages.yml`. One-time repo setup (an admin): **Settings → Pages →
+Source: GitHub Actions**, then put the Pages URL in the repo's About website. Re-run by hand with
+`gh workflow run pages.yml --ref develop`.

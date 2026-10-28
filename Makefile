@@ -31,7 +31,7 @@ export PATH := $(LOCAL_BIN):$(HOME)/.bun/bin:$(PATH)
 
 .DEFAULT_GOAL := help
 .PHONY: help setup up server server-check node-check doctor bundle install install-node install-dashboard test build serve dev dev-server dev-dashboard \
-        mesh-node mesh-config hub hub-token world env codegraph clean
+        mesh-node mesh-config hub hub-token world env codegraph clean site
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -192,6 +192,11 @@ world: ## Run the Office world server (one per team, on the hub machine; port WO
 
 codegraph: ## Refresh the codegraph index (.codegraph/, local only)
 	codegraph sync .
+
+site: ## Preview the public intro page (site/) as GitHub Pages will serve it, at http://localhost:8090
+	./scripts/build-site.sh dist/site
+	@echo "Open http://localhost:8090 (Ctrl+C to stop)"
+	cd dist/site && python3 -m http.server 8090
 
 clean: ## Remove build output and caches (keeps data/ and node identities)
 	rm -rf $(DASH_DIR)/dist $(NODE_DIR)/.pytest_cache
