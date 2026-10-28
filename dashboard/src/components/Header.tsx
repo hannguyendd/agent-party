@@ -24,6 +24,9 @@ export function Header({ node, connected, pendingApprovals, view, go, setNode }:
         </button>
         {node && <span className="font-mono text-xs text-muted">{node.owner}@{node.base_url}</span>}
         <nav className="ml-4 flex gap-1">
+          <button className={clsx('btn border-transparent', view.kind === 'office' && 'bg-panel-2')} onClick={() => go({ kind: 'office' })}>
+            Office
+          </button>
           <button className={clsx('btn border-transparent', view.kind === 'directory' && 'bg-panel-2')} onClick={() => go({ kind: 'directory' })}>
             Mesh directory
           </button>

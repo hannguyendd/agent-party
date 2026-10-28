@@ -1,0 +1,992 @@
+// Phaser scene for the Office. React owns the data (useLiveState) and pushes it in with setSceneData();
+// the scene draws it, animates walking and reports clicks back through callbacks. It never calls the API.
+//
+// Pastel art objects and characters are loaded from public/office/manifest.json.
+
+import Phaser from 'phaser'
+import type { OfficeAgent, OfficeOwner, OfficeTarget } from '../api'
+import {
+  COLS,
+  DESKS,
+  DESK_BY_ID,
+  ROWS,
+  SPAWN,
+  TILE,
+  applyMapData,
+  walkable,
+  type Facing,
+  type SeatRow,
+  type Point,
+} from './layout'
+import { blockedRuns, distance, findPath, nearestFree, rebuildGrid } from './pathfind'
+import { renderRoom } from './renderRoom'
+import { CHAR_ANIMS, CHAR_FRAME, CHAR_SCALE, SKIN_BY_ID, ownerHue } from './skins'
+
+export interface SceneData {
+  me: string
+  agents: OfficeAgent[]
+  desks: Record<string, string>
+  owners: Record<string, OfficeOwner>
+  /** Short text above an agent (own conversations: live text; others: "…"). */
+  bubbles: Record<string, string>
+  /** Status emoji above an agent. */
+  icons: Record<string, string>
+  pickingDesk: boolean
+}
+
+export interface PeerClick {
+  agentId: string
+  screen: Point
+  /** My agents standing within reach of the clicked agent. */
+  reachableBy: string[]
+  /** Opened by proximity rather than a click; closes when the agents part. */
+  auto?: boolean
+}
+
+export interface SceneCallbacks {
+  onSelect: (ids: string[]) => void
+  onMove: (agentId: string, at: OfficeTarget) => void
+  onPeerClick: (click: PeerClick) => void
+  onDeskPick: (deskId: string) => void
+  onOpenAgent: (agentId: string) => void
+  /** My agent stopped next to someone else's (or walked away: null). Gather-style proximity menu. */
+  onNearby: (click: PeerClick | null) => void
+}
+
+export const REACH = 2 // tiles; CONTEXT.md "Within reach"
+// Movement feel (pixels per second). Agents accelerate and brake instead of snapping between tiles.
+const WALK_SPEED = 150
+const ACCEL = 1100
+const ARRIVE_RADIUS = 28 // start braking this close to the final waypoint
+const WAYPOINT_RADIUS = 6
+const FEET = { w: 16, h: 8 } // collision box at the feet, so heads can overlap furniture drawn behind them
+const SYNC_MS = 250 // how often a keyboard-driven agent reports its tile
+const NEARBY_STILL_MS = 300 // standing still this long next to a peer opens its menu
+const DRIVE_HOLD_MS = 1200 // after keys are released, keep local authority this long
+
+const DESK_FREE = 0x70a65b // outline on free desks while picking one
+const USE_FOREGROUND = false
+const FOREGROUND_DEPTH = 50_000 // the map's foreground plate draws over characters (depth = feet y)
+const HUD_DEPTH = 60_000 // names, icons and bubbles stay above the foreground
+
+interface AgentSprite {
+  id: string
+  owner: string
+  container: Phaser.GameObjects.Container
+  hit: Phaser.GameObjects.Zone // click/hover target
+  hud: Phaser.GameObjects.Container // name, icon, bubble: drawn above the foreground plate
+  ring: Phaser.GameObjects.Ellipse
+  token?: Phaser.GameObjects.Arc
+  face?: Phaser.GameObjects.Text
+  sheet?: Phaser.GameObjects.Sprite
+  skin: string
+  label: Phaser.GameObjects.Text
+  icon: Phaser.GameObjects.Text
+  bubble: Phaser.GameObjects.Text
+  feet: Phaser.GameObjects.Zone // physics body at the feet; the container follows it
+  body: Phaser.Physics.Arcade.Body
+  path: Point[] // pixel waypoints
+  dest: Point | null // destination tile
+  facing: Facing
+  leaving: boolean
+  drivenUntil: number // keyboard authority (ms timestamp)
+  lastSync: number
+  lastTile: string
+  stuckMs: number
+  streaming?: boolean
+  hovered?: boolean
+  lastPlan: number // when the last walk was planned; frequent replans mean a remote owner is driving
+}
+
+const center = (p: Point) => ({ x: p.x * TILE + TILE / 2, y: p.y * TILE + TILE / 2 + 6 })
+const tileOf = (px: Point) => ({ x: Math.floor(px.x / TILE), y: Math.floor((px.y - 6) / TILE) })
+const posOf = (s: { feet: Phaser.GameObjects.Zone }) => ({ x: s.feet.x, y: s.feet.y })
+const TEXT_RES = Math.min(4, Math.ceil((window.devicePixelRatio || 1) * 2))
+// Text must not use the pixel-art NEAREST filter (it shreds glyphs when scaled); give it smooth sampling and
+// re-apply after every text change, since updating a canvas texture can reset it.
+function crisp<T extends Phaser.GameObjects.Text>(t: T, value?: string): T {
+  if (value !== undefined && t.text !== value) t.setText(value)
+  t.texture.setFilter(Phaser.Textures.FilterMode.LINEAR)
+  return t
+}
+const ownerColor = (owner: string) => Phaser.Display.Color.HSLToColor(ownerHue(owner) / 360, 0.7, 0.5).color
+
+export class OfficeScene extends Phaser.Scene {
+  private data_: SceneData = { me: '', agents: [], desks: {}, owners: {}, bubbles: {}, icons: {}, pickingDesk: false }
+  private sprites = new Map<string, AgentSprite>()
+  private selected = new Set<string>()
+  private deskLabels = new Map<string, Phaser.GameObjects.Text>()
+  private deskHighlight!: Phaser.GameObjects.Graphics
+  private selectBox!: Phaser.GameObjects.Graphics
+  private drag: { start: Point; world: Point; mode: 'select' | 'pan'; scroll: Point } | null = null
+  private sheets = new Set<string>()
+  private ready = false
+  private firstSync = true
+  private walls!: Phaser.Physics.Arcade.StaticGroup
+  private keys: Record<'up' | 'down' | 'left' | 'right', Phaser.Input.Keyboard.Key[]> | null = null
+  private following: string | null = null
+  private zoomTarget: number | null = null
+  private nearby: { mine: string; peer: string; dismissed: boolean } | null = null
+  private stillMs = 0
+  private zoomAnchor: { screen: Point; world: Point } | null = null
+  private hover!: Phaser.GameObjects.Graphics
+  private trails!: Phaser.GameObjects.Graphics
+  private markers: { x: number; y: number; agentId: string; born: number; bad?: boolean }[] = []
+  callbacks: SceneCallbacks | null = null
+  onReady: (() => void) | null = null
+
+  constructor() {
+    super({ key: 'office', physics: { default: 'arcade', arcade: { debug: false } } })
+  }
+
+  preload() {
+    this.load.json('manifest', 'office/manifest.json')
+    this.load.on('filecomplete-json-manifest', () => {
+      const manifest = this.cache.json.get('manifest') as { objects?: Record<string, string>; map?: Record<string, string> }
+      const map = manifest.map
+      if (map?.background && map.collision && map.seats) {
+        // Gather-style map: one background plate, a foreground plate over characters, and a collision grid.
+        this.load.image('map-bg', map.background)
+        if (map.foreground) this.load.image('map-fg', map.foreground)
+        this.load.image('map-collision', map.collision)
+        this.load.json('map-seats', map.seats)
+      } else {
+        for (const [kind, path] of Object.entries(manifest.objects ?? {})) this.load.image(`object-${kind}`, path)
+      }
+    })
+  }
+
+  create() {
+    this.drawMap()
+    this.walls = this.physics.add.staticGroup()
+    for (const r of blockedRuns()) {
+      const z = this.add.zone((r.x + r.w / 2) * TILE, (r.y + 0.5) * TILE, r.w * TILE, TILE)
+      this.walls.add(z)
+    }
+    this.physics.world.setBounds(0, 0, COLS * TILE, ROWS * TILE)
+    this.deskHighlight = this.add.graphics().setDepth(1)
+    this.selectBox = this.add.graphics().setDepth(10_000)
+    this.hover = this.add.graphics().setDepth(3)
+    this.trails = this.add.graphics().setDepth(3)
+
+    const cam = this.cameras.main
+    cam.setBackgroundColor(0xe6ddd8)
+    this.fitCamera()
+    this.scale.on('resize', () => this.fitCamera())
+
+    this.setupInput()
+    this.loadSheets()
+    this.ready = true
+    this.sync()
+    this.onReady?.()
+  }
+
+  /** Called by React whenever the Office state changes. */
+  setSceneData(d: SceneData) {
+    this.data_ = d
+    if (this.ready) this.sync()
+  }
+
+  selectOnly(ids: string[]) {
+    this.selected = new Set(ids.filter((id) => this.isMine(id)))
+    this.refreshSelection()
+    if (this.selected.size === 1) this.follow([...this.selected][0])
+  }
+
+  // map
+
+  private drawMap() {
+    if (this.textures.exists('map-bg') && this.textures.exists('map-collision') && this.cache.json.exists('map-seats')) {
+      this.applyCollision()
+      this.add.image(0, 0, 'map-bg').setOrigin(0).setDepth(-100)
+      // The foreground plate is off: it contains whole desks, so it also covered agents standing in FRONT of them.
+      // Proper occlusion needs per-object images with a baseline (sorted by y), not one plate.
+      if (USE_FOREGROUND && this.textures.exists('map-fg')) this.add.image(0, 0, 'map-fg').setOrigin(0).setDepth(FOREGROUND_DEPTH)
+    } else {
+      renderRoom(this)
+    }
+    for (const d of DESKS) {
+      const t = d.table
+      const label = this.add.text((t.x + t.w / 2) * TILE, t.y * TILE - 7, d.id, {
+        fontFamily: 'ui-sans-serif, system-ui', fontSize: '11px', fontStyle: '600', color: '#4a4258',
+        backgroundColor: '#fff3e6cc', padding: { x: 4, y: 1 }, resolution: TEXT_RES,
+      }).setOrigin(0.5, 1).setDepth(HUD_DEPTH - 1)
+      this.deskLabels.set(d.id, crisp(label))
+    }
+  }
+
+  /** collision.png: black blocks; white/red/blue walk; blue is where newcomers appear. */
+  private applyCollision() {
+    const img = this.textures.get('map-collision').getSourceImage() as HTMLImageElement
+    const c = document.createElement('canvas')
+    c.width = COLS
+    c.height = ROWS
+    const ctx = c.getContext('2d', { willReadFrequently: true })!
+    ctx.drawImage(img, 0, 0)
+    const px = ctx.getImageData(0, 0, COLS, ROWS).data
+    const blocked: boolean[][] = []
+    let spawn: Point | null = null
+    for (let y = 0; y < ROWS; y++) {
+      blocked.push([])
+      for (let x = 0; x < COLS; x++) {
+        const i = (y * COLS + x) * 4
+        const [r, g, b] = [px[i], px[i + 1], px[i + 2]]
+        blocked[y].push(r < 64 && g < 64 && b < 64)
+        if (b > 192 && r < 64 && g < 64) spawn = { x, y }
+      }
+    }
+    applyMapData(blocked, this.cache.json.get('map-seats') as SeatRow[], spawn)
+    rebuildGrid()
+  }
+
+  /** Smooth zoom: set a target and let update() glide there, keeping `anchor` (screen px) fixed. */
+  zoomBy(factor: number, anchor?: Point) {
+    const cam = this.cameras.main
+    const fit = Math.min(this.scale.width / (COLS * TILE), this.scale.height / (ROWS * TILE))
+    this.zoomTarget = Phaser.Math.Clamp((this.zoomTarget ?? cam.zoom) * factor, fit * 0.8, 3)
+    const screen = anchor ?? { x: this.scale.width / 2, y: this.scale.height / 2 }
+    const world = cam.getWorldPoint(screen.x, screen.y)
+    this.zoomAnchor = { screen, world: { x: world.x, y: world.y } }
+  }
+
+  private glideZoom(delta: number) {
+    if (this.zoomTarget === null) return
+    const cam = this.cameras.main
+    const k = 1 - Math.exp(-delta / 90) // ~90 ms time constant
+    const z = cam.zoom + (this.zoomTarget - cam.zoom) * k
+    const done = Math.abs(this.zoomTarget - z) < 0.002
+    cam.setZoom(done ? this.zoomTarget : z)
+    this.updateBounds()
+    if (this.zoomAnchor && !(this.following && !this.mapFits())) {
+      // Keep the world point under the cursor where it was.
+      const { screen, world } = this.zoomAnchor
+      cam.setScroll(world.x - (screen.x - cam.width * cam.originX) / cam.zoom - cam.width * cam.originX, world.y - (screen.y - cam.height * cam.originY) / cam.zoom - cam.height * cam.originY)
+    }
+    this.scaleDeskLabels()
+    if (done) {
+      this.zoomTarget = null
+      this.zoomAnchor = null
+      this.follow(this.following)
+    }
+  }
+
+  /** Keep one of my agents in view. Never changes zoom; does nothing while the whole map fits on screen. */
+  follow(agentId: string | null) {
+    const cam = this.cameras.main
+    const s = agentId ? this.sprites.get(agentId) : undefined
+    this.following = s ? agentId : null
+    if (!s || this.mapFits()) {
+      cam.stopFollow()
+      return
+    }
+    cam.startFollow(s.container, true, 0.12, 0.12)
+  }
+
+  private mapFits() {
+    const cam = this.cameras.main
+    return COLS * TILE * cam.zoom <= this.scale.width + 1 && ROWS * TILE * cam.zoom <= this.scale.height + 1
+  }
+
+  fitCamera() {
+    const cam = this.cameras.main
+    cam.stopFollow()
+    this.zoomTarget = null
+    this.zoomAnchor = null
+    cam.setZoom(Math.min(this.scale.width / (COLS * TILE), this.scale.height / (ROWS * TILE)))
+    this.updateBounds()
+    cam.centerOn((COLS * TILE) / 2, (ROWS * TILE) / 2)
+    this.scaleDeskLabels()
+  }
+
+  private scaleDeskLabels() {
+    const k = 1 / this.cameras.main.zoom
+    for (const l of this.deskLabels.values()) l.setScale(k)
+  }
+
+  /** Bounds only when the map is bigger than the view; otherwise they would pin it to the top-left. */
+  private updateBounds() {
+    const cam = this.cameras.main
+    const pad = { x: Math.max(0, (this.scale.width / cam.zoom - COLS * TILE) / 2), y: Math.max(0, (this.scale.height / cam.zoom - ROWS * TILE) / 2) }
+    cam.setBounds(-pad.x, -pad.y, COLS * TILE + 2 * pad.x, ROWS * TILE + 2 * pad.y)
+  }
+
+  // optional sprite sheets
+
+  private loadSheets() {
+    const manifest = (this.cache.json.get('manifest') ?? {}) as { characters?: Record<string, string> }
+    const chars = manifest.characters ?? {}
+    const keys = Object.keys(chars)
+    if (!keys.length) return
+    for (const skin of keys) this.load.spritesheet(`char-${skin}`, chars[skin], { frameWidth: CHAR_FRAME.width, frameHeight: CHAR_FRAME.height })
+    this.load.once('complete', () => {
+      for (const skin of keys) {
+        const key = `char-${skin}`
+        if (!this.textures.exists(key)) continue
+        this.sheets.add(skin)
+        for (const [name, frames] of Object.entries(CHAR_ANIMS)) {
+          this.anims.create({
+            key: `${key}-${name}`,
+            frames: this.anims.generateFrameNumbers(key, { frames: [...frames] }),
+            frameRate: name.startsWith('walk') ? 8 : 2,
+            repeat: -1,
+          })
+        }
+      }
+      for (const s of this.sprites.values()) this.applySkin(s, s.skin, true)
+    })
+    this.load.start()
+  }
+
+  // agents
+
+  private isMine(id: string) {
+    return id.startsWith(`${this.data_.me}/`)
+  }
+
+  private sync() {
+    const d = this.data_
+    const ids = new Set(d.agents.map((a) => a.agent_id))
+    for (const [id, s] of this.sprites) {
+      if (!ids.has(id) && !s.leaving) this.leave(s)
+    }
+    for (const a of d.agents) {
+      let s = this.sprites.get(a.agent_id)
+      if (!s || s.leaving) {
+        s?.container.destroy()
+        s?.hud.destroy()
+        s?.hit.destroy()
+        s?.feet.destroy()
+        s = this.spawn(a)
+      }
+      this.applySkin(s, a.skin)
+      const present = d.owners[a.owner]?.present
+      crisp(s.label, a.name.split('/').pop() ?? a.name).setAlpha(present ? 1 : 0.6)
+      crisp(s.icon, d.icons[a.agent_id] ?? '')
+      const bubble = d.bubbles[a.agent_id]
+      crisp(s.bubble, bubble ?? '').setVisible(!!bubble)
+    }
+    for (const id of [...this.selected]) if (!ids.has(id)) this.selected.delete(id)
+    this.resolveTargets()
+    this.refreshSelection()
+    this.refreshDesks()
+    this.firstSync = false
+  }
+
+  private spawn(a: OfficeAgent): AgentSprite {
+    const ring = this.add.ellipse(0, 0, 26 * CHAR_SCALE, 10 * CHAR_SCALE, ownerColor(a.owner), 0.85).setStrokeStyle(0)
+    const label = this.add
+      .text(0, -50, '', { fontFamily: 'ui-sans-serif, system-ui', fontSize: '13px', color: '#ffffff', backgroundColor: '#48506cdd', padding: { x: 5, y: 2 }, resolution: TEXT_RES })
+      .setOrigin(0.5, 1)
+    const icon = this.add.text(14, -40, '', { fontSize: '16px', resolution: TEXT_RES }).setOrigin(0, 1)
+    const bubble = this.add
+      .text(0, -60, '', {
+        fontFamily: 'ui-sans-serif, system-ui',
+        fontSize: '13px',
+        color: '#2c283c',
+        backgroundColor: '#ffffff',
+        padding: { x: 6, y: 3 },
+        wordWrap: { width: 180 },
+        resolution: TEXT_RES,
+      })
+      .setOrigin(0.5, 1)
+      .setVisible(false)
+    const container = this.add.container(0, 0, [ring])
+    const hud = this.add.container(0, 0, [label, icon, bubble]).setDepth(HUD_DEPTH)
+    // Generous hit box from the feet up to the name tag, ~1.6 tiles wide. A standalone zone (origin at the feet)
+    // instead of an interactive container: container hit areas are measured from the container's centre.
+    const hit = this.add
+      .zone(0, 0, 52, CHAR_FRAME.height * CHAR_SCALE + 30)
+      .setOrigin(0.5, 1)
+      .setDepth(HUD_DEPTH - 2)
+      .setInteractive({ useHandCursor: true })
+    const start = this.firstSync ? null : center(SPAWN) // newcomers walk in from the door
+    const feet = this.add.zone(start?.x ?? -100, start?.y ?? -100, FEET.w, FEET.h)
+    this.physics.add.existing(feet)
+    const body = feet.body as Phaser.Physics.Arcade.Body
+    body.setCollideWorldBounds(true).setMaxVelocity(WALK_SPEED * 1.6, WALK_SPEED * 1.6)
+    this.physics.add.collider(feet, this.walls)
+    const s: AgentSprite = {
+      id: a.agent_id,
+      owner: a.owner,
+      container,
+      hit,
+      hud,
+      ring,
+      skin: '',
+      label,
+      icon,
+      bubble,
+      feet,
+      body,
+      path: [],
+      dest: null,
+      facing: 'down',
+      leaving: false,
+      drivenUntil: 0,
+      lastSync: 0,
+      lastTile: '',
+      stuckMs: 0,
+      lastPlan: 0,
+    }
+    if (!start) feet.setData('unplaced', true)
+    hit.on('pointerdown', (p: Phaser.Input.Pointer) => this.onAgentDown(s, p))
+    hit.on('pointerover', () => this.setHover(s, true))
+    hit.on('pointerout', () => this.setHover(s, false))
+    // The name tag is on the HUD layer; make it clickable too.
+    label.setInteractive({ useHandCursor: true })
+    label.on('pointerdown', (p: Phaser.Input.Pointer) => this.onAgentDown(s, p))
+    label.on('pointerover', () => this.setHover(s, true))
+    label.on('pointerout', () => this.setHover(s, false))
+    this.sprites.set(a.agent_id, s)
+    return s
+  }
+
+  private applySkin(s: AgentSprite, skin: string, force = false) {
+    if (s.skin === skin && !force) return
+    s.skin = skin
+    s.token?.destroy()
+    s.face?.destroy()
+    s.sheet?.destroy()
+    s.token = s.face = s.sheet = undefined
+    const info = SKIN_BY_ID[skin] ?? SKIN_BY_ID['dev-hoodie']
+    if (this.sheets.has(skin)) {
+      s.sheet = this.add.sprite(0, 0, `char-${skin}`, 18).setOrigin(0.5, 1).setScale(CHAR_SCALE)
+      s.container.addAt(s.sheet, 1)
+    } else {
+      s.token = this.add.circle(0, -16 * CHAR_SCALE, 13 * CHAR_SCALE, info.color).setStrokeStyle(2, 0xffffff)
+      s.face = crisp(this.add.text(0, -16 * CHAR_SCALE, info.emoji, { fontSize: `${Math.round(16 * CHAR_SCALE)}px`, resolution: TEXT_RES }).setOrigin(0.5))
+      s.container.addAt([s.token, s.face], 1)
+    }
+  }
+
+  private leave(s: AgentSprite) {
+    s.leaving = true
+    s.drivenUntil = 0
+    this.walkTo(s, { x: SPAWN.x, y: SPAWN.y })
+    this.selected.delete(s.id)
+    if (this.following === s.id) this.follow(null)
+  }
+
+  /** Plan a smoothed path to a tile and follow it with steering (see update()). */
+  private walkTo(s: AgentSprite, tile: Point): boolean {
+    const here = tileOf(posOf(s))
+    const path = findPath(here, tile)
+    if (!path.length && (here.x !== tile.x || here.y !== tile.y)) return false
+    s.dest = tile
+    s.streaming = this.time.now - s.lastPlan < 450 // updates arriving every ~250 ms: keep gliding, don't brake
+    s.lastPlan = this.time.now
+    s.path = path.map(center)
+    if (!path.length) s.path = [center(tile)] // already on the tile: settle onto its centre
+    s.stuckMs = 0
+    return true
+  }
+
+  /** Turn each agent's symbolic target into a tile, without two agents claiming the same one. */
+  private resolveTargets() {
+    const d = this.data_
+    const taken = new Set<string>()
+    const free = (x: number, y: number) => !taken.has(`${x},${y}`)
+    const claim = (p: Point) => taken.add(`${p.x},${p.y}`)
+    const result = new Map<string, Point>()
+    const deskOf = (owner: string) => Object.entries(d.desks).find(([, o]) => o === owner)?.[0]
+    const order = (t: OfficeTarget) => (t.kind === 'desk' ? 0 : t.kind === 'tile' ? 1 : 2)
+    const agents = [...d.agents].sort((a, b) => order(a.at) - order(b.at) || a.agent_id.localeCompare(b.agent_id))
+    const byOwner = new Map<string, string[]>()
+    for (const a of [...d.agents].sort((x, y) => x.agent_id.localeCompare(y.agent_id))) {
+      byOwner.set(a.owner, [...(byOwner.get(a.owner) ?? []), a.agent_id])
+    }
+
+    for (const a of agents) {
+      let p: Point | null = null
+      const at = a.at
+      if (at.kind === 'desk') {
+        const deskId = deskOf(a.owner)
+        const i = byOwner.get(a.owner)!.indexOf(a.agent_id)
+        if (deskId) {
+          const desk = DESK_BY_ID[deskId]
+          const slot = [desk.seat, ...desk.extras][i]
+          p = slot && free(slot.x, slot.y) ? slot : nearestFree(desk.seat, free)
+        } else {
+          p = nearestFree({ x: SPAWN.x + 1 + i, y: SPAWN.y + 1 }, free)
+        }
+      } else if (at.kind === 'tile') {
+        p = nearestFree(at, free)
+      } else {
+        const other = this.sprites.get(at.agent_id)
+        const target = result.get(at.agent_id) ?? (other ? tileOf(posOf(other)) : null)
+        p = target ? nearestFree(target, (x, y) => free(x, y) && !(x === target.x && y === target.y), true) : null
+      }
+      if (!p) continue
+      claim(p)
+      result.set(a.agent_id, p)
+    }
+
+    const now = this.time.now
+    for (const [id, p] of result) {
+      const s = this.sprites.get(id)!
+      if (s.feet.getData('unplaced')) {
+        // First time we see it: place it directly.
+        s.feet.setData('unplaced', false)
+        const c = center(p)
+        s.body.reset(c.x, c.y)
+        s.dest = p
+        s.path = []
+        continue
+      }
+      if (s.drivenUntil > now) continue // the owner is steering it with the keyboard right now
+      if (s.dest && s.dest.x === p.x && s.dest.y === p.y) continue
+      this.walkTo(s, p)
+    }
+  }
+
+  update(time: number, delta: number) {
+    this.glideZoom(delta)
+    this.checkNearby(delta)
+    this.drawFeedback(time)
+    const dt = Math.min(delta, 80) / 1000
+    const drive = this.readKeys()
+    const driven = drive && this.selected.size === 1 ? this.sprites.get([...this.selected][0]) : undefined
+    for (const s of [...this.sprites.values()]) {
+      let want = { x: 0, y: 0 }
+      if (driven === s && drive) {
+        // Keyboard: direct control, like Gather.
+        s.path = []
+        s.dest = null
+        s.drivenUntil = time + DRIVE_HOLD_MS
+        want = { x: drive.x * WALK_SPEED, y: drive.y * WALK_SPEED }
+        this.syncDriven(s, time)
+      } else if (s.path.length) {
+        want = this.steer(s, delta)
+      } else if (s.leaving) {
+        s.container.destroy()
+        s.hud.destroy()
+        s.hit.destroy()
+        s.feet.destroy()
+        this.sprites.delete(s.id)
+        continue
+      } else if (s.drivenUntil > 0 && s.drivenUntil <= time + DRIVE_HOLD_MS - 60 && driven !== s) {
+        this.syncDriven(s, time, true) // keys released: report where it stopped
+        s.drivenUntil = 0
+      }
+      // Accelerate towards the wanted velocity; brake when there is none.
+      const v = s.body.velocity
+      const maxDv = ACCEL * dt
+      const dvx = Phaser.Math.Clamp(want.x - v.x, -maxDv, maxDv)
+      const dvy = Phaser.Math.Clamp(want.y - v.y, -maxDv, maxDv)
+      s.body.setVelocity(v.x + dvx, v.y + dvy)
+      const speed = s.body.velocity.length()
+      const moving = speed > 12
+      if (moving) {
+        // Hysteresis: only switch between horizontal and vertical facing on a clear majority, so diagonal
+        // walking doesn't flicker between two animations.
+        const { x, y } = s.body.velocity
+        const horizontal = s.facing === 'left' || s.facing === 'right'
+        const goHorizontal = horizontal ? Math.abs(x) * 1.4 > Math.abs(y) : Math.abs(x) > Math.abs(y) * 1.4
+        s.facing = goHorizontal ? (x > 0 ? 'right' : 'left') : y > 0 ? 'down' : 'up'
+      }
+      s.container.setPosition(Math.round(s.feet.x), Math.round(s.feet.y + FEET.h / 2)).setDepth(s.feet.y)
+      s.hud.setPosition(s.container.x, s.container.y).setDepth(HUD_DEPTH + s.feet.y)
+      s.hit.setPosition(s.container.x, s.container.y)
+      this.scaleOverlay(s)
+      this.animate(s, moving)
+    }
+  }
+
+  /** Proximity: when the one agent I'm controlling stands still within reach of someone else's agent, offer
+   *  the menu for the closest one; close it when they part. Closing it by hand keeps it closed until they part. */
+  private checkNearby(delta: number) {
+    const mine = this.selected.size === 1 ? this.sprites.get([...this.selected][0]) : undefined
+    const best = mine ? this.closestPeer(mine) : null
+    if (!mine || !best) {
+      if (this.nearby) this.callbacks?.onNearby(null)
+      this.nearby = null
+      this.stillMs = 0
+      return
+    }
+    const still = !mine.path.length && mine.body.velocity.length() < 12
+    this.stillMs = still ? this.stillMs + delta : 0
+    if (this.nearby && (this.nearby.mine !== mine.id || this.nearby.peer !== best.id)) {
+      this.callbacks?.onNearby(null)
+      this.nearby = null
+    }
+    if (!this.nearby && this.stillMs >= NEARBY_STILL_MS) {
+      this.nearby = { mine: mine.id, peer: best.id, dismissed: false }
+      this.callbacks?.onNearby({ ...this.peerClick(best), auto: true })
+    }
+  }
+
+  private closestPeer(mine: AgentSprite): AgentSprite | null {
+    const here = tileOf(posOf(mine))
+    let best: AgentSprite | null = null
+    let bestD = Infinity
+    for (const s of this.sprites.values()) {
+      if (this.isMine(s.id) || s.leaving) continue
+      const d = distance(tileOf(posOf(s)), here)
+      const px = Math.hypot(s.feet.x - mine.feet.x, s.feet.y - mine.feet.y)
+      if (d <= REACH && px < bestD) {
+        best = s
+        bestD = px
+      }
+    }
+    return best
+  }
+
+  /** Screen position (canvas px) of an agent's head plus who of mine can reach it. */
+  private peerClick(s: AgentSprite): PeerClick {
+    const cam = this.cameras.main
+    const here = tileOf(posOf(s))
+    const reachableBy = [...this.sprites.values()]
+      .filter((m) => this.isMine(m.id) && !m.leaving && distance(tileOf(posOf(m)), here) <= REACH)
+      .map((m) => m.id)
+    const head = { x: s.feet.x, y: s.feet.y - CHAR_FRAME.height * CHAR_SCALE }
+    return { agentId: s.id, screen: { x: (head.x - cam.worldView.x) * cam.zoom, y: (head.y - cam.worldView.y) * cam.zoom }, reachableBy }
+  }
+
+  /** The owner closed the proximity menu: don't reopen it until the agents part. */
+  dismissNearby() {
+    if (this.nearby) this.nearby.dismissed = true
+  }
+
+  /** E: open the menu for the closest agent within reach, even after it was dismissed. */
+  private openNearby() {
+    const mine = this.selected.size === 1 ? this.sprites.get([...this.selected][0]) : undefined
+    const best = mine ? this.closestPeer(mine) : null
+    if (mine && best) {
+      this.nearby = { mine: mine.id, peer: best.id, dismissed: false }
+      this.callbacks?.onNearby({ ...this.peerClick(best), auto: true })
+    }
+  }
+
+  /** Names, icons and bubbles keep the same on-screen size at any zoom, and sit just above the head. */
+  private scaleOverlay(s: AgentSprite) {
+    const k = 1 / this.cameras.main.zoom
+    const head = -(CHAR_FRAME.height - 2) * CHAR_SCALE
+    s.label.setScale(k).setY(head)
+    s.icon.setScale(k).setPosition(14, head - 2)
+    s.bubble.setScale(k).setY(head - s.label.height * k - 4)
+  }
+
+  /** Velocity towards the next waypoint, slowing down on the last one. Replans when stuck. */
+  private steer(s: AgentSprite, delta: number): Point {
+    const target = s.path[0]
+    const dx = target.x - s.feet.x
+    const dy = target.y - s.feet.y
+    const dist = Math.hypot(dx, dy)
+    const last = s.path.length === 1
+    if (dist < (last ? 2 : WAYPOINT_RADIUS)) {
+      s.path.shift()
+      if (last) {
+        s.body.reset(target.x, target.y) // settle exactly on the tile
+        return { x: 0, y: 0 }
+      }
+      return this.steer(s, delta)
+    }
+    if (s.body.velocity.length() < 8 && s.body.blocked.none === false) s.stuckMs += delta
+    else s.stuckMs = 0
+    if (s.stuckMs > 600 && s.dest) this.walkTo(s, s.dest)
+    const brake = last && !(s.streaming && this.time.now - s.lastPlan < 450)
+    const speed = brake ? Math.min(WALK_SPEED, (WALK_SPEED * dist) / ARRIVE_RADIUS + 20) : WALK_SPEED
+    return { x: (dx / dist) * speed, y: (dy / dist) * speed }
+  }
+
+  private readKeys(): Point | null {
+    if (!this.keys) return null
+    const down = (ks: Phaser.Input.Keyboard.Key[]) => ks.some((k) => k.isDown)
+    const x = (down(this.keys.right) ? 1 : 0) - (down(this.keys.left) ? 1 : 0)
+    const y = (down(this.keys.down) ? 1 : 0) - (down(this.keys.up) ? 1 : 0)
+    if (!x && !y) return null
+    const n = Math.hypot(x, y)
+    return { x: x / n, y: y / n }
+  }
+
+  /** Tell the world where a keyboard-driven agent is (throttled, and once when it stops). */
+  private syncDriven(s: AgentSprite, time: number, final = false) {
+    const t = tileOf(posOf(s))
+    const key = `${t.x},${t.y}`
+    if (!final && (time - s.lastSync < SYNC_MS || key === s.lastTile)) return
+    if (final && key === s.lastTile) return
+    s.lastSync = time
+    s.lastTile = key
+    s.dest = t
+    this.callbacks?.onMove(s.id, { kind: 'tile', x: t.x, y: t.y })
+  }
+
+  private animate(s: AgentSprite, moving: boolean) {
+    if (s.sheet) {
+      const key = `char-${s.skin}`
+      const dir = s.facing === 'right' ? 'left' : s.facing
+      const seat = !moving && this.seatAt(tileOf(posOf(s)))
+      const name = moving ? `walk-${dir}` : seat ? (seat === 'right' ? 'sit-left' : `sit-${seat}`) : 'idle'
+      s.sheet.setFlipX(s.facing === 'right' || seat === 'right')
+      if (s.sheet.anims.currentAnim?.key !== `${key}-${name}`) s.sheet.play(`${key}-${name}`)
+    } else if (s.token) {
+      const bob = moving ? Math.sin(this.time.now / 70) * 2 : 0
+      s.token.y = -16 * CHAR_SCALE + bob
+      if (s.face) s.face.y = -16 * CHAR_SCALE + bob
+    }
+  }
+
+  private seatAt(p: Point): Facing | null {
+    for (const d of DESKS) if (d.seat.x === p.x && d.seat.y === p.y) return d.seat.face
+    return null
+  }
+
+  // selection + desks
+
+  private refreshSelection(notify = true) {
+    for (const s of this.sprites.values()) {
+      const sel = this.selected.has(s.id)
+      s.ring.setStrokeStyle(sel || s.hovered ? 3 : 0, sel ? 0xffffff : 0xfff3e6)
+      s.ring.setScale(sel ? 1.2 : s.hovered ? 1.15 : 1)
+    }
+    if (notify) this.callbacks?.onSelect([...this.selected])
+  }
+
+  private refreshDesks() {
+    const { desks, pickingDesk, me } = this.data_
+    this.deskHighlight.clear()
+    for (const d of DESKS) {
+      const owner = desks[d.id]
+      crisp(this.deskLabels.get(d.id)!, owner ? `${d.id} · ${owner}` : d.id).setColor(owner === me ? '#487b65' : '#63596f')
+      if (pickingDesk && !owner) {
+        const t = d.table
+        this.deskHighlight.lineStyle(2, DESK_FREE).strokeRect(t.x * TILE - 2, t.y * TILE - 2, t.w * TILE + 4, t.h * TILE + 4)
+      }
+    }
+  }
+
+  private deskAt(p: Point): string | null {
+    for (const d of DESKS) {
+      const t = d.table
+      const onTable = p.x >= t.x && p.x < t.x + t.w && p.y >= t.y && p.y < t.y + t.h
+      if (onTable || (d.seat.x === p.x && d.seat.y === p.y)) return d.id
+    }
+    return null
+  }
+
+  // input
+
+  private setHover(s: AgentSprite, on: boolean) {
+    s.hovered = on
+    this.refreshSelection(false)
+    s.label.setBackgroundColor(on ? '#2c283cf0' : '#48506cdd')
+    crisp(s.label)
+  }
+
+  private onAgentDown(s: AgentSprite, p: Phaser.Input.Pointer) {
+    if (!p.leftButtonDown() || s.leaving) return
+    this.drag = null
+    if (this.isMine(s.id)) {
+      if (p.event.shiftKey) {
+        if (this.selected.has(s.id)) this.selected.delete(s.id)
+        else this.selected.add(s.id)
+      } else {
+        this.selected = new Set([s.id])
+      }
+      if ((p.event as MouseEvent).detail >= 2) this.callbacks?.onOpenAgent(s.id)
+      this.refreshSelection()
+      if (this.selected.size === 1) this.follow(s.id)
+      return
+    }
+    const click = this.peerClick(s)
+    if (click.reachableBy.length) {
+      this.callbacks?.onPeerClick(click)
+      return
+    }
+    // Not within reach: walk my agent over; the proximity menu opens when it arrives.
+    if (!this.selected.size) {
+      const first = [...this.sprites.values()].filter((m) => this.isMine(m.id) && !m.leaving).sort((a, b) => a.id.localeCompare(b.id))[0]
+      if (!first) {
+        this.callbacks?.onPeerClick(click)
+        return
+      }
+      this.selected = new Set([first.id])
+      this.refreshSelection()
+    }
+    this.walkSelectedTo(s.id)
+  }
+
+  private setupInput() {
+    this.input.mouse?.disableContextMenu()
+    this.input.on('pointerdown', (p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
+      // Phaser cancels the mousedown default, so the canvas host never gets focus by itself; keys need it.
+      ;(this.game.canvas.parentElement as HTMLElement | null)?.focus({ preventScroll: true })
+      if (over.length) return
+      const cam = this.cameras.main
+      this.drag = {
+        start: { x: p.x, y: p.y },
+        world: { x: p.worldX, y: p.worldY },
+        mode: p.leftButtonDown() ? 'select' : 'pan',
+        scroll: { x: cam.scrollX, y: cam.scrollY },
+      }
+    })
+    this.input.on('gameout', () => {
+      this.hover.clear()
+      this.game.canvas.style.cursor = 'default'
+    })
+    this.input.on('pointermove', (p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
+      if (!this.drag) {
+        this.showHover(p, over)
+        return
+      }
+      const cam = this.cameras.main
+      if (this.drag.mode === 'pan') {
+        if (this.following) this.follow(null)
+        cam.setScroll(this.drag.scroll.x - (p.x - this.drag.start.x) / cam.zoom, this.drag.scroll.y - (p.y - this.drag.start.y) / cam.zoom)
+        return
+      }
+      const w = this.drag.world
+      this.selectBox.clear().lineStyle(1, 0xffffff).fillStyle(0xffffff, 0.12)
+      this.selectBox.fillRect(Math.min(w.x, p.worldX), Math.min(w.y, p.worldY), Math.abs(p.worldX - w.x), Math.abs(p.worldY - w.y))
+      this.selectBox.strokeRect(Math.min(w.x, p.worldX), Math.min(w.y, p.worldY), Math.abs(p.worldX - w.x), Math.abs(p.worldY - w.y))
+    })
+    this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
+      const drag = this.drag
+      this.drag = null
+      this.selectBox.clear()
+      if (!drag || drag.mode === 'pan') return
+      const moved = Math.hypot(p.x - drag.start.x, p.y - drag.start.y) > 6
+      if (moved) {
+        const x0 = Math.min(drag.world.x, p.worldX)
+        const x1 = Math.max(drag.world.x, p.worldX)
+        const y0 = Math.min(drag.world.y, p.worldY)
+        const y1 = Math.max(drag.world.y, p.worldY)
+        const inside = [...this.sprites.values()].filter(
+          (s) => this.isMine(s.id) && !s.leaving && s.feet.x >= x0 && s.feet.x <= x1 && s.feet.y >= y0 && s.feet.y <= y1,
+        )
+        if (!p.event.shiftKey) this.selected.clear()
+        inside.forEach((s) => this.selected.add(s.id))
+        this.refreshSelection()
+        return
+      }
+      const tile = tileOf({ x: p.worldX, y: p.worldY + 6 })
+      if (this.data_.pickingDesk) {
+        const desk = this.deskAt(tile)
+        if (desk && !this.data_.desks[desk]) this.callbacks?.onDeskPick(desk)
+        return
+      }
+      this.moveSelectedTo(tile)
+    })
+    this.input.on('wheel', (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
+      // Trackpads send many small deltas, mice a few big ones; scale by the delta so both feel the same.
+      this.zoomBy(Math.exp(-Phaser.Math.Clamp(dy, -200, 200) * 0.0012), { x: p.x, y: p.y })
+    })
+    const keys = this.input.keyboard
+    keys?.on('keydown-H', () => this.sendSelectedHome())
+    keys?.on('keydown-ESC', () => {
+      this.selected.clear()
+      this.refreshSelection()
+    })
+    if (keys) {
+      const K = Phaser.Input.Keyboard.KeyCodes
+      const add = (...codes: number[]) => codes.map((c) => keys.addKey(c, true, false))
+      this.keys = { up: add(K.W, K.UP), down: add(K.S, K.DOWN), left: add(K.A, K.LEFT), right: add(K.D, K.RIGHT) }
+      keys.on('keydown-E', () => this.openNearby())
+      keys.on('keydown-F', () => this.follow(this.selected.size === 1 ? [...this.selected][0] : null))
+    }
+  }
+
+  /** Cursor + tile outline: tells the owner what a click will do before they click. */
+  private showHover(p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) {
+    const canvas = this.game.canvas
+    this.hover.clear()
+    if (over.length) {
+      canvas.style.cursor = 'pointer'
+      return
+    }
+    const t = tileOf({ x: p.worldX, y: p.worldY + 6 })
+    if (this.data_.pickingDesk) {
+      const desk = this.deskAt(t)
+      canvas.style.cursor = desk && !this.data_.desks[desk] ? 'pointer' : 'default'
+      return
+    }
+    if (!this.selected.size || t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) {
+      canvas.style.cursor = 'default'
+      return
+    }
+    const ok = walkable(t.x, t.y)
+    canvas.style.cursor = ok ? 'pointer' : 'not-allowed'
+    this.hover.lineStyle(2, ok ? 0x70a65b : 0xce8262, 0.9).fillStyle(ok ? 0x70a65b : 0xce8262, 0.18)
+    this.hover.fillRoundedRect(t.x * TILE + 2, t.y * TILE + 2, TILE - 4, TILE - 4, 6).strokeRoundedRect(t.x * TILE + 2, t.y * TILE + 2, TILE - 4, TILE - 4, 6)
+  }
+
+  /** One destination marker per walking agent of mine (the latest click wins); a red cross for a click
+   *  nobody can reach. */
+  private drawFeedback(time: number) {
+    const g = this.trails.clear()
+    this.markers = this.markers.filter((m) => {
+      const age = time - m.born
+      const s = this.sprites.get(m.agentId)
+      const arrived = !m.bad && age > 150 && (!s || !s.path.length)
+      if (age > (m.bad ? 700 : 15000) || arrived) return false
+      const pulse = 1 + 0.12 * Math.sin(age / 140)
+      if (m.bad) {
+        g.lineStyle(3, 0xce8262, 1 - age / 700)
+        g.lineBetween(m.x - 7, m.y - 7, m.x + 7, m.y + 7).lineBetween(m.x - 7, m.y + 7, m.x + 7, m.y - 7)
+      } else {
+        g.fillStyle(0x70a65b, 0.25).fillEllipse(m.x, m.y, 26 * pulse, 12 * pulse)
+        g.lineStyle(2, 0x70a65b, 0.95).strokeEllipse(m.x, m.y, 26 * pulse, 12 * pulse)
+      }
+      return true
+    })
+  }
+
+  private mark(agentId: string, p: Point) {
+    const c = center(p)
+    this.markers = this.markers.filter((m) => m.agentId !== agentId)
+    this.markers.push({ x: c.x, y: c.y, agentId, born: this.time.now })
+  }
+
+  /** Steering: send the selected agents to a tile, spread over nearby free tiles. */
+  moveSelectedTo(tile: Point) {
+    if (!this.selected.size) return
+    const taken = new Set<string>()
+    for (const s of this.sprites.values()) {
+      if (!this.selected.has(s.id) && s.dest) taken.add(`${s.dest.x},${s.dest.y}`)
+    }
+    let sent = 0
+    for (const id of [...this.selected].sort()) {
+      const p = walkable(tile.x, tile.y) ? nearestFree(tile, (x, y) => !taken.has(`${x},${y}`)) : null
+      const from = this.sprites.get(id)
+      if (!p || !from) continue
+      const here = tileOf(posOf(from))
+      if (!findPath(here, p).length && (here.x !== p.x || here.y !== p.y)) continue
+      from.drivenUntil = 0
+      taken.add(`${p.x},${p.y}`)
+      this.walkTo(from, p) // start walking now; the world echo arrives a moment later
+      this.mark(id, p)
+      this.callbacks?.onMove(id, { kind: 'tile', x: p.x, y: p.y })
+      sent++
+    }
+    if (!sent) {
+      const c = center(tile)
+      this.markers = this.markers.filter((m) => !m.bad)
+      this.markers.push({ x: c.x, y: c.y, agentId: '', born: this.time.now, bad: true })
+    }
+  }
+
+  sendSelectedHome() {
+    for (const id of this.selected) this.callbacks?.onMove(id, { kind: 'desk' })
+  }
+
+  /** Steering towards another agent ("Đi tới"). */
+  walkSelectedTo(agentId: string) {
+    const target = this.sprites.get(agentId)
+    if (!target) return
+    const t = tileOf(posOf(target))
+    const taken = new Set<string>([`${t.x},${t.y}`])
+    for (const id of [...this.selected].sort()) {
+      const me = this.sprites.get(id)
+      if (!me) continue
+      const p = nearestFree(t, (x, y) => !taken.has(`${x},${y}`), true)
+      if (p) {
+        taken.add(`${p.x},${p.y}`)
+        me.drivenUntil = 0
+        this.walkTo(me, p)
+        this.mark(id, p)
+        // Send the exact tile, so the world's echo matches the local walk instead of re-resolving "near".
+        this.callbacks?.onMove(id, { kind: 'tile', x: p.x, y: p.y })
+      }
+    }
+  }
+}

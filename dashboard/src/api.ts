@@ -69,6 +69,10 @@ export interface Conversation {
   mode: 'auto' | 'manual'
   turn_count: number
   title: string
+  /** '' | 'inquiry' | 'assignment' (CONTEXT.md) */
+  kind: '' | 'inquiry' | 'assignment'
+  /** Assignment accepted by this node's owner: file edits run without asking. */
+  accepted: boolean
   created_at: string
   updated_at: string
   awaiting_owner: boolean
@@ -101,6 +105,49 @@ export interface ConversationDetail {
   approvals: Approval[]
 }
 
+// Office (relayed from the team world server by the node; see node-server office.py / world.py)
+
+export type OfficeTarget =
+  | { kind: 'desk' }
+  | { kind: 'tile'; x: number; y: number }
+  | { kind: 'near'; agent_id: string }
+
+export interface OfficeAgent {
+  agent_id: string
+  owner: string
+  name: string
+  skin: string
+  at: OfficeTarget
+  steered: boolean
+  /** Status only, never content. */
+  activity: { peer: string | null; status: ConversationStatus; direction: Direction } | null
+}
+
+export interface OfficeOwner {
+  connected: boolean
+  present: boolean
+}
+
+export interface OfficeState {
+  enabled: boolean
+  connected: boolean
+  owner: string
+  desks: Record<string, string>
+  owners: Record<string, OfficeOwner>
+  agents: OfficeAgent[]
+  desk_ids: string[]
+  skins: string[]
+}
+
+export type WorldEvent =
+  | { type: 'snapshot'; desks: Record<string, string>; owners: Record<string, OfficeOwner>; agents: OfficeAgent[]; desk_ids: string[]; skins: string[] }
+  | { type: 'desks'; desks: Record<string, string> }
+  | { type: 'owners'; owners: Record<string, OfficeOwner> }
+  | { type: 'agent'; agent: OfficeAgent; entered?: boolean }
+  | { type: 'agent_left'; agent_id: string }
+  | { type: 'link'; connected: boolean }
+  | { type: 'error'; op?: string; message: string }
+
 export type LiveEvent =
   | { type: 'hello'; owner: string }
   | { type: 'agent'; agent: Agent }
@@ -110,6 +157,7 @@ export type LiveEvent =
   | { type: 'delta'; conversation_id: string; text: string }
   | { type: 'approval'; approval: Approval }
   | { type: 'mesh'; config_dirty: boolean }
+  | { type: 'office'; event: WorldEvent }
 
 export class ApiError extends Error {
   status: number
@@ -176,6 +224,13 @@ export const api = {
   handback: (id: string) => req<{ status: string }>('POST', `/api/conversations/${enc(id)}/handback`),
   reply: (id: string, text: string) => req<{ status: string }>('POST', `/api/conversations/${enc(id)}/reply`, { text }),
   fork: (id: string) => req<{ conversation_id: string }>('POST', `/api/conversations/${enc(id)}/fork`),
+
+  office: () => req<OfficeState>('GET', '/api/office'),
+  claimDesk: (desk: string) => req<{ status: string }>('POST', '/api/office/desk', { desk }),
+  setSkin: (agent_id: string, skin: string) => req<{ status: string }>('POST', '/api/office/skin', { agent_id, skin }),
+  move: (agent_id: string, at: OfficeTarget) => req<{ status: string }>('POST', '/api/office/move', { agent_id, at }),
+  assign: (from_agent: string, to_agent: string, text: string) =>
+    req<{ status: string }>('POST', '/api/office/assign', { from_agent, to_agent, text }),
 
   approvals: () => req<Approval[]>('GET', '/api/approvals'),
   decide: (id: string, allow: boolean, reason = '') =>

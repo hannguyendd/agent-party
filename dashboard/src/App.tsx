@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useMemo, useState } from 'react'
 import { AgentForm } from './components/AgentForm'
 import { ApprovalCard } from './components/ApprovalCard'
 import { Directory } from './components/Directory'
@@ -8,9 +8,14 @@ import { Sidebar } from './components/Sidebar'
 import { StartSession } from './components/StartSession'
 import { StatusBadge } from './components/ui'
 import { useLiveState } from './useLiveState'
+import { useApprovalNotifications } from './useNotifications'
+
+// Phaser is large; load it only when the Office opens.
+const OfficeView = lazy(() => import('./office/OfficeView'))
 
 export type View =
   | { kind: 'home' }
+  | { kind: 'office' }
   | { kind: 'conversation'; id: string }
   | { kind: 'agent-edit'; id?: string }
   | { kind: 'start'; agentId: string }
@@ -18,9 +23,9 @@ export type View =
   | { kind: 'approvals' }
 
 export default function App() {
-  const [view, setView] = useState<View>({ kind: 'home' })
+  const [view, setView] = useState<View>({ kind: 'office' })
   const openId = view.kind === 'conversation' ? view.id : null
-  const { state, setNode } = useLiveState(openId)
+  const { state, setNode, clearOfficeError } = useLiveState(openId)
 
   const agents = useMemo(() => Object.values(state.agents).sort((a, b) => a.id.localeCompare(b.id)), [state.agents])
   const conversations = useMemo(() => Object.values(state.conversations), [state.conversations])
@@ -29,10 +34,15 @@ export default function App() {
     [state.approvals],
   )
   const pending = approvals.filter((a) => a.status === 'pending')
+  const openApproval = useCallback((a: { conversation_id: string }) => setView({ kind: 'conversation', id: a.conversation_id }), [])
+  useApprovalNotifications(state.approvals, openApproval)
   const owner = state.node?.owner ?? ''
 
   let main: React.ReactNode
   switch (view.kind) {
+    case 'office':
+      main = <Suspense fallback={<Empty>Opening office…</Empty>}><OfficeView state={state} go={setView} clearError={clearOfficeError} /></Suspense>
+      break
     case 'conversation': {
       const conv = state.conversations[view.id]
       main = conv ? (
@@ -108,8 +118,8 @@ export default function App() {
     <div className="flex h-full flex-col">
       <Header node={state.node} connected={state.connected} pendingApprovals={pending.length} view={view} go={setView} setNode={setNode} />
       <div className="flex min-h-0 flex-1">
-        <Sidebar agents={agents} conversations={conversations} view={view} go={setView} />
-        <main className="min-w-0 flex-1 overflow-y-auto">{main}</main>
+        {view.kind !== 'office' && <Sidebar agents={agents} conversations={conversations} view={view} go={setView} />}
+        <main className={view.kind === 'office' ? 'min-w-0 flex-1 overflow-hidden' : 'min-w-0 flex-1 overflow-y-auto'}>{main}</main>
       </div>
     </div>
   )

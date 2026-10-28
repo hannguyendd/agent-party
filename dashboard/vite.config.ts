@@ -9,7 +9,8 @@ export default defineConfig(({ mode }) => {
   const target = env.VITE_NODE_URL || process.env.VITE_NODE_URL || 'http://127.0.0.1:9100'
   return {
     plugins: [react(), tailwindcss()],
-    build: { outDir: 'dist', emptyOutDir: true },
+    // The Office chunk carries Phaser (~1.2 MB) and is loaded only when the Office opens.
+    build: { outDir: 'dist', emptyOutDir: true, chunkSizeWarningLimit: 1500 },
     server: {
       proxy: {
         '/api': { target, changeOrigin: true, ws: true },
