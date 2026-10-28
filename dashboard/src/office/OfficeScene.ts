@@ -115,6 +115,8 @@ interface AgentSprite {
   streaming?: boolean
   hovered?: boolean
   lastPlan: number // when the last walk was planned; frequent replans mean a remote owner is driving
+  /** The tile I last sent for this agent and until when the world's echo of an older move is ignored. */
+  sent: { tile: Point; until: number } | null
 }
 
 const center = (p: Point) => ({ x: p.x * TILE + TILE / 2, y: p.y * TILE + TILE / 2 + 6 })
@@ -483,6 +485,7 @@ export class OfficeScene extends Phaser.Scene {
       lastTile: '',
       stuckMs: 0,
       lastPlan: 0,
+      sent: null,
     }
     if (!start) feet.setData('unplaced', true)
     hit.on('pointerdown', (p: Phaser.Input.Pointer) => this.onAgentDown(s, p))
@@ -594,6 +597,14 @@ export class OfficeScene extends Phaser.Scene {
         continue
       }
       if (s.drivenUntil > now) continue // the owner is steering it with the keyboard right now
+      // Rapid clicks: echoes of earlier moves arrive after the newest click. Keep walking to the newest target
+      // until the world confirms it (or a while passes, in case the move was refused).
+      if (s.sent) {
+        const target = d.agents.find((a) => a.agent_id === id)?.at
+        const confirmed = target?.kind === 'tile' && target.x === s.sent.tile.x && target.y === s.sent.tile.y
+        if (confirmed || s.sent.until <= now) s.sent = null
+        else continue
+      }
       if (s.dest && s.dest.x === p.x && s.dest.y === p.y) continue
       this.walkTo(s, p)
     }
@@ -612,6 +623,7 @@ export class OfficeScene extends Phaser.Scene {
         // Keyboard: direct control, like Gather.
         s.path = []
         s.dest = null
+        s.sent = null
         s.drivenUntil = time + DRIVE_HOLD_MS
         want = { x: drive.x * WALK_SPEED, y: drive.y * WALK_SPEED }
         this.syncDriven(s, time)
@@ -970,9 +982,12 @@ export class OfficeScene extends Phaser.Scene {
         return
       }
       const w = this.drag.world
-      this.selectBox.clear().lineStyle(1, 0xffffff).fillStyle(0xffffff, 0.12)
-      this.selectBox.fillRect(Math.min(w.x, p.worldX), Math.min(w.y, p.worldY), Math.abs(p.worldX - w.x), Math.abs(p.worldY - w.y))
-      this.selectBox.strokeRect(Math.min(w.x, p.worldX), Math.min(w.y, p.worldY), Math.abs(p.worldX - w.x), Math.abs(p.worldY - w.y))
+      // Drag-select box: dark outline + mint wash so it reads on the pastel floor; line width stays 2 screen px.
+      const r = { x: Math.min(w.x, p.worldX), y: Math.min(w.y, p.worldY), w: Math.abs(p.worldX - w.x), h: Math.abs(p.worldY - w.y) }
+      const px = 1 / cam.zoom
+      this.selectBox.clear().fillStyle(0x3f9a67, 0.2).fillRect(r.x, r.y, r.w, r.h)
+      this.selectBox.lineStyle(4 * px, 0xfefaf2, 0.9).strokeRect(r.x, r.y, r.w, r.h)
+      this.selectBox.lineStyle(2 * px, 0x2f6b4a, 1).strokeRect(r.x, r.y, r.w, r.h)
     })
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
       const drag = this.drag
@@ -1099,7 +1114,7 @@ export class OfficeScene extends Phaser.Scene {
       taken.add(`${p.x},${p.y}`)
       this.walkTo(from, p) // start walking now; the world echo arrives a moment later
       this.mark(id, p)
-      this.callbacks?.onMove(id, { kind: 'tile', x: p.x, y: p.y })
+      this.sendMove(from, p)
       sent++
     }
     if (!sent) {
@@ -1119,7 +1134,17 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   sendSelectedHome() {
-    for (const id of this.selected) this.callbacks?.onMove(id, { kind: 'desk' })
+    for (const id of this.selected) {
+      const s = this.sprites.get(id)
+      if (s) s.sent = null
+      this.callbacks?.onMove(id, { kind: 'desk' })
+    }
+  }
+
+  /** Report a click-to-walk target; until the world echoes it back, older echoes don't pull the agent around. */
+  private sendMove(s: AgentSprite, p: Point) {
+    s.sent = { tile: p, until: this.time.now + 3000 }
+    this.callbacks?.onMove(s.id, { kind: 'tile', x: p.x, y: p.y })
   }
 
   /** Steering towards another agent ("Walk over"). */
@@ -1138,7 +1163,7 @@ export class OfficeScene extends Phaser.Scene {
         this.walkTo(me, p)
         this.mark(id, p)
         // Send the exact tile, so the world's echo matches the local walk instead of re-resolving "near".
-        this.callbacks?.onMove(id, { kind: 'tile', x: p.x, y: p.y })
+        this.sendMove(me, p)
       }
     }
   }

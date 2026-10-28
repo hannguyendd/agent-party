@@ -30,7 +30,8 @@ Settings are `AGENTFLEET_*` env vars or `.env` (`src/agentfleet_node/config.py`)
 `world.py` (`agentfleet-node world`, default port 7500) is one per team. Nodes connect with
 `AGENTFLEET_WORLD_URL=ws://<hub>:7500/world/ws`; without it the Office is disabled for that node. `WorldState` holds
 the rules (pure, unit-tested); `WorldHub` is the socket fan-out. Only desk claims and skins persist (`world.json`);
-positions reset to desks on restart. A node may only act on its own owner's agents (the owner name is a claim on the
+positions reset to desks on restart. When a node reconnects, the newest socket owns its agents
+(`WorldHub.publisher`); the old socket closing later must not remove them. A node may only act on its own owner's agents (the owner name is a claim on the
 LAN; there is no auth yet). Roaming: an agent with an active outbound conversation walks to its peer (taking over
 from steering) and goes back to its desk when the conversation ends.
 

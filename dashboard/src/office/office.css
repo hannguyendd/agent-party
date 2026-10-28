@@ -450,10 +450,10 @@
 
 /* ---------- chat panel (v2) ---------- */
 .o-avatar {
-  display: inline-grid; place-items: end center; flex-shrink: 0; overflow: hidden;
+  display: inline-grid; place-items: center; flex-shrink: 0; overflow: hidden;
   background: var(--o-panel-2); border: 2px solid var(--o-line); border-radius: 50%;
 }
-.o-avatar img { width: 82%; height: auto; image-rendering: pixelated; transform: translateY(14%); }
+.o-avatar img { height: 84%; width: auto; image-rendering: pixelated; } /* whole character, centred in the circle */
 .o-avatar-letter, .o-avatar-me { place-items: center; color: #fff; font-size: 11px; font-weight: 800; }
 .o-avatar-me { background: var(--o-peach); color: #4a2412; font-size: 10px; }
 

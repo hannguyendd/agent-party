@@ -176,3 +176,22 @@ async def test_office_disabled_without_world_url(node_factory):
     async with node_factory("han") as a, httpx.AsyncClient(base_url=a.url) as c:
         assert (await c.get("/api/office")).json()["enabled"] is False
         assert (await c.post("/api/office/desk", json={"desk": "D1"})).status_code == 409
+
+
+async def test_old_socket_closing_does_not_remove_agents_a_newer_socket_publishes(tmp_path):
+    # A node reconnects (network blip, restart) before the world notices its old socket is gone.
+    async with RunningWorld(tmp_path) as world:
+        hello = json.dumps({"op": "hello", "owner": "kien"})
+        publish = json.dumps({"op": "agents", "agents": [{"agent_id": "kien/dev", "name": "Dev"}]})
+        old = await connect(world.url)
+        await old.send(hello)
+        await old.send(publish)
+        await wait_for(lambda: "kien/dev" in world.hub.state.agents)
+        async with connect(world.url) as new:
+            await new.send(hello)
+            await new.send(publish)
+            await asyncio.sleep(0.2)
+            await old.close()
+            await asyncio.sleep(0.3)
+            assert "kien/dev" in world.hub.state.agents
+        await wait_for(lambda: "kien/dev" not in world.hub.state.agents)  # the last socket closing still removes it

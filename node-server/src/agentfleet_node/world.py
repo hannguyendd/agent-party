@@ -228,6 +228,7 @@ class WorldHub:
     def __init__(self, state: WorldState):
         self.state = state
         self.clients: set[WebSocket] = set()
+        self.publisher: dict[str, WebSocket] = {}  # agent_id -> the socket that published it last
 
     async def broadcast(self, events: list[dict]) -> None:
         for ev in events:
@@ -265,6 +266,8 @@ class WorldHub:
                         present = now
                     elif op == "agents":
                         events, owned = self.state.sync_agents(owner, list(msg.get("agents") or []), owned)
+                        for agent_id in owned:
+                            self.publisher[agent_id] = ws
                     elif op == "claim_desk":
                         events = self.state.claim_desk(owner, str(msg.get("desk", "")))
                     elif op == "set_skin":
@@ -287,8 +290,11 @@ class WorldHub:
         finally:
             self.clients.discard(ws)
             events = self.state.set_present(owner, present, False)
+            # Only agents this socket still publishes: after a reconnect the newer socket owns them.
             for agent_id in owned:
-                events += self.state.remove_agent(agent_id)
+                if self.publisher.get(agent_id) is ws:
+                    del self.publisher[agent_id]
+                    events += self.state.remove_agent(agent_id)
             events += self.state.owner_connected(owner, -1)
             await self.broadcast(events)
 
