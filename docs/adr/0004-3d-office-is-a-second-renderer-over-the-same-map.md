@@ -38,4 +38,7 @@ calls), not a second Office. The choice is stored per browser; 2D stays the defa
 - Names, status icons and bubbles are HTML overlays in 3D (crisp text, same privacy rule: other people's
   conversations show only typing dots).
 - 3D art follows the 2D art workflow: Codex builds it from `docs/office/CODEX-PROMPTS-3D.md`; code reads it through
-  the manifest's `models3d` section and never hard-codes models.
+  the manifest's `models3d` (a `models3d.json` the pipeline writes) and never hard-codes models.
+- Furniture comes from the Kenney Furniture Kit (CC0, kept with its license in `design/office-style/3d/vendor/`),
+  converted to our ids and pastel palette; characters are built from the 2D sprites so both looks show the same
+  people. The room is ×1.7 the first contract so people and desks read at the size of the 2D art.
