@@ -179,6 +179,10 @@ export class Office3D implements OfficeRenderer {
     this.urls = { ...m3.kit, ...m3.props, ...m3.characters }
     const layout = (await (await fetch(m3.layout)).json()) as Layout3d
     const needed = new Set([...layout.objects, ...layout.walls].map((p) => p.model))
+    const unknown = [...needed].filter((id) => !this.urls[id])
+    // The layout names a model the manifest lacks (e.g. new art not merged into manifest.json yet): say so, the
+    // room is drawn without it.
+    if (unknown.length) console.warn(`3D office: no model in the manifest for ${unknown.join(', ')}`)
     for (const id of Object.keys(m3.characters)) needed.add(id)
     await this.loadModels([...needed], m3)
     if (this.disposed) return
