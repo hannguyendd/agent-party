@@ -129,3 +129,37 @@ async def test_mesh_node_is_brought_back_when_it_dies_but_not_for_a_used_token(t
     await m.stop()
     await asyncio.sleep(0.5)
     assert not m.running and len(runs.read_text().splitlines()) == 2  # a deliberate stop stays stopped
+
+
+async def test_service_controls_are_only_for_installed_nodes(node_factory):
+    a = node_factory("kien", os_notifications=False)
+    async with a, httpx.AsyncClient(base_url=a.url) as c:
+        assert (await c.get("/api/service")).json() == {"installed": False, "autostart": False}
+        assert (await c.post("/api/service/autostart", json={"on": True})).status_code == 409
+
+
+async def test_going_offline_takes_the_agents_out_and_survives_a_restart(node_factory, tmp_path):
+    from agentfleet_node.config import Settings as S
+    from test_two_nodes import add_agent, wait_for
+    from test_world import RunningWorld
+
+    async with RunningWorld(tmp_path) as world:
+        a = node_factory("kien", world_url=world.url, os_notifications=False)
+        b = node_factory("bob", world_url=world.url, os_notifications=False)
+        a.settings.static_peers = {"bob": b.url}
+        b.settings.static_peers = {"kien": a.url}
+        async with a, b, httpx.AsyncClient(base_url=a.url) as c:
+            await add_agent(a, "kien/dev")
+            await add_agent(b, "bob/qa")
+            await wait_for(lambda: "kien/dev" in world.hub.state.agents)
+            assert (await c.post("/api/presence", json={"online": False})).json() == {"online": False}
+            await wait_for(lambda: "kien/dev" not in world.hub.state.agents)  # left the Office
+            try:  # peers can't reach an offline owner's agents
+                await b.node.outbound.send("bob/qa", "kien/dev", "hi")
+                raise AssertionError("should not have been delivered")
+            except Exception as e:
+                assert "offline" in str(e).lower() or "503" in str(e)
+            assert (await c.get("/api/presence")).json() == {"online": False}
+            assert S(data_dir=a.settings.data_dir).data_dir.joinpath("presence.json").read_text() == '{"online": false}'
+            await c.post("/api/presence", json={"online": True})
+            await wait_for(lambda: "kien/dev" in world.hub.state.agents)  # back

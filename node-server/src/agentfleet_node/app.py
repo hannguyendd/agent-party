@@ -17,6 +17,7 @@ from agentfleet_node.meshproc import MeshNodeProcess
 from agentfleet_node.notify import os_notify
 from agentfleet_node.office import WorldClient
 from agentfleet_node.party import PartyService
+from agentfleet_node.presence import Presence
 from agentfleet_node.recap import RecapService
 from agentfleet_node.sessions import SessionManager
 from agentfleet_node.store import EventBus, Store
@@ -44,6 +45,7 @@ class Node:
     recaps: RecapService
     usage: UsageTracker
     titles: TitleService
+    presence: Presence | None = None
 
 
 def build_node(settings: Settings, client_factory: Callable | None = None) -> Node:
@@ -88,10 +90,9 @@ def create_app(settings: Settings | None = None, client_factory: Callable | None
     async def lifespan(app: FastAPI):
         node.store.recover_after_restart()
         node.directory.sync_node_config()
-        node.world.start()
         node.titles.start()
-        if settings.hub_url:
-            await node.meshproc.start()  # no-op with a reason in status() if agentmesh-node isn't installed
+        # Online (the default): world link + mesh node (a no-op with a reason if agentmesh-node isn't installed).
+        await node.presence.apply()
         yield
         await node.meshproc.stop()
         await node.titles.stop()
@@ -99,6 +100,7 @@ def create_app(settings: Settings | None = None, client_factory: Callable | None
         await node.sessions.shutdown()
 
     app = FastAPI(title=f"agentfleet node ({settings.owner})", lifespan=lifespan)
+    node.presence = Presence(node)
     app.state.node = node
     app.add_middleware(
         CORSMiddleware,

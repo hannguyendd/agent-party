@@ -186,7 +186,8 @@ async def save_setup(body: SetupIn, request: Request) -> dict[str, Any]:
         s.mesh_api_token_path = s.data_dir / "mesh-api-token"
     node.directory.sync_node_config()  # the owner label lives in agentmesh-node.yaml
     await node.world.stop()
-    node.world.start()
+    if node.presence is None or node.presence.online:
+        node.world.start()
     await _republish(node, force=True)
     node.store.audit("setup_saved", owner=body.owner, has_token=bool(body.token.strip()))
     return _setup_view(node)
@@ -195,6 +196,8 @@ async def save_setup(body: SetupIn, request: Request) -> dict[str, Any]:
 async def _republish(node, force: bool = False) -> None:
     """agentmesh-node reads its services only at startup: restart the one we run when they changed."""
     # force (setup, the restart button) always tries, so a missing binary shows up in status() with a reason.
+    if node.presence is not None and not node.presence.online:
+        return  # offline: the mesh node stays down until the owner comes back
     if node.settings.hub_url and (force or (node.meshproc.installed and node.directory.config_dirty)):
         if await node.meshproc.restart():
             node.directory.config_dirty = False
@@ -629,6 +632,75 @@ async def share_recap(recap_id: str, request: Request) -> dict[str, list[str]]:
 async def plan_usage(request: Request) -> dict[str, Any]:
     """This machine's Claude plan usage per window, as the CLI last reported it during a turn."""
     return {"usage": _node(request).usage.usage}
+
+
+# online / offline (presence.py)
+
+
+class PresenceIn(BaseModel):
+    online: bool
+
+
+@router.get("/presence")
+async def get_presence(request: Request) -> dict[str, bool]:
+    return {"online": _node(request).presence.online}
+
+
+@router.post("/presence")
+async def set_presence(body: PresenceIn, request: Request) -> dict[str, bool]:
+    """Go offline (agents leave the Office, peers can't reach them) or back online. Survives restarts."""
+    node = _node(request)
+    await node.presence.set(body.online)
+    return {"online": node.presence.online}
+
+
+# this machine's node as a service (installed nodes only; see service.py)
+
+
+class AutostartIn(BaseModel):
+    on: bool
+
+
+def _detached(*args: str) -> None:
+    """Run `agentfleet-node <args>` on its own: it may stop the very process serving this request."""
+    import subprocess
+
+    from agentfleet_node import service
+
+    kw = {"creationflags": 0x00000008 | 0x00000200 | 0x08000000} if service.SYSTEM == "windows" else {"start_new_session": True}
+    subprocess.Popen([service._exe(), *args], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                     **kw)
+
+
+@router.get("/service")
+async def service_info(request: Request) -> dict[str, Any]:
+    """Whether this node is an installed one and whether it starts when the person signs in."""
+    from starlette.concurrency import run_in_threadpool
+
+    from agentfleet_node import service
+
+    if not service.installed():
+        return {"installed": False, "autostart": False}
+    return {"installed": True, "autostart": await run_in_threadpool(service.autostart_enabled)}
+
+
+@router.post("/service/autostart")
+async def service_autostart(body: AutostartIn, request: Request) -> dict[str, Any]:
+    """On: register for the next sign-in (this node keeps running). Off: unregister; done on the side, since
+    unloading the login service may stop this very node (it then comes back in the background)."""
+    from starlette.concurrency import run_in_threadpool
+
+    from agentfleet_node import service
+
+    if not service.installed():
+        raise HTTPException(409, "this node runs from a repo checkout")
+    if body.on:
+        ok = await run_in_threadpool(service.set_autostart, True)
+        if not ok:
+            raise HTTPException(500, "could not register the node to start at sign-in")
+    else:
+        _detached("autostart", "off")
+    return {"autostart": body.on}
 
 
 # updates (installed nodes only; see service.py)

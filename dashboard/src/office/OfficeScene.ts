@@ -53,6 +53,8 @@ export interface SceneCallbacks {
   onOpenAgent: (agentId: string) => void
   /** My agent stopped next to someone else's (or walked away: null). Gather-style proximity menu. */
   onNearby: (click: PeerClick | null) => void
+  /** The owner walked their agent to the entrance door and stopped there: offer to go home (offline). */
+  onDoor?: (agentId: string) => void
 }
 
 export const REACH = 2 // tiles; CONTEXT.md "Within reach"
@@ -715,8 +717,38 @@ export class OfficeScene extends Phaser.Scene {
 
   /** Proximity: when the one agent I'm controlling stands still within reach of someone else's agent, offer
    *  the menu for the closest one; close it when they part. Closing it by hand keeps it closed until they part. */
+  // My agents that have been away from the entrance since they came in (walking out of it doesn't count).
+  private awayFromDoor = new Set<string>()
+  private doorStillMs = 0
+
+  private checkDoor(delta: number, mine: AgentSprite | undefined) {
+    if (!mine) {
+      this.doorStillMs = 0
+      return
+    }
+    const door = center(SPAWN)
+    const tiles = Math.hypot(mine.feet.x - door.x, mine.feet.y - door.y) / TILE
+    if (tiles > 3) {
+      this.awayFromDoor.add(mine.id)
+      this.doorStillMs = 0
+      return
+    }
+    const still = !mine.path.length && mine.body.velocity.length() < 12
+    if (tiles <= 1.6 && still && this.awayFromDoor.has(mine.id)) {
+      this.doorStillMs += delta
+      if (this.doorStillMs >= 500) {
+        this.awayFromDoor.delete(mine.id)
+        this.doorStillMs = 0
+        this.callbacks?.onDoor?.(mine.id)
+      }
+    } else {
+      this.doorStillMs = 0
+    }
+  }
+
   private checkNearby(delta: number) {
     const mine = this.selected.size === 1 ? this.sprites.get([...this.selected][0]) : undefined
+    this.checkDoor(delta, mine)
     const best = mine ? this.closestPeer(mine) : null
     if (!mine || !best) {
       if (this.nearby) this.callbacks?.onNearby(null)

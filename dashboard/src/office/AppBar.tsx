@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { api } from '../api'
+import { errMsg } from '../components/format'
+import { goOffline } from '../offline'
 import type { View } from '../App'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
@@ -42,6 +44,67 @@ function UpdateButton() {
     <button className={`office-update ${phase}`} disabled={phase === 'updating'} onClick={() => void update()} title={info?.latest ? `New build ${info.latest}` : undefined}>
       {phase === 'updating' ? 'Updating…' : phase === 'failed' ? 'Update failed: try again' : 'Update available'}
     </button>
+  )
+}
+
+/** The account chip: settings, start at sign-in, and going offline (the node stops; agents leave the office). */
+function AccountMenu({ owner, active, onSettings }: { owner: string; active: boolean; onSettings: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [svc, setSvc] = useState<{ installed: boolean; autostart: boolean } | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [note, setNote] = useState<string | null>(null)
+  const [confirmOut, setConfirmOut] = useState(false)
+  useEffect(() => {
+    if (open) api.service().then(setSvc).catch(() => setSvc(null))
+  }, [open])
+  const toggleAuto = async () => {
+    if (!svc) return
+    setBusy(true)
+    setNote(null)
+    try {
+      setSvc({ ...svc, autostart: (await api.serviceAutostart(!svc.autostart)).autostart })
+    } catch (e) {
+      setNote(errMsg(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="office-me-wrap">
+      <button className={`office-me ${active ? 'is-active' : ''}`} onClick={() => setOpen((v) => !v)} aria-expanded={open} title="Account">
+        <b style={{ background: owner ? ownerCss(owner) : undefined }}>{(owner[0] ?? '?').toUpperCase()}</b>
+        <span>{owner || '…'}</span>
+        <Icon name="settings" />
+      </button>
+      {open && (
+        <div className="o-frame office-me-menu" role="menu" onMouseLeave={() => { setOpen(false); setConfirmOut(false) }}>
+          <button role="menuitem" onClick={() => { setOpen(false); onSettings() }}><Icon name="settings" />Settings</button>
+          {svc?.installed && (
+            <>
+              <label className="office-me-toggle">
+                <span>Start when I sign in<small>to this computer</small></span>
+                <span className={`o-switch ${svc.autostart ? 'is-on' : ''}`}>
+                  <input type="checkbox" checked={svc.autostart} disabled={busy} onChange={() => void toggleAuto()} />
+                  <i />
+                </span>
+              </label>
+            </>
+          )}
+          {!confirmOut ? (
+            <button role="menuitem" className="is-danger" onClick={() => setConfirmOut(true)}>🚪 Log out (go offline)</button>
+          ) : (
+            <div className="office-me-confirm">
+              <span>Go offline? Your agents leave the office.</span>
+              <div>
+                <button className="btn-primary" onClick={() => void goOffline().catch((e) => setNote(errMsg(e)))}>Yes</button>
+                <button className="btn" onClick={() => setConfirmOut(false)}>No</button>
+              </div>
+            </div>
+          )}
+          {note && <p className="office-me-note is-err">{note}</p>}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -86,11 +149,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
           <Icon name={pending ? 'approvals-pending' : 'approvals'} />
           {pending > 0 && <span className="o-count">{pending}</span>}
         </button>
-        <button className={`office-me ${view.kind === 'settings' ? 'is-active' : ''}`} onClick={() => go({ kind: 'settings' })} title="Settings">
-          <b style={{ background: owner ? ownerCss(owner) : undefined }}>{(owner[0] ?? '?').toUpperCase()}</b>
-          <span>{owner || '…'}</span>
-          <Icon name="settings" />
-        </button>
+        <AccountMenu owner={owner} active={view.kind === 'settings'} onSettings={() => go({ kind: 'settings' })} />
       </div>
     </nav>
   )

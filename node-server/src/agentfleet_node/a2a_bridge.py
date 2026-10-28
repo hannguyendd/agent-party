@@ -231,6 +231,7 @@ class A2AGateway:
         self.store = store
         self.sessions = sessions
         self.parties = None  # set by build_node
+        self.offline = False  # the owner went offline (presence.py): refuse inbound calls
         self._apps: dict[str, Starlette] = {}
 
     def invalidate(self, agent_id: str) -> None:
@@ -250,6 +251,9 @@ class A2AGateway:
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
+            return
+        if self.offline:
+            await JSONResponse({"error": "owner is offline"}, status_code=503)(scope, receive, send)
             return
         # Starlette keeps the full path in scope["path"] and routes on path minus root_path.
         root_path: str = scope.get("root_path", "")

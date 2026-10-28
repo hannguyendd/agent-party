@@ -92,6 +92,11 @@ whether to start it at login (default no), adds an Office shortcut (macOS Applic
 Desktop, Linux app menu) and opens the setup page with the server prefilled. Staff only need Claude Code installed
 and logged in.
 
+**Online / offline** (in the app): *Log out (go offline)* in the account menu, or walking your agent to the
+entrance door, asks "go offline?". Offline, your agents leave the Office and peers' agents get "owner is offline";
+the node keeps serving the page, which asks "go online?" next time you open it. The choice survives refreshes and
+restarts (`data/presence.json`). The account menu also has *Start when I sign in* on installed nodes.
+
 **On a staff machine afterwards** `agentfleet-node` (no arguments) opens a menu: start in the background, run in
 this window, stop, open the Office, start at login on/off, update, show the log. The same as commands:
 `agentfleet-node status | start | stop | restart | open | autostart on|off | update | logs | uninstall [--purge]`.

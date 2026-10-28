@@ -1046,3 +1046,27 @@ a.o-file:hover { border-color: var(--o-line); }
 .o-exchange-line.is-err { border-color: #e8a68e; color: #b0442a; }
 .o-exchange-line button, .o-exchange-fold { font-size: 11.5px; font-weight: 800; color: var(--o-muted); cursor: pointer; }
 .o-exchange-line button:hover, .o-exchange-fold:hover { color: var(--o-ink); text-decoration: underline; }
+
+/* account menu */
+.office-me-wrap { position: relative; }
+.office-me-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; width: 240px; padding: 6px; display: flex; flex-direction: column; gap: 2px; color: var(--o-ink); }
+.office-me-menu > button { display: flex; align-items: center; gap: 8px; padding: 7px 8px; font-size: 13px; font-weight: 700; text-align: left; border-radius: 6px; cursor: pointer; }
+.office-me-menu > button:hover { background: var(--o-panel-2); }
+.office-me-menu > button.is-danger { color: #b0442a; }
+.office-me-toggle { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.office-me-toggle small { display: block; font-size: 11px; font-weight: 600; color: var(--o-muted); }
+.office-me-note { padding: 4px 8px; font-size: 11.5px; color: var(--o-muted); }
+.office-me-note.is-err { color: #b0442a; }
+
+/* "heading home?" at the entrance */
+.o-door { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 40; width: min(360px, calc(100% - 32px)); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.o-door strong { font-family: var(--o-pixel); font-size: 17px; font-weight: 600; }
+.o-door p { font-size: 13px; color: var(--o-muted); }
+.o-door-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.o-door-note { margin-right: auto; font-size: 11.5px; color: var(--o-muted); }
+.o-offline p { text-align: center; }
+.o-offline code { font-size: 12px; padding: 0 4px; border-radius: 4px; background: var(--o-panel-2); }
+
+.o-offline-actions { display: flex; justify-content: center; gap: 8px; }
+.office-me-confirm { display: flex; flex-direction: column; gap: 6px; padding: 7px 8px; font-size: 12.5px; font-weight: 700; }
+.office-me-confirm div { display: flex; gap: 6px; }

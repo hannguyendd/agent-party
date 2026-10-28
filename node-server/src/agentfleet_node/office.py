@@ -51,7 +51,7 @@ class WorldClient:
     # lifecycle
 
     def start(self) -> None:
-        if not self.enabled:
+        if not self.enabled or self._tasks:  # disabled, or already running
             return
         for c in self.store.list_conversations():
             self._convs[c.id] = self._conv_view(c.model_dump(mode="json"))

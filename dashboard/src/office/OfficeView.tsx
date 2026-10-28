@@ -13,6 +13,7 @@ import { ConversationPanel } from './ConversationPanel'
 import { NewChatPanel } from './NewChatPanel'
 import { PartyPanel } from './PartyPanel'
 import { LEVELS, levelOf } from './permissions'
+import { goOffline } from '../offline'
 import { markSeen } from './seen'
 import { ACTIVE_STATUSES } from './status'
 import { who } from './people'
@@ -103,6 +104,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   // A Party being gathered around one of my agents (its Host), before it starts.
   const [newParty, setNewParty] = useState<string | null>(null)
   const [chatTab, setChatTab] = useState<ChatTab | null>(null)
+  // My agent stopped at the entrance: "heading home?" (go offline).
+  const [atDoor, setAtDoor] = useState(false)
   useEffect(() => { if (view.side) setSide(view.side) }, [view.side])
   const [notifyPerm, setNotifyPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'denied'))
   const incoming = Object.values(state.approvals).filter(a => a.status === 'pending' && a.tool_name === 'Assignment')
@@ -199,6 +202,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
       if (isPreview) { setDemoDesks({ [id]: 'preview' }); setPickingDesk(false) }
       else void perform(async () => { await api.claimDesk(id); setPickingDesk(false) })
     },
+    onDoor: () => { if (!isPreview) setAtDoor(true) },
     onDeskTaken: (id, owner) => setNotice(`${id} is ${owner}'s desk. Pick one outlined in green.`),
     onOpenAgent: id => { const c = isPreview ? undefined : latestConv(id); if (c) setOpenConv(c.id) },
   }
@@ -257,6 +261,16 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
             onClose={() => (quickAgent ? setQuickAgent(false) : finishOnboarding())}
             onAdvanced={() => { setQuickAgent(false); go({ kind: 'settings', section: 'agents', agentId: 'new' }) }}
           />
+        )}
+        {atDoor && (
+          <div className="o-frame o-door" role="dialog" aria-label="Heading home?">
+            <strong>🚪 Heading home?</strong>
+            <p>Go offline? Your agents leave the office until you come back online.</p>
+            <div className="o-door-actions">
+              <button className="btn-primary" onClick={() => { setAtDoor(false); void goOffline().catch(e => setError(errMsg(e))) }}>Yes, go offline</button>
+              <button className="btn" onClick={() => setAtDoor(false)}>No, stay</button>
+            </div>
+          </div>
         )}
         {peer && agents.some(a => a.agent_id === peer.agentId) && (
           <PeerMenu

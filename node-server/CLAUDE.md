@@ -41,6 +41,9 @@ It also serves the staff installer: `/install` and `/install.ps1` render `instal
 data) with the server address, newest wheel and `--org`; `/downloads/<name>` serves `dist/downloads` (safe names
 only). The installed node finds the dashboard in `agentfleet_node/static` (a repo checkout prefers
 `dashboard/dist`). `meshproc` runs `agentmesh-node run` itself, so nothing needs the repo at runtime.
+`presence.py`: online/offline chosen in the dashboard (`/api/presence`), kept in `data/presence.json`. Offline
+stops the world link and the managed mesh node and makes `A2AGateway` answer 503; the process keeps serving the
+dashboard. Lifespan calls `presence.apply()` instead of starting those links directly.
 `admin.py` + `admin.html` are the `/admin` page (invites via `agentmesh-one token create`, office overview);
 localhost needs no key, the LAN needs `admin-key` (an HMAC cookie). Tests fake `agentmesh-one` on PATH.
 `service.py` manages an installed node (menu, background run with a pid file, opt-in start at login, update by

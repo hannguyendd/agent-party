@@ -21,6 +21,8 @@ export interface LiveState {
   recaps: Record<string, Recap>
   /** This machine's Claude plan usage (null until fetched). */
   usage: PlanUsage | null
+  /** The owner is online (agents in the Office) or went offline; null until fetched. */
+  online: boolean | null
 }
 
 type Action =
@@ -43,6 +45,7 @@ const initial: LiveState = {
   officeError: null,
   recaps: {},
   usage: null,
+  online: null,
 }
 
 const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]))
@@ -125,6 +128,8 @@ function applyEvent(s: LiveState, e: LiveEvent): LiveState {
       return { ...s, recaps: { ...s.recaps, [e.recap.id]: e.recap } }
     case 'usage':
       return { ...s, usage: e.usage }
+    case 'presence':
+      return { ...s, online: e.online }
   }
 }
 
@@ -182,6 +187,7 @@ export function useLiveState(openConversationId: string | null) {
     void refreshNode()
     api.office().then((office) => dispatch({ type: 'office', office })).catch(() => {})
     api.usage().then((u) => dispatch({ type: 'event', event: { type: 'usage', usage: u.usage } })).catch(() => {})
+    api.presence().then((p) => dispatch({ type: 'event', event: { type: 'presence', online: p.online } })).catch(() => {})
     if (openRef.current) await loadConversation(openRef.current).catch(() => {})
   }, [loadConversation, refreshNode])
 

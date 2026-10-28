@@ -247,6 +247,7 @@ export type LiveEvent =
   | { type: 'office'; event: WorldEvent }
   | { type: 'recap'; recap: Recap }
   | { type: 'usage'; usage: PlanUsage }
+  | { type: 'presence'; online: boolean }
 
 export class ApiError extends Error {
   status: number
@@ -340,6 +341,10 @@ export const api = {
   shareRecap: (id: string) => req<{ sent: string[]; failed: string[] }>('POST', `/api/recaps/${enc(id)}/share`),
 
   usage: () => req<{ usage: PlanUsage }>('GET', '/api/usage'),
+  service: () => req<{ installed: boolean; autostart: boolean }>('GET', '/api/service'),
+  serviceAutostart: (on: boolean) => req<{ autostart: boolean }>('POST', '/api/service/autostart', { on }),
+  presence: () => req<{ online: boolean }>('GET', '/api/presence'),
+  setPresence: (online: boolean) => req<{ online: boolean }>('POST', '/api/presence', { online }),
   updateInfo: () => req<{ installed: boolean; build: string; latest: string | null; available: boolean }>('GET', '/api/update'),
   startUpdate: () => req<{ status: string }>('POST', '/api/update'),
 

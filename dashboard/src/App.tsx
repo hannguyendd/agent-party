@@ -4,6 +4,7 @@ import SetupView from './office/SetupView'
 import SettingsView from './office/SettingsView'
 import { useLiveState } from './useLiveState'
 import { useApprovalNotifications } from './useNotifications'
+import OfflineScreen from './office/OfflineScreen'
 
 // Phaser is large; load it only when the Office opens.
 const OfficeView = lazy(() => import('./office/OfficeView'))
@@ -45,6 +46,8 @@ export default function App() {
   }, [])
   useApprovalNotifications(state.approvals, openApproval)
 
+  // Offline (chosen at log out or at the door): ask to come back. Refreshing doesn't change it.
+  if (!preview && setup?.configured && state.online === false) return <OfflineScreen org={org} />
   if (!preview && setup && (!setup.configured || justJoined))
     return <SetupView state={state} setup={setup} onSaved={onSetupSaved} onContinue={() => setJustJoined(false)} />
   if (view.kind === 'settings')

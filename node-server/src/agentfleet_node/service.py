@@ -209,7 +209,9 @@ def set_autostart(on: bool) -> bool:
             _wait(False, 8)  # unloading the login service stops the node it ran: wait, then keep today's session
             start()
         return True
-    stop()
+    # Turning it on is for the next sign-in: a node already running keeps running (no restart, so the dashboard
+    # that asked stays connected). Not running yet: start it now through the login service.
+    already = running()
     env = node_env()
     path = os.environ.get("PATH", "") + os.pathsep + os.pathsep.join(["/usr/local/bin", "/opt/homebrew/bin", "/usr/bin", "/bin"])
     if SYSTEM == "darwin":
@@ -228,14 +230,17 @@ def set_autostart(on: bool) -> bool:
   <key>StandardErrorPath</key><string>{LOG}</string>
 </dict></plist>
 """)
-        _run("launchctl", "bootstrap", f"gui/{os.getuid()}", str(MAC_PLIST))
+        if not already:  # a plist in LaunchAgents loads by itself at the next sign-in
+            _run("launchctl", "bootstrap", f"gui/{os.getuid()}", str(MAC_PLIST))
     elif SYSTEM == "linux":
         LINUX_UNIT.parent.mkdir(parents=True, exist_ok=True)
         lines = "\n".join(f"Environment={k}={v}" for k, v in {**env, "PATH": path}.items())
         LINUX_UNIT.write_text(f"[Unit]\nDescription=Agent Mesh node\n[Service]\nExecStart={exe} serve\nWorkingDirectory={HOME}\n"
                               f"{lines}\nRestart=on-failure\n[Install]\nWantedBy=default.target\n")
         _run("systemctl", "--user", "daemon-reload")
-        _run("systemctl", "--user", "enable", "--now", LINUX_UNIT.name)
+        _run("systemctl", "--user", "enable", LINUX_UNIT.name)
+        if not already:
+            _run("systemctl", "--user", "start", LINUX_UNIT.name)
     else:
         # Hidden PowerShell loop: restarts the node if it stops, until the task is stopped.
         loop = f"while ($true) {{ & '{exe}' serve *>> '{LOG}'; Start-Sleep 3 }}"
@@ -243,8 +248,8 @@ def set_autostart(on: bool) -> bool:
                f"-WorkingDirectory '{HOME}'; "
                f"$t = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME; "
                f"$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0; "
-               f"Register-ScheduledTask -TaskName {WIN_TASK} -Action $a -Trigger $t -Settings $s -Force | Out-Null; "
-               f"Start-ScheduledTask -TaskName {WIN_TASK}")
+               f"Register-ScheduledTask -TaskName {WIN_TASK} -Action $a -Trigger $t -Settings $s -Force | Out-Null"
+               + ("" if already else f"; Start-ScheduledTask -TaskName {WIN_TASK}"))
         for k, v in env.items():
             _ps(f"[Environment]::SetEnvironmentVariable('{k}', '{v}', 'User')")
         if not _ps(cmd):
