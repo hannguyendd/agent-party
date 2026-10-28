@@ -1,0 +1,226 @@
+[
+  {
+    "skin": "dev-hoodie",
+    "size": [
+      192,
+      360
+    ],
+    "frame": [
+      48,
+      72
+    ],
+    "frames": 20,
+    "source_size": [
+      916,
+      1717
+    ],
+    "sampling": "downsampled from new image-generated art, never enlarged from old character sheets",
+    "unique_poses_per_row": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "frame_bounds": "PASS",
+    "sha256": "17b43aaba6210cf398f90a0115f68b021281281de51d537226c7a10f5689890c"
+  },
+  {
+    "skin": "designer",
+    "size": [
+      192,
+      360
+    ],
+    "frame": [
+      48,
+      72
+    ],
+    "frames": 20,
+    "source_size": [
+      916,
+      1717
+    ],
+    "sampling": "downsampled from new image-generated art, never enlarged from old character sheets",
+    "unique_poses_per_row": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "frame_bounds": "PASS",
+    "sha256": "b0ed96f7bf812b610931c1c99fef221c28b6459b34e2fb213221f3ac6ad1a26c"
+  },
+  {
+    "skin": "lead",
+    "size": [
+      192,
+      360
+    ],
+    "frame": [
+      48,
+      72
+    ],
+    "frames": 20,
+    "source_size": [
+      916,
+      1717
+    ],
+    "sampling": "downsampled from new image-generated art, never enlarged from old character sheets",
+    "unique_poses_per_row": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "frame_bounds": "PASS",
+    "sha256": "4b6bb287cf4a1c12882d6e8680db49712772555080d1cb54a28b96734ec9e817"
+  },
+  {
+    "skin": "shiba",
+    "size": [
+      192,
+      360
+    ],
+    "frame": [
+      48,
+      72
+    ],
+    "frames": 20,
+    "source_size": [
+      916,
+      1717
+    ],
+    "sampling": "downsampled from new image-generated art, never enlarged from old character sheets",
+    "unique_poses_per_row": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "frame_bounds": "PASS",
+    "sha256": "7e922d6804216fd8ceacaa8d8c1c41be06d503ff12701e69aab86045efeb3dc2"
+  },
+  {
+    "skin": "cat",
+    "size": [
+      192,
+      360
+    ],
+    "frame": [
+      48,
+      72
+    ],
+    "frames": 20,
+    "source_size": [
+      1024,
+      1536
+    ],
+    "sampling": "downsampled from new image-generated art, never enlarged from old character sheets",
+    "unique_poses_per_row": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "frame_bounds": "PASS",
+    "sha256": "10450cc8d21173bd5eaf12d0e4cfe13699d0a61686ab272cab3e5dcf5f7d86cc"
+  },
+  {
+    "skin": "penguin",
+    "size": [
+      192,
+      360
+    ],
+    "frame": [
+      48,
+      72
+    ],
+    "frames": 20,
+    "source_size": [
+      916,
+      1717
+    ],
+    "sampling": "downsampled from new image-generated art, never enlarged from old character sheets",
+    "unique_poses_per_row": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "frame_bounds": "PASS",
+    "sha256": "7e399a0cee1607342cb5abeb022a79a1187a3f4994604edf43e46201a8daf317"
+  },
+  {
+    "skin": "alien",
+    "size": [
+      192,
+      360
+    ],
+    "frame": [
+      48,
+      72
+    ],
+    "frames": 20,
+    "source_size": [
+      972,
+      1619
+    ],
+    "sampling": "downsampled from new image-generated art, never enlarged from old character sheets",
+    "unique_poses_per_row": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "frame_bounds": "PASS",
+    "sha256": "d7fed72246e05e33837b962f1f5773f36d340b2107a1bed2013f874ff2d3775d"
+  },
+  {
+    "skin": "robot",
+    "size": [
+      192,
+      360
+    ],
+    "frame": [
+      48,
+      72
+    ],
+    "frames": 20,
+    "source_size": [
+      916,
+      1717
+    ],
+    "sampling": "downsampled from new image-generated art, never enlarged from old character sheets",
+    "unique_poses_per_row": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "frame_bounds": "PASS",
+    "sha256": "8e9fee80d75e8b92f9806b2381b4121e1b1ac575e7da10746b44e7efc3b8ab71"
+  }
+]

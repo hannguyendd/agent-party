@@ -1,0 +1,218 @@
+[
+  {
+    "file": "attach.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "attach@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "image.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "image@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "file.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "file@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "pantry.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "pantry@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "mention.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "mention@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "question.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "question@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "search.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "search@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "keyboard.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "keyboard@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "new-chat.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "new-chat@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "people.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "people@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "clock.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "clock@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "check.png",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  },
+  {
+    "file": "check@2x.png",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS"
+  }
+]
