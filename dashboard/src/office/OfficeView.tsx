@@ -4,6 +4,7 @@ import type { LiveState } from '../useLiveState'
 import type { SideTab, View } from '../App'
 import { errMsg } from '../components/format'
 import type { MountedRenderer, OfficeRenderer, PeerClick, SceneCallbacks, SceneData } from './renderer'
+import { useOfficeTheme, webglAvailable } from './theme'
 import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
@@ -52,22 +53,33 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
   const host = useRef<HTMLDivElement>(null)
   const latest = useRef({ data, callbacks, onReady, onError })
   useEffect(() => { latest.current = { data, callbacks, onReady, onError } })
+  // The look this browser picked (Settings); 3D falls back to 2D when WebGL is missing or the 3D art fails to load.
+  const theme = useOfficeTheme()
+  const [failed3d, setFailed3d] = useState(false)
+  const look = theme === '3d' && !failed3d && webglAvailable() ? '3d' : '2d'
   useEffect(() => {
     let disposed = false
     let mounted: MountedRenderer | undefined
-    void import('./mountPhaser').then(({ mountPhaser }) => {
+    const load = look === '3d' ? import('./mountThree').then(m => m.mountThree) : import('./mountPhaser').then(m => m.mountPhaser)
+    void load.then(mount => {
       if (disposed || !host.current) return
-      mounted = mountPhaser({ host: host.current, data: latest.current.data, callbacks: latest.current.callbacks, onReady: () => latest.current.onReady() })
+      mounted = mount({
+        host: host.current, data: latest.current.data, callbacks: latest.current.callbacks, onReady: () => latest.current.onReady(),
+        onError: message => { latest.current.onError(`3D office: ${message} Showing the 2D office instead.`); setFailed3d(true) },
+      })
       sceneRef.current = mounted.renderer
-    }).catch(e => latest.current.onError(errMsg(e)))
+    }).catch(e => {
+      if (look === '3d') setFailed3d(true)
+      latest.current.onError(errMsg(e))
+    })
     return () => { disposed = true; sceneRef.current = null; mounted?.destroy() }
-  }, [sceneRef])
+  }, [sceneRef, look])
   useEffect(() => { sceneRef.current?.setSceneData(data) }, [data, sceneRef])
   useEffect(() => { if (sceneRef.current) sceneRef.current.callbacks = callbacks }, [callbacks, sceneRef])
   // Map keys work wherever the focus is (after clicking an agent in the side column, a button…), except while
   // typing: the map takes the focus and gets the key that moved it there.
   useEffect(() => {
-    const MAP_KEYS = new Set(['w', 'a', 's', 'd', 'e', 'h', 'f', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'])
+    const MAP_KEYS = new Set(['w', 'a', 's', 'd', 'e', 'h', 'f', '[', ']', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'])
     let lastG = 0
     const onKey = (e: KeyboardEvent) => {
       const el = host.current

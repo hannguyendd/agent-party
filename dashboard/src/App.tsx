@@ -18,7 +18,7 @@ const OfficeView = lazy(() => import('./office/OfficeView'))
 
 /** Side-column tab on the Office screen. */
 export type SideTab = 'agents' | 'chats' | 'approvals'
-export type SettingsSection = 'agents' | 'mesh' | 'notifications' | 'computer'
+export type SettingsSection = 'agents' | 'mesh' | 'notifications' | 'look' | 'computer'
 
 /** Three screens: the Office, where all daily work happens; History, every past conversation in full; and
  *  Settings for configuration. `conv` opens that conversation. */

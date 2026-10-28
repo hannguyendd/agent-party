@@ -13,12 +13,15 @@ import { SetupForm, SetupStatus } from './SetupForm'
 import { ClaudeCheck } from './ClaudeCheck'
 import { Icon, type IconName } from './Icon'
 import { SKIN_BY_ID } from './skins'
+import { setOfficeTheme, useOfficeTheme, webglAvailable } from './theme'
+import type { OfficeTheme } from './renderer'
 import './office.css'
 
 const SECTIONS: { id: SettingsSection; label: string; icon: IconName; hint: string }[] = [
   { id: 'agents', label: 'Agents', icon: 'agents', hint: 'Create and configure the agents on this machine' },
   { id: 'mesh', label: 'Mesh & office', icon: 'directory', hint: 'Connection to the team and who is online' },
   { id: 'notifications', label: 'Notifications', icon: 'notifications-on', hint: 'How you get pinged' },
+  { id: 'look', label: 'Office look', icon: 'office', hint: 'Pixel-art 2D or the 3D office, on this browser' },
   { id: 'computer', label: 'This computer', icon: 'settings', hint: 'Version, updates, start at sign-in, uninstall' },
 ]
 
@@ -57,6 +60,7 @@ export default function SettingsView({ state, view, go, setNode, setup, onSetupS
           {section === 'agents' && <AgentsSection state={state} agentId={view.agentId} at={at} go={go} />}
           {section === 'mesh' && <MeshSection state={state} setNode={setNode} setup={setup} onSetupSaved={onSetupSaved} />}
           {section === 'notifications' && <NotificationsSection />}
+          {section === 'look' && <LookSection />}
           {section === 'computer' && <ComputerSection setup={setup} />}
         </main>
       </div>
@@ -220,6 +224,39 @@ function NotificationsSection() {
           <button className="btn" onClick={() => void testOs()}><Icon name="notifications-on" />Send a test system notification</button>
         </div>
         {osResult && <p className="settings-note">{osResult}</p>}
+      </div>
+    </div>
+  )
+}
+
+const LOOKS: { id: OfficeTheme; label: string; note: string }[] = [
+  { id: '2d', label: '2D pixel art', note: 'The classic map. Light on any computer.' },
+  { id: '3d', label: '3D (preview)', note: 'The same office, desks and people in 3D. Drag to pan, scroll to zoom, [ and ] to turn. Needs WebGL.' },
+]
+
+/** Which look draws the Office on this browser (ADR 0004). Others see you the same either way. */
+function LookSection() {
+  const theme = useOfficeTheme()
+  const gl = webglAvailable()
+  return (
+    <div className="settings-stack">
+      <div className="o-frame settings-card">
+        <h2>Office look</h2>
+        <p className="settings-note">
+          Only changes how the Office looks on this browser. Positions, desks and skins are shared, so teammates see you in the same place
+          whichever look they use.
+        </p>
+        <div className="settings-looks" role="radiogroup" aria-label="Office look">
+          {LOOKS.map((l) => {
+            const off = l.id === '3d' && !gl
+            return (
+              <button key={l.id} role="radio" aria-checked={theme === l.id} className={theme === l.id ? 'is-active' : ''} disabled={off} onClick={() => setOfficeTheme(l.id)}>
+                <strong>{l.label}</strong>
+                <small>{off ? 'This browser cannot draw 3D (WebGL is off or unsupported).' : l.note}</small>
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

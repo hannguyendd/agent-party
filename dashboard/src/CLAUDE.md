@@ -19,7 +19,11 @@
 - `office/`: the Office.
   - `renderer.ts`: the renderer contract (ADR 0004): `SceneData`, `SceneCallbacks`, `OfficeRenderer` and
     `MountedRenderer`. `OfficeView` talks to the map only through it, so the 2D and 3D looks are interchangeable.
-    `mountPhaser.ts` mounts the 2D look (a Phaser game sized to its host).
+    `mountPhaser.ts` mounts the 2D look (a Phaser game sized to its host), `mountThree.ts` the 3D look
+    (`three/Office3D.ts`: Codex's glTF models from the manifest's `models3d`, instanced; names and bubbles are HTML
+    in `.o3d-overlay`). `OfficeView` picks one from `theme.ts` (per-browser choice, Settings → Office look) and falls
+    back to 2D when WebGL or the 3D art is missing. Rules both looks share live in plain modules: `mapData.ts`
+    (collision.png + seats.json → layout/pathfind), `placement.ts` (`resolveTargets`: which tile each agent stands on).
   - `OfficeScene.ts`: the Phaser scene (the 2D `OfficeRenderer`). Loads the map plate, `collision.png` (black = blocked, red = seat,
     blue = entrance) and `seats.json` from the manifest (`layout.ts` is only the fallback when the map is missing).
     Arcade-physics movement (keyboard driving, smoothed click-to-walk), proximity menu, desk tags, bubbles. It

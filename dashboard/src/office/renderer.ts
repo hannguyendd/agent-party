@@ -67,6 +67,8 @@ export interface MountOptions {
   data: SceneData
   callbacks: SceneCallbacks
   onReady: () => void
+  /** The look failed after mounting (e.g. its art is missing); OfficeView falls back to 2D. */
+  onError?: (message: string) => void
 }
 
 export type OfficeTheme = '2d' | '3d'

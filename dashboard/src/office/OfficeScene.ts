@@ -4,23 +4,23 @@
 // Pastel art objects and characters are loaded from public/office/manifest.json.
 
 import Phaser from 'phaser'
-import type { OfficeAgent, OfficeTarget } from '../api'
+import type { OfficeAgent } from '../api'
 import {
   COLS,
   DESKS,
-  DESK_BY_ID,
   ROWS,
   SPAWN,
   TILE,
-  applyMapData,
   walkable,
   type Facing,
   type SeatRow,
   type Point,
 } from './layout'
-import { blockedRuns, distance, findPath, nearestFree, rebuildGrid } from './pathfind'
+import { blockedRuns, distance, findPath, nearestFree } from './pathfind'
 import { renderRoom } from './renderRoom'
 import { CHAR_ANIMS, CHAR_FRAME, CHAR_FRAME_48, CHAR_SCALE, SKIN_BY_ID, ownerHue } from './skins'
+import { applyCollisionImage } from './mapData'
+import { resolveTargets } from './placement'
 import { REACH, type OfficeRenderer, type PeerClick, type SceneCallbacks, type SceneData } from './renderer'
 
 // Movement feel (pixels per second). Agents accelerate and brake instead of snapping between tiles.
@@ -233,28 +233,8 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
     }
   }
 
-  /** collision.png: black blocks; white/red/blue walk; blue is where newcomers appear. */
   private applyCollision() {
-    const img = this.textures.get('map-collision').getSourceImage() as HTMLImageElement
-    const c = document.createElement('canvas')
-    c.width = COLS
-    c.height = ROWS
-    const ctx = c.getContext('2d', { willReadFrequently: true })!
-    ctx.drawImage(img, 0, 0)
-    const px = ctx.getImageData(0, 0, COLS, ROWS).data
-    const blocked: boolean[][] = []
-    let spawn: Point | null = null
-    for (let y = 0; y < ROWS; y++) {
-      blocked.push([])
-      for (let x = 0; x < COLS; x++) {
-        const i = (y * COLS + x) * 4
-        const [r, g, b] = [px[i], px[i + 1], px[i + 2]]
-        blocked[y].push(r < 64 && g < 64 && b < 64)
-        if (b > 192 && r < 64 && g < 64) spawn = { x, y }
-      }
-    }
-    applyMapData(blocked, this.cache.json.get('map-seats') as SeatRow[], spawn)
-    rebuildGrid()
+    applyCollisionImage(this.textures.get('map-collision').getSourceImage() as HTMLImageElement, this.cache.json.get('map-seats') as SeatRow[])
   }
 
   /** Smooth zoom: set a target and let update() glide there, keeping `anchor` (screen px) fixed. */
@@ -521,43 +501,10 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
   /** Turn each agent's symbolic target into a tile, without two agents claiming the same one. */
   private resolveTargets() {
     const d = this.data_
-    const taken = new Set<string>()
-    const free = (x: number, y: number) => !taken.has(`${x},${y}`)
-    const claim = (p: Point) => taken.add(`${p.x},${p.y}`)
-    const result = new Map<string, Point>()
-    const deskOf = (owner: string) => Object.entries(d.desks).find(([, o]) => o === owner)?.[0]
-    const order = (t: OfficeTarget) => (t.kind === 'desk' ? 0 : t.kind === 'tile' ? 1 : 2)
-    const agents = [...d.agents].sort((a, b) => order(a.at) - order(b.at) || a.agent_id.localeCompare(b.agent_id))
-    const byOwner = new Map<string, string[]>()
-    for (const a of [...d.agents].sort((x, y) => x.agent_id.localeCompare(y.agent_id))) {
-      byOwner.set(a.owner, [...(byOwner.get(a.owner) ?? []), a.agent_id])
-    }
-
-    for (const a of agents) {
-      let p: Point | null = null
-      const at = a.at
-      if (at.kind === 'desk') {
-        const deskId = deskOf(a.owner)
-        const i = byOwner.get(a.owner)!.indexOf(a.agent_id)
-        // A desk the world knows but this map lacks (a newer office server, an older seats.json) counts as no desk.
-        const desk = deskId ? DESK_BY_ID[deskId] : undefined
-        if (desk) {
-          const slot = [desk.seat, ...desk.extras][i]
-          p = slot && free(slot.x, slot.y) ? slot : nearestFree(desk.seat, free)
-        } else {
-          p = nearestFree({ x: SPAWN.x + 1 + i, y: SPAWN.y + 1 }, free)
-        }
-      } else if (at.kind === 'tile') {
-        p = nearestFree(at, free)
-      } else {
-        const other = this.sprites.get(at.agent_id)
-        const target = result.get(at.agent_id) ?? (other ? tileOf(posOf(other)) : null)
-        p = target ? nearestFree(target, (x, y) => free(x, y) && !(x === target.x && y === target.y), true) : null
-      }
-      if (!p) continue
-      claim(p)
-      result.set(a.agent_id, p)
-    }
+    const result = resolveTargets(d, (id) => {
+      const other = this.sprites.get(id)
+      return other ? tileOf(posOf(other)) : null
+    })
 
     const now = this.time.now
     for (const [id, p] of result) {

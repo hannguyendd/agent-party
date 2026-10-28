@@ -200,6 +200,25 @@
 }
 .office-canvas { width: 100%; height: 100%; outline: none; }
 .office-canvas canvas { display: block; image-rendering: pixelated; }
+.office-canvas canvas.o3d-canvas { image-rendering: auto; }
+/* 3D look (ADR 0004): names, status icons and bubbles are HTML over the WebGL canvas. */
+.o3d-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.o3d-tag { position: absolute; left: 0; top: 0; display: grid; justify-items: center; gap: 3px; will-change: transform; }
+.o3d-name {
+  display: flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 5px; white-space: nowrap;
+  font: 800 12px/1.4 Nunito, ui-sans-serif, system-ui; color: #fdf3e6; background: color-mix(in srgb, var(--o-line) 93%, transparent);
+}
+.o3d-tag.is-selected .o3d-name { outline: 2px solid var(--o-panel); }
+.o3d-bubble {
+  max-width: 180px; padding: 4px 8px; border: 2px solid var(--o-line); border-radius: 10px; background: var(--o-panel);
+  font: 700 12px/1.3 Nunito, ui-sans-serif, system-ui; color: var(--o-ink);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.o3d-bubble.is-typing { width: 34px; height: 12px; padding: 4px 6px; background:
+  radial-gradient(circle, var(--o-muted) 3px, transparent 3.5px) 0 50% / 11px 100% repeat-x, var(--o-panel);
+  animation: o3d-dots 1s steps(3) infinite; }
+@keyframes o3d-dots { from { background-position: 0 50%, 0 0; } to { background-position: 33px 50%, 0 0; } }
+@media (prefers-reduced-motion: reduce) { .o3d-bubble.is-typing { animation: none; } }
 .office-loading {
   position: absolute; inset: 0; display: grid; place-items: center;
   font-family: var(--o-pixel); font-size: 20px; color: var(--o-muted); background: var(--o-stage);
@@ -449,6 +468,15 @@
 .settings-warn { margin-top: 12px; display: flex; align-items: center; gap: 12px; justify-content: space-between; padding: 8px 10px; font-size: 12px; background: #fef3c7; color: #6b4e16; border: 2px solid var(--o-line); border-radius: 6px; }
 .settings-error { margin-top: 8px; font-size: 12px; color: var(--o-coral); }
 .settings-actions { margin-top: 14px; display: flex; gap: 8px; }
+.settings-looks { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.settings-looks button {
+  display: grid; gap: 4px; text-align: left; padding: 12px 14px; border: 2px solid var(--o-soft-line); border-radius: 8px;
+  background: var(--o-panel); color: var(--o-ink); cursor: pointer;
+}
+.settings-looks button strong { font-size: 14px; }
+.settings-looks button small { font-size: 12px; color: var(--o-muted); line-height: 1.5; }
+.settings-looks button.is-active { border-color: var(--o-accent); background: var(--o-ok-bg); }
+.settings-looks button:disabled { opacity: 0.55; cursor: not-allowed; }
 .settings-directory > div { max-width: none !important; padding: 0 !important; }
 @media (max-width: 900px) {
   .settings-body { flex-direction: column; overflow-y: auto; }
