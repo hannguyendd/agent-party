@@ -1,7 +1,9 @@
 """Short topic titles for conversations, so the Chats list says what each one is about, not only who talks.
 
-After a conversation's first real message, a small tool-less model writes a 3-6 word title in the message's
-language. It stays on this node (the world server never sees it). `Settings.auto_titles` turns it off.
+One title per conversation, shared by both sides: the side that started it writes it (a small tool-less model,
+3-6 words, in the message's language) from the first message, then sends it to the peer (A2A `topic`, no Claude
+turn), whose copy of the conversation shows the same title. A private chat is titled from the owner's first
+message. The world server never sees titles. `Settings.auto_titles` turns this off.
 """
 
 import asyncio
@@ -11,7 +13,7 @@ import re
 from claude_agent_sdk import AssistantMessage, ClaudeAgentOptions, TextBlock, query
 
 from agentfleet_node.config import Settings
-from agentfleet_node.models import ConversationKind
+from agentfleet_node.models import ConversationKind, Direction
 from agentfleet_node.store import EventBus, Store
 
 log = logging.getLogger(__name__)
@@ -39,10 +41,11 @@ def clean_title(raw: str) -> str:
 
 
 class TitleService:
-    def __init__(self, settings: Settings, store: Store, bus: EventBus):
+    def __init__(self, settings: Settings, store: Store, bus: EventBus, outbound=None):
         self.settings = settings
         self.store = store
         self.bus = bus
+        self.outbound = outbound  # a2a_bridge.OutboundClient, to share the title with the peer
         self._done: set[str] = set()  # conversations already titled or being titled
         self._task: asyncio.Task | None = None
 
@@ -60,14 +63,21 @@ class TitleService:
             if ev.get("type") != "message":
                 continue
             m = ev["message"]
-            if m.get("role") not in ("owner", "peer") or m.get("kind") != "text" or len(m.get("content", "").strip()) < 3:
+            if m.get("kind") != "text" or len(m.get("content", "").strip()) < 3:
                 continue
             conv_id = ev["conversation_id"]
             if conv_id in self._done:
                 continue
             conv = self.store.get_conversation(conv_id)
-            # Parties already carry their topic; shared copies and fixed titles are left alone.
-            if conv is None or conv.topic or conv.kind in (ConversationKind.PARTY, ConversationKind.PARTY_SHARE):
+            if conv is None:
+                continue
+            # Who names it: the owner's first message in a private chat; my agent's first message when it started
+            # the conversation. An inbound conversation waits for the starter's title instead of making its own.
+            starter_role = "owner" if conv.direction == Direction.LOCAL else "agent" if conv.direction == Direction.OUTBOUND else None
+            if m.get("role") != starter_role:
+                continue
+            # Parties already carry their topic; shared copies and titled ones are left alone.
+            if conv.topic or conv.kind in (ConversationKind.PARTY, ConversationKind.PARTY_SHARE):
                 self._done.add(conv_id)
                 continue
             self._done.add(conv_id)
@@ -79,5 +89,14 @@ class TitleService:
         except Exception as e:
             log.info("no title for %s: %s", conv_id, e)
             return
-        if title:
-            self.store.update_conversation(conv_id, topic=title)
+        if not title:
+            return
+        conv = self.store.update_conversation(conv_id, topic=title)
+        if conv.direction == Direction.OUTBOUND and conv.peer_agent_id and self.outbound:
+            from agentfleet_node.a2a_bridge import TOPIC_UPDATE
+
+            try:  # best effort: the peer also gets it on our next message (TOPIC_KEY)
+                await self.outbound.send_update(conv.agent_id, conv.peer_agent_id, title, TOPIC_UPDATE, conv.party_id,
+                                                context_id=conv.context_id, timeout_s=15)
+            except Exception as e:
+                log.info("could not share the title of %s: %s", conv_id, e)

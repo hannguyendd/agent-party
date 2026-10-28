@@ -32,3 +32,19 @@ async def test_conversations_get_a_topic_title_from_their_first_message(node_fac
         await c.post(f"/api/conversations/{conv['id']}/inject", json={"text": "and the refunds API?"})
         await __import__("asyncio").sleep(0.3)
         assert a.node.store.get_conversation(conv["id"]).topic.startswith("Title: what does")
+
+
+async def test_both_sides_of_a_conversation_show_the_starters_title(node_factory):
+    from test_two_nodes import add_agent, pair, wait_for
+
+    a, b = await pair(node_factory)
+    async with a, b:
+        await add_agent(a, "han/dev")
+        await add_agent(b, "bob/qa")
+        res = await a.node.outbound.send("han/dev", "bob/qa", "which DB do the orders use?")
+        mine = a.node.store.get_conversation(res.conversation_id)
+        await wait_for(lambda: a.node.store.get_conversation(mine.id).topic.startswith("Title: which DB"))
+        theirs = b.node.store.find_conversation("bob/qa", mine.context_id)
+        await wait_for(lambda: b.node.store.get_conversation(theirs.id).topic == a.node.store.get_conversation(mine.id).topic)
+        # The receiving side never makes its own title.
+        assert b.node.store.get_conversation(theirs.id).topic.startswith("Title: which DB")

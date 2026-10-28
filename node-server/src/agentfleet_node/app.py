@@ -77,7 +77,7 @@ def build_node(settings: Settings, client_factory: Callable | None = None) -> No
     world.usage = usage
     usage.listeners.append(lambda u: world.send_usage(u))
     return Node(settings, bus, store, directory, outbound, sessions, gateway, world, MeshNodeProcess(settings),
-                parties, RecapService(settings, store, parties), usage, TitleService(settings, store, bus))
+                parties, RecapService(settings, store, parties), usage, TitleService(settings, store, bus, outbound))
 
 
 def create_app(settings: Settings | None = None, client_factory: Callable | None = None) -> FastAPI:

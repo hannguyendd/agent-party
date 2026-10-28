@@ -55,6 +55,10 @@ PARTY_KEY = "agentfleet.party"
 # owner, and the Host role passed to another agent together with the Party transcript.
 PARTY_UPDATE = "party_update"
 PARTY_HANDOFF = "party_handoff"
+# The conversation's topic title, written by the side that started it and shared with the peer so both lists show
+# the same title (titles.py). Rides on messages as TOPIC_KEY, or alone as a TOPIC_UPDATE (no Claude turn).
+TOPIC_KEY = "agentfleet.topic"
+TOPIC_UPDATE = "topic"
 
 
 def build_card(settings: Settings, agent: Agent) -> AgentCard:
@@ -125,6 +129,13 @@ class MeshAgentExecutor(AgentExecutor):
         kind = raw_kind if raw_kind in (ConversationKind.INQUIRY, ConversationKind.ASSIGNMENT) else ""
         party_id = str(meta.get(PARTY_KEY) or "")[:64]
 
+        if raw_kind == TOPIC_UPDATE:
+            # The starter's title for this conversation: taken only from the peer this conversation is with.
+            conv = self.store.find_conversation(self.agent_id, task.context_id)
+            if conv and sender and conv.peer_agent_id == sender:
+                self.store.update_conversation(conv.id, topic=text.strip()[:60])
+            await up.complete(up.new_agent_message([Part(text="ok")]))
+            return
         if raw_kind == PARTY_UPDATE:
             # Read-only: stored for the owner to read, no Claude turn (ADR 0003).
             ok, note = self.parties.receive_update(self.agent_id, sender, party_id, text) if self.parties else (False, "no Office here")
@@ -146,6 +157,8 @@ class MeshAgentExecutor(AgentExecutor):
             )
             if kind or party_id:
                 conv = self.store.update_conversation(conv.id, kind=kind, party_id=party_id)
+        if meta.get(TOPIC_KEY) and not conv.topic and conv.peer_agent_id == sender:
+            conv = self.store.update_conversation(conv.id, topic=str(meta[TOPIC_KEY]).strip()[:60])
         self.store.audit("inbound_message", agent_id=self.agent_id, peer_agent_id=sender, context_id=task.context_id, task_id=task.id, chars=len(text))
         if conv.turn_count >= self.settings.max_turns_per_context:
             self.store.add_message(conv.id, "system", "Turn limit reached; message rejected.", kind="status")
@@ -303,7 +316,8 @@ class OutboundClient:
         msg = Message(message_id=uuid.uuid4().hex, role=Role.ROLE_USER, parts=parts, context_id=context_id)
         if task_id:
             msg.task_id = task_id
-        msg.metadata.update({SENDER_KEY: from_agent, **({KIND_KEY: kind} if kind else {}), **({PARTY_KEY: party_id} if party_id else {})})
+        msg.metadata.update({SENDER_KEY: from_agent, **({KIND_KEY: kind} if kind else {}), **({PARTY_KEY: party_id} if party_id else {}),
+                             **({TOPIC_KEY: conv.topic} if conv.topic else {})})
 
         headers = self.directory.mesh_headers() if endpoint.via_mesh else {}
         try:
