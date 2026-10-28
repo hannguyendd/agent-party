@@ -7,6 +7,7 @@ import { errMsg } from '../components/format'
 import { enableNotifications, notificationsSupported } from '../useNotifications'
 import { Icon } from './Icon'
 import { SKINS } from './skins'
+import { READ_TOOLS } from './permissions'
 
 export type OnboardingStep = 'agent' | 'desk' | 'notify' | 'tips'
 
@@ -36,7 +37,7 @@ function quickAgent(owner: string, name: string, description: string, folder: st
     skills: [],
     working_dir: folder.trim(),
     setting_sources: ['project'],
-    allowed_tools: ['Read', 'Bash(ls*)', 'Bash(rg *)', 'Bash(grep *)', 'Bash(git status*)', 'Bash(git log*)', 'Bash(git diff*)'],
+    allowed_tools: READ_TOOLS,
     denied_tools: [],
     system_prompt: '',
     model: null,

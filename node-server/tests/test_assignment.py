@@ -155,3 +155,12 @@ async def test_restart_closes_waits_that_no_longer_exist(tmp_path):
     assert node.store.list_approvals(pending_only=True) == []
     assert [a.status for a in node.store.list_approvals() if a.id == appr.id] == ["timed_out"]
     assert node.store.get_conversation(conv.id).status == "interrupted"
+
+
+def test_ask_first_does_not_ask_again_for_an_agent_the_owner_named():
+    agent = Agent(id="kien/wabi", name="WABI", working_dir="/tmp", contact_policy="ask")
+    named = frozenset({"han/be"})
+    assert policy_decision(agent, "mcp__mesh__send_message", {"to": "Han/be"}, owner_named=named) == "allow"
+    assert policy_decision(agent, "mcp__mesh__send_message", {"to": "bob/api"}, owner_named=named) == "ask"
+    agent.denied_tools = ["mcp__mesh__send_message"]
+    assert policy_decision(agent, "mcp__mesh__send_message", {"to": "Han/be"}, owner_named=named) == "deny"

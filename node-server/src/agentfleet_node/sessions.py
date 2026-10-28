@@ -23,6 +23,7 @@ from claude_agent_sdk import (
     HookMatcher,
     PermissionResultAllow,
     PermissionResultDeny,
+    RateLimitEvent,
     ResultMessage,
     StreamEvent,
     SystemMessage,
@@ -95,6 +96,8 @@ ALWAYS_ALLOWED = ("ToolSearch",)
 CONTACT_TOOLS = (MESH_TOOL_PREFIX + "send_message", MESH_TOOL_PREFIX + "share_file")
 # What an accepted Assignment opens up (ADR 0002): file edits only. Bash outside the allow-list still asks.
 ASSIGNMENT_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
+# "@han/be" in the owner's own message.
+OWNER_MENTION = re.compile(r"(?:^|[\s(])@([A-Za-z0-9_-]{1,40}/[A-Za-z0-9._-]{1,60})")
 # A Bash pattern like "Bash(ls*)" must not also approve "ls; rm -rf ~".
 _SHELL_CHAINING = re.compile(r"[;&|`<>\n]|\$\(")
 
@@ -112,13 +115,15 @@ def tool_matches(tool_name: str, tool_input: dict[str, Any], patterns: list[str]
     return False
 
 
-def policy_decision(agent: Agent, tool_name: str, tool_input: dict[str, Any], accepted_assignment: bool = False) -> str:
+def policy_decision(agent: Agent, tool_name: str, tool_input: dict[str, Any], accepted_assignment: bool = False,
+                    owner_named: frozenset[str] = frozenset()) -> str:
     """allow | deny | ask (owner approval). `accepted_assignment`: the conversation is an Assignment its
-    owner accepted, so file edits are allowed too (ADR 0002)."""
+    owner accepted, so file edits are allowed too (ADR 0002). `owner_named`: agent IDs the owner @mentioned in this
+    conversation; contacting one of those is the owner's own request, so "ask me first" doesn't ask again."""
     if tool_matches(tool_name, tool_input, agent.denied_tools):
         return "deny"
     if tool_name in CONTACT_TOOLS and agent.contact_policy == "ask":
-        return "ask"
+        return "allow" if str(tool_input.get("to", "")).lower() in owner_named else "ask"
     if tool_name.startswith(MESH_TOOL_PREFIX) or tool_name in ALWAYS_ALLOWED or tool_matches(tool_name, tool_input, agent.allowed_tools):
         return "allow"
     if accepted_assignment and tool_name in ASSIGNMENT_TOOLS:
@@ -146,6 +151,9 @@ class SessionWorker:
         self._interrupted = False
         self.status_hook: StatusHook | None = None
         self.needs_input = False
+        # Agents the owner @mentioned here (the composer sends "@han/be"): contacting them needs no extra OK.
+        self.owner_named: set[str] = set()
+        self._cost_seen = 0.0  # last total_cost_usd this client reported
 
     @property
     def store(self) -> Store:
@@ -181,6 +189,7 @@ class SessionWorker:
             cli_path=self.m.settings.claude_cli_path,
         )
         self.client = self.m.client_factory(options)
+        self._cost_seen = 0.0  # a new CLI process counts cost from zero
         await self.client.connect()
         self._reader = asyncio.create_task(self._read_loop(), name=f"reader-{self.conv_id}")
         return self.client
@@ -203,6 +212,10 @@ class SessionWorker:
         if self._grace and not isinstance(msg, StreamEvent):
             self._grace.cancel()
             self._grace = None
+        if isinstance(msg, RateLimitEvent):
+            if self.m.on_rate_limit:
+                self.m.on_rate_limit(msg.rate_limit_info)
+            return
         if isinstance(msg, StreamEvent):
             ev = msg.event
             if ev.get("type") == "content_block_delta" and ev.get("delta", {}).get("type") == "text_delta":
@@ -229,6 +242,7 @@ class SessionWorker:
         elif isinstance(msg, ResultMessage):
             if msg.session_id:
                 self.store.update_conversation(self.conv_id, session_id=msg.session_id)
+            self._record_usage(msg)
             interrupted = self._interrupted
             result = TurnResult(
                 text=msg.result or "",
@@ -286,6 +300,7 @@ class SessionWorker:
             self.store.add_message(self.conv_id, "system", text, kind="status")
         else:
             self.store.add_message(self.conv_id, "owner", text, **({"files": files} if files else {}))
+            self.owner_named |= {m.lower() for m in OWNER_MENTION.findall(text)}
         prompt = prompt or text
         if files:
             paths = ", ".join(f["path"] for f in files)
@@ -320,19 +335,37 @@ class SessionWorker:
 
     # permissions
 
+    def _record_usage(self, msg: ResultMessage) -> None:
+        """Add this turn's cost. The CLI reports total_cost_usd per process (it grows over a session), so count the
+        increase since the last report of this client; a smaller number means a fresh process."""
+        total = msg.total_cost_usd or 0.0
+        delta = total - self._cost_seen if total >= self._cost_seen else total
+        self._cost_seen = total
+        conv = self.store.get_conversation(self.conv_id)
+        if conv:
+            self.store.update_conversation(self.conv_id, cost_usd=round(conv.cost_usd + max(0.0, delta), 6),
+                                           agent_turns=conv.agent_turns + 1)
+
+    def _named(self) -> frozenset[str]:
+        if not self.owner_named:  # after a restart: read them back from the owner's messages
+            for m in self.store.list_messages(self.conv_id):
+                if m.role == "owner":
+                    self.owner_named |= {x.lower() for x in OWNER_MENTION.findall(m.content)}
+        return frozenset(self.owner_named)
+
     def _accepted(self) -> bool:
         conv = self.store.get_conversation(self.conv_id)
         return bool(conv and conv.accepted)
 
     async def _pre_tool_use(self, hook_input, tool_use_id, context) -> dict[str, Any]:
-        decision = policy_decision(self.agent, hook_input["tool_name"], hook_input.get("tool_input") or {}, self._accepted())
+        decision = policy_decision(self.agent, hook_input["tool_name"], hook_input.get("tool_input") or {}, self._accepted(), self._named())
         out: dict[str, Any] = {"hookEventName": "PreToolUse", "permissionDecision": decision}
         if decision == "deny":
             out["permissionDecisionReason"] = f"Not allowed for mesh sessions of {self.agent.id}."
         return {"hookSpecificOutput": out}
 
     async def _can_use_tool(self, tool_name: str, tool_input: dict[str, Any], ctx: ToolPermissionContext):
-        decision = policy_decision(self.agent, tool_name, tool_input, self._accepted())
+        decision = policy_decision(self.agent, tool_name, tool_input, self._accepted(), self._named())
         if decision == "allow":
             return PermissionResultAllow(updated_input=tool_input)
         if decision == "deny":
@@ -355,6 +388,8 @@ class SessionManager:
         self._workers: dict[str, SessionWorker] = {}
         self._approvals: dict[str, asyncio.Future[tuple[bool, str]]] = {}
         self._owner_gates: dict[str, asyncio.Future[OwnerDecision]] = {}
+        # The CLI's plan usage per window (usage.UsageTracker.update).
+        self.on_rate_limit: Callable[[Any], None] | None = None
         # Called when an Assignment needs the owner: (conversation_id, approval_id, sender) -> how they were woken.
         self.wake_owner: Callable[[str, str, str | None], str] | None = None
 

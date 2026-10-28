@@ -12,6 +12,7 @@ import { AgentCard } from './AgentCard'
 import { ConversationPanel } from './ConversationPanel'
 import { NewChatPanel } from './NewChatPanel'
 import { PartyPanel } from './PartyPanel'
+import { LEVELS, levelOf } from './permissions'
 import { markSeen } from './seen'
 import { ACTIVE_STATUSES } from './status'
 import { who } from './people'
@@ -262,6 +263,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
             click={peer}
             peer={agents.find(a => a.agent_id === peer.agentId)!}
             present={isPreview || !!office?.owners[agents.find(a => a.agent_id === peer.agentId)!.owner]?.present}
+            usage={office?.usage?.[agents.find(a => a.agent_id === peer.agentId)!.owner]}
             selectedMine={selected}
             conversations={isPreview ? [] : Object.values(state.conversations).filter(c => c.peer_agent_id === peer.agentId)}
             onClose={() => { if (peer.auto) sceneRef.current?.dismissNearby(); setPeer(null) }}
@@ -348,6 +350,13 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           onSettings={() => go({ kind: 'settings', section: 'agents', agentId: picked.agent_id })}
           contactPolicy={isPreview ? undefined : (policyDraft[picked.agent_id] ?? state.agents[picked.agent_id]?.contact_policy ?? 'auto')}
           onContactPolicy={policy => setContactPolicy(picked.agent_id, policy)}
+          permission={isPreview || !state.agents[picked.agent_id] ? undefined : levelOf(state.agents[picked.agent_id].allowed_tools)}
+          onPermission={level => {
+            const full = state.agents[picked.agent_id]
+            const tools = LEVELS.find(l => l.id === level)?.tools
+            if (full && tools) api.saveAgent({ ...full, allowed_tools: tools }).catch(e => setError(errMsg(e)))
+          }}
+          usage={isPreview ? undefined : state.usage}
         />}
 
         {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{(office?.desk_ids?.length ? office.desk_ids : ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2']).filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}

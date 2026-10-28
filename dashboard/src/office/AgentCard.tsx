@@ -1,10 +1,13 @@
 // The card for the agent I have selected. One primary action (message it), then small controls.
 
 import { useState } from 'react'
-import type { Conversation, OfficeAgent } from '../api'
+import type { Conversation, OfficeAgent, PlanUsage } from '../api'
 import { Icon } from './Icon'
 import { SKINS } from './skins'
 import { ACTIVE_STATUSES } from './status'
+import { LEVELS, type PermissionLevel } from './permissions'
+import { UsageMeters } from './Usage'
+import { plainPreview } from './render-md'
 
 interface Props {
   agent: OfficeAgent
@@ -24,6 +27,11 @@ interface Props {
   /** "auto": goes ahead and messages others; "ask": asks me first. Undefined in preview. */
   contactPolicy?: 'auto' | 'ask'
   onContactPolicy?: (p: 'auto' | 'ask') => void
+  /** Quick permission level (undefined in preview); 'custom' when Settings set its own tool lists. */
+  permission?: PermissionLevel
+  onPermission?: (level: Exclude<PermissionLevel, 'custom'>) => void
+  /** This machine's Claude plan usage (shared by all my agents). */
+  usage?: PlanUsage | null
 }
 
 export function AgentCard(p: Props) {
@@ -81,7 +89,7 @@ export function AgentCard(p: Props) {
           {last && (
             <button className="o-continue" onClick={() => p.onOpenChat(last.id)} title="Open the latest chat">
               <span>Continue{last.peer_agent_id ? ` with ${p.peerName?.(last.peer_agent_id) ?? last.peer_agent_id}` : ''}:</span>
-              <b>{last.title || 'untitled'}</b>
+              <b>{plainPreview(last.title, (id) => p.peerName?.(id) ?? null) || 'untitled'}</b>
               <span aria-hidden>→</span>
             </button>
           )}
@@ -96,6 +104,28 @@ export function AgentCard(p: Props) {
           <button disabled={!p.canAct} onClick={() => p.onGo('manager')}><Icon name="host" />Manager</button>
         </div>
       </div>
+
+      {p.permission && (
+        <div className="o-agent-row o-perm-row">
+          <span className="o-agent-label">Permissions</span>
+          <select
+            className="input o-perm-select"
+            value={p.permission}
+            onChange={(e) => e.target.value !== 'custom' && p.onPermission?.(e.target.value as Exclude<PermissionLevel, 'custom'>)}
+          >
+            {LEVELS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+            {p.permission === 'custom' && <option value="custom" disabled>Custom (set in Settings)</option>}
+          </select>
+          <small className="o-perm-hint">{LEVELS.find((l) => l.id === p.permission)?.hint ?? 'Its own tool lists, set in agent settings.'}</small>
+        </div>
+      )}
+
+      {p.usage !== undefined && (
+        <div className="o-agent-row o-usage-wrap">
+          <span className="o-agent-label">Claude plan</span>
+          <UsageMeters usage={p.usage} />
+        </div>
+      )}
 
       {p.contactPolicy && (
         <label className="o-agent-row o-switch-row" title="When on, each message it wants to send to another agent waits for your OK">

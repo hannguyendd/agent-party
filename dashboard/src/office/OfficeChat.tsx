@@ -71,6 +71,10 @@ function MeshEvent({ state, use, result }: { state: LiveState; use: Message; res
     const to = who(state, String(input.to ?? ''))
     const reply = parsed && typeof parsed.reply === 'string' ? parsed.reply : null
     const failed = result?.data.is_error === true
+    // "Ask me first": the message has not left yet; it waits for the owner's OK in the approval card above.
+    const needsOk = !result && Object.values(state.approvals).some(
+      (a) => a.status === 'pending' && a.conversation_id === use.conversation_id && a.tool_name === use.content && a.tool_input.to === input.to,
+    )
     return (
       <div className="o-exchange">
         <div className="o-exchange-head">
@@ -81,7 +85,9 @@ function MeshEvent({ state, use, result }: { state: LiveState; use: Message; res
           </span>
         </div>
         {typeof input.text === 'string' && input.text && <Markdown className="o-exchange-q" text={input.text} state={state} />}
-        {!result && <div className="o-exchange-wait"><span className="o-dots"><i /><i /><i /></span> waiting for {to.name}</div>}
+        {!result && (needsOk
+          ? <div className="o-exchange-wait is-ok-needed">Not sent yet: waiting for your OK above</div>
+          : <div className="o-exchange-wait"><span className="o-dots"><i /><i /><i /></span> waiting for {to.name}</div>)}
         {failed && <div className="o-exchange-err">{result?.content}</div>}
         {reply && <div className="o-exchange-a"><strong>{to.name}</strong><Markdown text={reply} state={state} /></div>}
       </div>

@@ -120,6 +120,9 @@ export interface Conversation {
   party_id: string
   /** Host side: the owner shared this Party with the members' owners. */
   party_shared: boolean
+  /** Claude cost of this conversation's session and agent turns run (local only). */
+  cost_usd?: number
+  agent_turns?: number
   /** Assignment accepted by this node's owner: file edits run without asking. */
   accepted: boolean
   created_at: string
@@ -187,9 +190,14 @@ export interface OfficeState {
   owners: Record<string, OfficeOwner>
   agents: OfficeAgent[]
   parties: Party[]
+  /** Owner -> their machine's Claude plan usage (numbers only). */
+  usage?: Record<string, PlanUsage>
   desk_ids: string[]
   skins: string[]
 }
+
+/** One machine's Claude plan usage per window (five_hour, seven_day, ...), as its CLI last reported it. */
+export type PlanUsage = Record<string, { utilization: number | null; resets_at: number | null; status: string; at: number }>
 
 /** CONTEXT.md "Party": one Host; members talk only with the Host. The world server knows no topic. */
 export interface Party {
@@ -214,7 +222,8 @@ export interface Recap {
 }
 
 export type WorldEvent =
-  | { type: 'snapshot'; org?: string; desks: Record<string, string>; owners: Record<string, OfficeOwner>; agents: OfficeAgent[]; parties?: Party[]; desk_ids: string[]; skins: string[] }
+  | { type: 'snapshot'; org?: string; usage?: Record<string, PlanUsage>; desks: Record<string, string>; owners: Record<string, OfficeOwner>; agents: OfficeAgent[]; parties?: Party[]; desk_ids: string[]; skins: string[] }
+  | { type: 'usage'; owner: string; usage: PlanUsage }
   | { type: 'party'; party: Party; joined?: string; left?: string; handed_off_from?: string }
   | { type: 'party_ended'; party_id: string; host: string; members: string[]; reason: 'closed' | 'host_offline' }
   | { type: 'desks'; desks: Record<string, string> }
@@ -235,6 +244,7 @@ export type LiveEvent =
   | { type: 'mesh'; config_dirty: boolean }
   | { type: 'office'; event: WorldEvent }
   | { type: 'recap'; recap: Recap }
+  | { type: 'usage'; usage: PlanUsage }
 
 export class ApiError extends Error {
   status: number
@@ -327,6 +337,7 @@ export const api = {
   recapFileUrl: (id: string) => `/api/recaps/${enc(id)}/file`,
   shareRecap: (id: string) => req<{ sent: string[]; failed: string[] }>('POST', `/api/recaps/${enc(id)}/share`),
 
+  usage: () => req<{ usage: PlanUsage }>('GET', '/api/usage'),
   updateInfo: () => req<{ installed: boolean; build: string; latest: string | null; available: boolean }>('GET', '/api/update'),
   startUpdate: () => req<{ status: string }>('POST', '/api/update'),
 

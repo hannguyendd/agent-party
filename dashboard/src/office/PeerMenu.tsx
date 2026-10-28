@@ -1,16 +1,19 @@
 // Menu shown when the owner clicks someone else's agent in the Office (CONTEXT.md: Inquiry, Assignment).
 
 import { useState } from 'react'
-import { api, type Conversation, type OfficeAgent } from '../api'
+import { api, type Conversation, type OfficeAgent, type PlanUsage } from '../api'
 import { errMsg } from '../components/format'
 import type { PeerClick } from './OfficeScene'
 import { Icon } from './Icon'
 import { ownerCss } from './skins'
+import { UsageMeters } from './Usage'
 
 export function PeerMenu(props: {
   click: PeerClick
   peer: OfficeAgent
   present: boolean
+  /** The peer's machine's Claude plan usage, so I know if it has room before I ask it. */
+  usage?: PlanUsage
   selectedMine: string[]
   conversations: Conversation[]
   onClose: () => void
@@ -74,10 +77,10 @@ export function PeerMenu(props: {
         <span className="mt-1 size-2 shrink-0 rounded-full" style={{ background: ownerCss(peer.owner) }} />
         <div className="min-w-0 flex-1">
           <div className="o-peer-name truncate">{peer.name}</div>
-          <div className="o-peer-sub truncate font-mono">{peer.agent_id}</div>
           <div className="o-peer-sub">
             {peer.owner}'s agent · {props.present ? 'owner here' : 'owner away'}
           </div>
+          {props.usage && Object.keys(props.usage).length > 0 && <UsageMeters usage={props.usage} compact />}
         </div>
         <button className="o-peer-sub" aria-label="Close" onClick={props.onClose}><Icon name="close" /></button>
       </div>

@@ -625,6 +625,12 @@ async def share_recap(recap_id: str, request: Request) -> dict[str, list[str]]:
     return await _party_call(_node(request).recaps.share(recap_id))
 
 
+@router.get("/usage")
+async def plan_usage(request: Request) -> dict[str, Any]:
+    """This machine's Claude plan usage per window, as the CLI last reported it during a turn."""
+    return {"usage": _node(request).usage.usage}
+
+
 # updates (installed nodes only; see service.py)
 
 

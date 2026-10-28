@@ -1,7 +1,7 @@
 // Live dashboard state: REST snapshot + /api/ws event stream folded through one reducer.
 
 import { useCallback, useEffect, useReducer, useRef } from 'react'
-import { api, wsUrl, type Agent, type Approval, type Conversation, type LiveEvent, type Message, type NodeInfo, type OfficeState, type Recap, type WorldEvent } from './api'
+import { api, wsUrl, type Agent, type Approval, type Conversation, type LiveEvent, type Message, type NodeInfo, type OfficeState, type PlanUsage, type Recap, type WorldEvent } from './api'
 
 export interface LiveState {
   connected: boolean
@@ -19,6 +19,8 @@ export interface LiveState {
   officeError: string | null
   /** Recaps made or updated since this tab opened (`recap` events); panels fetch older ones themselves. */
   recaps: Record<string, Recap>
+  /** This machine's Claude plan usage (null until fetched). */
+  usage: PlanUsage | null
 }
 
 type Action =
@@ -40,6 +42,7 @@ const initial: LiveState = {
   office: null,
   officeError: null,
   recaps: {},
+  usage: null,
 }
 
 const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]))
@@ -120,6 +123,8 @@ function applyEvent(s: LiveState, e: LiveEvent): LiveState {
       return applyWorld(s, e.event)
     case 'recap':
       return { ...s, recaps: { ...s.recaps, [e.recap.id]: e.recap } }
+    case 'usage':
+      return { ...s, usage: e.usage }
   }
 }
 
@@ -131,9 +136,11 @@ function applyWorld(s: LiveState, e: WorldEvent): LiveState {
   if (e.type !== 'link' && !o.connected) return applyWorld({ ...s, office: { ...o, enabled: true, connected: true } }, e)
   switch (e.type) {
     case 'snapshot':
-      return { ...s, office: { ...o, enabled: true, connected: true, org: e.org ?? o.org, desks: e.desks, owners: e.owners, agents: e.agents, parties: e.parties ?? [], desk_ids: e.desk_ids, skins: e.skins } }
+      return { ...s, office: { ...o, enabled: true, connected: true, org: e.org ?? o.org, desks: e.desks, owners: e.owners, agents: e.agents, parties: e.parties ?? [], usage: e.usage ?? o.usage, desk_ids: e.desk_ids, skins: e.skins } }
     case 'party':
       return { ...s, office: { ...o, parties: [...(o.parties ?? []).filter((p) => p.party_id !== e.party.party_id), e.party] } }
+    case 'usage':
+      return { ...s, office: { ...o, usage: { ...(o.usage ?? {}), [e.owner]: e.usage } } }
     case 'party_ended':
       return { ...s, office: { ...o, parties: (o.parties ?? []).filter((p) => p.party_id !== e.party_id) } }
     case 'desks':
@@ -174,6 +181,7 @@ export function useLiveState(openConversationId: string | null) {
     dispatch({ type: 'snapshot', agents, conversations, approvals })
     void refreshNode()
     api.office().then((office) => dispatch({ type: 'office', office })).catch(() => {})
+    api.usage().then((u) => dispatch({ type: 'event', event: { type: 'usage', usage: u.usage } })).catch(() => {})
     if (openRef.current) await loadConversation(openRef.current).catch(() => {})
   }, [loadConversation, refreshNode])
 

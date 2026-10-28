@@ -99,6 +99,9 @@ class Conversation(SQLModel, table=True):
     party_id: str = ""
     # Host side: the owner shared this Party with the members' owners (late joiners get the backlog too).
     party_shared: bool = False
+    # Usage of this conversation's Claude session: cost as the CLI reports it, and agent turns run.
+    cost_usd: float = 0.0
+    agent_turns: int = 0
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
 

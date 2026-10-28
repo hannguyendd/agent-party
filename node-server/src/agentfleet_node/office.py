@@ -30,7 +30,8 @@ class WorldClient:
         self.store = store
         self.bus = bus
         self.connected = False
-        self.mirror: dict[str, Any] = {"org": "", "desks": {}, "owners": {}, "agents": {}, "parties": {}, "desk_ids": [], "skins": []}
+        self.mirror: dict[str, Any] = {"org": "", "desks": {}, "owners": {}, "agents": {}, "parties": {}, "usage": {}, "desk_ids": [], "skins": []}
+        self.usage = None  # usage.UsageTracker; its numbers go to the world on every (re)connect
         # Called with each Party event from the world (party.PartyService reacts to joins, hand-offs, endings).
         self.party_listeners: list[Callable[[dict[str, Any]], None]] = []
         self._ws: ClientConnection | None = None
@@ -95,8 +96,14 @@ class WorldClient:
             attempt += 1
             await asyncio.sleep(min(15.0, 0.5 * 2**attempt))
 
+    def send_usage(self, usage: dict) -> None:
+        """Plan usage as numbers only (fraction used, reset time per window): no content."""
+        self._spawn_send({"op": "usage", "usage": usage})
+
     async def _resync(self) -> None:
         await self._send_raw({"op": "presence", "present": self.present})
+        if self.usage and self.usage.usage:
+            await self._send_raw({"op": "usage", "usage": self.usage.usage})
         await self._send_raw({"op": "agents", "agents": self._agent_rows()})
         for agent_id in {c["agent_id"] for c in self._convs.values()}:
             op = self._activity_op(agent_id)
@@ -113,6 +120,7 @@ class WorldClient:
             m["desks"], m["owners"] = ev.get("desks", {}), ev.get("owners", {})
             m["agents"] = {a["agent_id"]: a for a in ev.get("agents", [])}
             m["parties"] = {p["party_id"]: p for p in ev.get("parties", [])}
+            m["usage"] = ev.get("usage", {})
             m["desk_ids"], m["skins"] = ev.get("desk_ids", []), ev.get("skins", [])
             self.connected = True
         elif t == "desks":
@@ -127,6 +135,8 @@ class WorldClient:
             m["parties"][ev["party"]["party_id"]] = ev["party"]
         elif t == "party_ended":
             m["parties"].pop(ev.get("party_id"), None)
+        elif t == "usage":
+            m["usage"][ev.get("owner", "")] = ev.get("usage", {})
         self.bus.publish({"type": "office", "event": ev})
         if t in ("party", "party_ended"):
             for listener in self.party_listeners:
@@ -146,6 +156,7 @@ class WorldClient:
             "owners": m["owners"],
             "agents": list(m["agents"].values()),
             "parties": list(m["parties"].values()),
+            "usage": m["usage"],
             "desk_ids": m["desk_ids"],
             "skins": m["skins"],
         }

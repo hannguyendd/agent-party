@@ -70,6 +70,7 @@ class WorldState:
         self.present: dict[str, int] = {}  # owner -> nodes reporting the owner present
         self.connected: dict[str, int] = {}  # owner -> connected nodes
         self.parties: dict[str, PartyState] = {}
+        self.usage: dict[str, dict] = {}  # owner -> Claude plan usage per window (numbers only)
         self._load()
 
     # persistence: only desk claims and skins survive a restart
@@ -102,6 +103,7 @@ class WorldState:
             "owners": self.owners_view(),
             "agents": [asdict(a) for a in self.agents.values()],
             "parties": [asdict(p) for p in self.parties.values()],
+            "usage": self.usage,
             "desk_ids": list(DESKS),
             "skins": list(SKINS),
         }
@@ -407,6 +409,11 @@ class WorldHub:
                         events = self.state.set_skin(owner, str(msg.get("agent_id", "")), str(msg.get("skin", "")))
                     elif op == "move":
                         events = self.state.move(owner, str(msg.get("agent_id", "")), dict(msg.get("at") or {}))
+                    elif op == "usage":
+                        from agentfleet_node.usage import clean
+
+                        self.state.usage[owner] = clean(msg.get("usage"))
+                        events = [{"type": "usage", "owner": owner, "usage": self.state.usage[owner]}]
                     elif op == "party_open":
                         events = self.state.open_party(
                             owner, str(msg.get("party_id", "")), str(msg.get("host", "")),

@@ -20,6 +20,7 @@ from agentfleet_node.party import PartyService
 from agentfleet_node.recap import RecapService
 from agentfleet_node.sessions import SessionManager
 from agentfleet_node.store import EventBus, Store
+from agentfleet_node.usage import UsageTracker
 
 # A repo checkout serves dashboard/dist (the latest `bun run build`); the installed package has no repo around it
 # and carries the built dashboard in agentfleet_node/static instead (`make bundle`).
@@ -40,6 +41,7 @@ class Node:
     meshproc: MeshNodeProcess
     parties: PartyService
     recaps: RecapService
+    usage: UsageTracker
 
 
 def build_node(settings: Settings, client_factory: Callable | None = None) -> Node:
@@ -68,8 +70,12 @@ def build_node(settings: Settings, client_factory: Callable | None = None) -> No
         return "none"
 
     sessions.wake_owner = wake_owner
+    usage = UsageTracker(settings, bus)
+    sessions.on_rate_limit = usage.update
+    world.usage = usage
+    usage.listeners.append(lambda u: world.send_usage(u))
     return Node(settings, bus, store, directory, outbound, sessions, gateway, world, MeshNodeProcess(settings),
-                parties, RecapService(settings, store, parties))
+                parties, RecapService(settings, store, parties), usage)
 
 
 def create_app(settings: Settings | None = None, client_factory: Callable | None = None) -> FastAPI:
