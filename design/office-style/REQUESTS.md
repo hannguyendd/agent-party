@@ -44,3 +44,10 @@ Add these IDs/labels to the skin picker and any skin allow-list maintained by th
 All eight are in `manifest.characters48` with the existing 192×360 sheet / 48×72 frame contract and animation indices. Portraits follow `office/characters/<id>-portrait.png`. Feet/slime base end at logical y=70; y=71 stays transparent. No new layers or effect files are required: mage sparkles, healer heart and dragon smoke are contained inside their frames. Slime's squat silhouette is intentional; do not stretch it to human height. The existing animation behavior is unchanged: walk-right mirrors the left row.
 
 No application code was changed by the asset batch. Add the IDs to any server-side skin validation as needed before exposing them to owners. SHA-256 preservation and visual reviews are in `design/office-style/C/characters48-batch2/`.
+
+## Requested: desk seat in the Manager Room (open)
+
+Owner request (2026-10-28): the Manager Room should have a desk seat with the same office chair as the open-office
+desks, so the manager can claim it like D1-D16. Art + metadata via Codex: `docs/office/CODEX-PROMPTS.md` Step 8.
+Code follow-up after delivery: add `MGR` to `DESKS` in `node-server/src/agentfleet_node/world.py` and to the fallback
+desk list in `dashboard/src/office/OfficeView.tsx`; labels, the desk picker mini-map and "Go to desk" read seats.json.

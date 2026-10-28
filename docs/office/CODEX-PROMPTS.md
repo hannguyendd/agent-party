@@ -281,3 +281,40 @@ Gather, Stardew Valley, Animal Crossing, League of Legends, Dota, Overwatch or a
 - Existing files (the original eight sheets, portraits and the rest of manifest.json) are unchanged (compare
   hashes and say so in validation.json).
 ```
+
+---
+
+## Step 8: A desk seat in the Manager Room
+
+Attach `dashboard/public/office/map/background.png`, `collision@16x.png`, `seats.json` and
+`design/office-style/C/palette.txt`. Assets and map metadata only: no application code. After delivery the code side
+adds the desk id `MGR` (world.py `DESKS`, the dashboard's fallback desk list).
+
+```text
+Edit the existing office map plate in dashboard/public/office/map/ (background.png 1792x1152, 56x36 tiles of 32 px,
+with foreground.png, collision.png and seats.json). Assets and map metadata only: do not edit application code.
+
+Goal: the Manager Room (bottom right, the room with the whiteboard, sofa and the large desk with a monitor) gets a
+real desk seat like the 18 desks in the open office, so the manager can claim it as their desk.
+
+1. Behind the manager's large desk, replace the green armchair with the SAME office chair used at the open-office
+   desks D1-D16 (same sprite style, size and colours; take it from the existing plate), facing the desk. Keep the two
+   grey visitor chairs in front of the desk, the rug, the plant and everything else exactly as they are.
+2. foreground.png: if the chair back should cover a seated character like at D1-D16, copy those pixels the same way
+   the existing foreground was made (pixels copied from background.png). Background and foreground stacked without
+   agents must stay pixel-identical to background.png alone.
+3. collision.png (56x36): mark the chair tile red (seat), keep it reachable from the room's doorway, and change no
+   other tile.
+4. seats.json: append one entry, keeping all 18 existing entries unchanged:
+   {"id": "MGR", "seat": {"x": <chair tile x>, "y": <chair tile y>}, "face": "<towards the desk>",
+    "extras": [three walkable tiles next to the seat, like the other desks]}
+5. Update design/office-style/C/map/ (export script, collision@16x.png review image) so the plate stays reproducible,
+   and append a short section to design/office-style/REQUESTS.md: the new desk id MGR, its seat tile and facing.
+
+Style: same palette (palette.txt), same top-left light, crisp pixels, no anti-aliasing, no blur, no gradients, no
+partial alpha. No text or labels in the art (desk labels are drawn by the code).
+
+Verify and report: image sizes unchanged; only the pixels of the chair area changed in background.png (say how many);
+collision.png differs from the old one only at the new seat tile; the MGR seat is reachable by a path from the
+entrance (blue tile) through the Manager Room doorway; seats.json is valid JSON with 19 entries.
+```
