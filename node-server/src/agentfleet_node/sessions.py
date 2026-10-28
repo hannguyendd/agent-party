@@ -1,6 +1,6 @@
-"""Claude sessions behind conversations.
+"""Agent sessions behind conversations.
 
-One ``SessionWorker`` per conversation owns a connected ``ClaudeSDKClient``.
+One ``SessionWorker`` per conversation owns an ``AgentRuntime`` (runtimes/; Claude by default).
 Turns are serialized; the owner can inject prompts mid-turn, interrupt, take
 over (answer the peer by hand) and hand back. Tool use outside the agent's
 allow-list waits for an owner decision on the dashboard and is denied on
@@ -16,27 +16,11 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any
 
-from claude_agent_sdk import (
-    AssistantMessage,
-    ClaudeAgentOptions,
-    ClaudeSDKClient,
-    HookMatcher,
-    PermissionResultAllow,
-    PermissionResultDeny,
-    RateLimitEvent,
-    ResultMessage,
-    StreamEvent,
-    SystemMessage,
-    TextBlock,
-    ToolPermissionContext,
-    ToolResultBlock,
-    ToolUseBlock,
-    UserMessage,
-    fork_session,
-)
+from claude_agent_sdk import ClaudeSDKClient, fork_session
 
 from agentfleet_node.config import Settings
 from agentfleet_node.models import Agent, ApprovalStatus, ConversationStatus, Direction, Mode
+from agentfleet_node.runtimes import AgentRuntime, RuntimeContext, make_runtime
 from agentfleet_node.store import Store
 
 log = logging.getLogger(__name__)
@@ -137,12 +121,13 @@ def _short(value: Any, limit: int = 4000) -> str:
 
 
 class SessionWorker:
+    """Turns, injects and interrupts for one conversation; the model session itself is an `AgentRuntime`."""
+
     def __init__(self, manager: "SessionManager", conv_id: str, agent: Agent):
         self.m = manager
         self.conv_id = conv_id
         self.agent = agent
-        self.client: ClaudeSDKClient | None = None
-        self._reader: asyncio.Task | None = None
+        self.runtime: AgentRuntime | None = None
         self._turn_lock = asyncio.Lock()
         self._turn_done: asyncio.Future[TurnResult] | None = None
         self._pending = 0
@@ -153,109 +138,92 @@ class SessionWorker:
         self.needs_input = False
         # Agents the owner @mentioned here (the composer sends "@han/be"): contacting them needs no extra OK.
         self.owner_named: set[str] = set()
-        self._cost_seen = 0.0  # last total_cost_usd this client reported
 
     @property
     def store(self) -> Store:
         return self.m.store
 
     @property
+    def client(self) -> Any:
+        """The runtime's SDK client, None until it has connected."""
+        return getattr(self.runtime, "client", None)
+
+    @property
+    def started(self) -> bool:
+        return self.runtime is not None and self.runtime.started
+
+    @property
     def turn_active(self) -> bool:
         return self._turn_done is not None and not self._turn_done.done()
 
-    async def _ensure_started(self) -> ClaudeSDKClient:
-        if self.client is not None:
-            return self.client
+    async def _ensure_started(self) -> AgentRuntime:
+        if self.runtime is not None and self.runtime.started:
+            return self.runtime
         conv = self.store.get_conversation(self.conv_id)
-        options = ClaudeAgentOptions(
-            cwd=self.agent.working_dir,
-            resume=conv.session_id if conv else None,
-            can_use_tool=self._can_use_tool,
-            # can_use_tool alone is skipped for calls the CLI auto-approves (e.g. read-only Bash);
-            # the hook runs on every call, so the agent's policy always applies.
-            hooks={"PreToolUse": [HookMatcher(matcher=None, hooks=[self._pre_tool_use])]},
-            include_partial_messages=True,
-            setting_sources=self.agent.setting_sources,  # type: ignore[arg-type]
-            mcp_servers={"mesh": self.m.mesh_tools_factory(self.agent, self)},
-            disallowed_tools=self.agent.denied_tools,
-            system_prompt={
-                "type": "preset",
-                "preset": "claude_code",
-                "append": MESH_PROMPT.format(agent_id=self.agent.id, name=self.agent.name, description=self.agent.description or "(none given)")
-                + ("\n" + self.agent.system_prompt if self.agent.system_prompt else ""),
-            },
-            model=self.agent.model,
-            max_turns=self.m.settings.max_agent_turns_per_message,
-            cli_path=self.m.settings.claude_cli_path,
+        ctx = RuntimeContext(
+            agent=self.agent,
+            settings=self.m.settings,
+            conv_id=self.conv_id,
+            mesh_tools=self.m.mesh_tools_factory(self.agent, self),
+            prompt=MESH_PROMPT.format(agent_id=self.agent.id, name=self.agent.name, description=self.agent.description or "(none given)")
+            + ("\n" + self.agent.system_prompt if self.agent.system_prompt else ""),
+            client_factory=self.m.client_factory,
         )
-        self.client = self.m.client_factory(options)
-        self._cost_seen = 0.0  # a new CLI process counts cost from zero
-        await self.client.connect()
-        self._reader = asyncio.create_task(self._read_loop(), name=f"reader-{self.conv_id}")
-        return self.client
+        self.runtime = make_runtime(ctx, self)
+        await self.runtime.start(conv.session_id if conv else None)
+        return self.runtime
 
-    # stream handling
+    # runtime events
 
-    async def _read_loop(self) -> None:
-        assert self.client is not None
-        try:
-            async for msg in self.client.receive_messages():
-                self._on_message(msg)
-        except asyncio.CancelledError:
-            raise
-        except Exception as e:  # CLI died or protocol error
-            log.exception("session reader failed for %s", self.conv_id)
-            self._finish(TurnResult(text="", error=str(e)))
-            self.client = None
-
-    def _on_message(self, msg: Any) -> None:
-        if self._grace and not isinstance(msg, StreamEvent):
+    def activity(self) -> None:
+        if self._grace:
             self._grace.cancel()
             self._grace = None
-        if isinstance(msg, RateLimitEvent):
-            if self.m.on_rate_limit:
-                self.m.on_rate_limit(msg.rate_limit_info)
-            return
-        if isinstance(msg, StreamEvent):
-            ev = msg.event
-            if ev.get("type") == "content_block_delta" and ev.get("delta", {}).get("type") == "text_delta":
-                self.store.stream_delta(self.conv_id, ev["delta"]["text"])
-        elif isinstance(msg, AssistantMessage):
-            if msg.parent_tool_use_id:
-                return  # subagent chatter stays out of the conversation view
-            for block in msg.content:
-                if isinstance(block, TextBlock) and block.text.strip():
-                    self.store.add_message(self.conv_id, "agent", block.text)
-                elif isinstance(block, ToolUseBlock):
-                    self.store.add_message(self.conv_id, "agent", block.name, kind="tool_use", tool_use_id=block.id, input=block.input)
-        elif isinstance(msg, UserMessage):
-            if isinstance(msg.content, list):
-                for block in msg.content:
-                    if isinstance(block, ToolResultBlock):
-                        self.store.add_message(
-                            self.conv_id, "tool", _short(block.content), kind="tool_result",
-                            tool_use_id=block.tool_use_id, is_error=bool(block.is_error),
-                        )
-        elif isinstance(msg, SystemMessage):
-            if msg.subtype == "init" and msg.data.get("session_id"):
-                self.store.update_conversation(self.conv_id, session_id=msg.data["session_id"])
-        elif isinstance(msg, ResultMessage):
-            if msg.session_id:
-                self.store.update_conversation(self.conv_id, session_id=msg.session_id)
-            self._record_usage(msg)
-            interrupted = self._interrupted
-            result = TurnResult(
-                text=msg.result or "",
-                interrupted=interrupted,
-                error=None if not msg.is_error or interrupted else (msg.result or msg.subtype),
-            )
-            self._pending -= 1
-            if self._pending > 0:
-                # An injected prompt may produce its own result, or be folded into this one.
-                self._last = result
-                self._grace = asyncio.get_running_loop().call_later(INJECT_GRACE_S, self._finish, result)
-            else:
-                self._finish(result)
+
+    def text_delta(self, text: str) -> None:
+        self.store.stream_delta(self.conv_id, text)
+
+    def text(self, text: str) -> None:
+        self.store.add_message(self.conv_id, "agent", text)
+
+    def tool_use(self, tool_id: str, name: str, input: dict[str, Any]) -> None:
+        self.store.add_message(self.conv_id, "agent", name, kind="tool_use", tool_use_id=tool_id, input=input)
+
+    def tool_result(self, tool_id: str, content: Any, is_error: bool) -> None:
+        self.store.add_message(self.conv_id, "tool", _short(content), kind="tool_result", tool_use_id=tool_id, is_error=is_error)
+
+    def session_id(self, sid: str) -> None:
+        self.store.update_conversation(self.conv_id, session_id=sid)
+
+    def rate_limit(self, info: Any) -> None:
+        if self.m.on_rate_limit:
+            self.m.on_rate_limit(info)
+
+    def failed(self, error: str) -> None:
+        self._finish(TurnResult(text="", error=error))
+
+    def result(self, text: str, error: str | None, cost_usd: float | None) -> None:
+        self._record_usage(cost_usd)
+        interrupted = self._interrupted
+        result = TurnResult(text=text, interrupted=interrupted, error=None if interrupted else error)
+        self._pending -= 1
+        if self._pending > 0:
+            # An injected prompt may produce its own result, or be folded into this one.
+            self._last = result
+            self._grace = asyncio.get_running_loop().call_later(INJECT_GRACE_S, self._finish, result)
+        else:
+            self._finish(result)
+
+    def policy(self, tool_name: str, tool_input: dict[str, Any]) -> str:
+        return policy_decision(self.agent, tool_name, tool_input, self._accepted(), self._named())
+
+    async def decide(self, tool_name: str, tool_input: dict[str, Any]) -> tuple[bool, str]:
+        decision = self.policy(tool_name, tool_input)
+        if decision == "allow":
+            return True, ""
+        if decision == "deny":
+            return False, f"{tool_name} is not allowed for mesh sessions of {self.agent.id}."
+        return await self.m.request_approval(self, tool_name, tool_input)
 
     def _finish(self, result: TurnResult) -> None:
         self._grace = None
@@ -267,13 +235,13 @@ class SessionWorker:
 
     async def run_turn(self, prompt: str) -> TurnResult:
         async with self._turn_lock:
-            client = await self._ensure_started()
+            runtime = await self._ensure_started()
             self._interrupted = False
             self.needs_input = False
             self._turn_done = asyncio.get_running_loop().create_future()
             self._pending = 1
             self.store.set_status(self.conv_id, ConversationStatus.RUNNING)
-            await client.query(prompt)
+            await runtime.send(prompt)
             try:
                 result = await asyncio.wait_for(asyncio.shield(self._turn_done), self.m.settings.turn_timeout_s)
             except TimeoutError:
@@ -305,9 +273,9 @@ class SessionWorker:
         if files:
             paths = ", ".join(f["path"] for f in files)
             prompt = (text + "\n\n" if text else "") + f"Your owner attached files, saved in your working directory: {paths}. Read them as needed."
-        if self.turn_active and self.client is not None:
+        if self.turn_active and self.started:
             self._pending += 1
-            await self.client.query(prompt)
+            await self.runtime.send(prompt)
         else:
             asyncio.create_task(self._local_turn(prompt))
 
@@ -318,32 +286,23 @@ class SessionWorker:
             log.exception("local turn failed for %s", self.conv_id)
 
     async def interrupt(self, reason: str = "owner") -> None:
-        if self.client is not None and self.turn_active:
+        if self.started and self.turn_active:
             self._interrupted = True
             self.store.add_message(self.conv_id, "system", f"Turn interrupted ({reason}).", kind="status")
-            await self.client.interrupt()
+            await self.runtime.interrupt()
 
     async def close(self) -> None:
-        if self._reader:
-            self._reader.cancel()
-        if self.client:
-            try:
-                await self.client.disconnect()
-            except Exception:
-                log.debug("disconnect failed", exc_info=True)
-        self.client = None
+        if self.runtime is not None:
+            await self.runtime.close()
+        self.runtime = None
 
-    # permissions
+    # usage and permissions
 
-    def _record_usage(self, msg: ResultMessage) -> None:
-        """Add this turn's cost. The CLI reports total_cost_usd per process (it grows over a session), so count the
-        increase since the last report of this client; a smaller number means a fresh process."""
-        total = msg.total_cost_usd or 0.0
-        delta = total - self._cost_seen if total >= self._cost_seen else total
-        self._cost_seen = total
+    def _record_usage(self, cost_usd: float | None) -> None:
+        """Add this turn's cost (runtimes report each result's own cost) and count the turn."""
         conv = self.store.get_conversation(self.conv_id)
         if conv:
-            self.store.update_conversation(self.conv_id, cost_usd=round(conv.cost_usd + max(0.0, delta), 6),
+            self.store.update_conversation(self.conv_id, cost_usd=round(conv.cost_usd + max(0.0, cost_usd or 0.0), 6),
                                            agent_turns=conv.agent_turns + 1)
 
     def _named(self) -> frozenset[str]:
@@ -357,21 +316,6 @@ class SessionWorker:
         conv = self.store.get_conversation(self.conv_id)
         return bool(conv and conv.accepted)
 
-    async def _pre_tool_use(self, hook_input, tool_use_id, context) -> dict[str, Any]:
-        decision = policy_decision(self.agent, hook_input["tool_name"], hook_input.get("tool_input") or {}, self._accepted(), self._named())
-        out: dict[str, Any] = {"hookEventName": "PreToolUse", "permissionDecision": decision}
-        if decision == "deny":
-            out["permissionDecisionReason"] = f"Not allowed for mesh sessions of {self.agent.id}."
-        return {"hookSpecificOutput": out}
-
-    async def _can_use_tool(self, tool_name: str, tool_input: dict[str, Any], ctx: ToolPermissionContext):
-        decision = policy_decision(self.agent, tool_name, tool_input, self._accepted(), self._named())
-        if decision == "allow":
-            return PermissionResultAllow(updated_input=tool_input)
-        if decision == "deny":
-            return PermissionResultDeny(message=f"{tool_name} is not allowed for mesh sessions of {self.agent.id}.")
-        return await self.m.request_approval(self, tool_name, tool_input)
-
 
 class SessionManager:
     def __init__(
@@ -379,7 +323,7 @@ class SessionManager:
         settings: Settings,
         store: Store,
         mesh_tools_factory: Callable[[Agent, SessionWorker], Any],
-        client_factory: Callable[[ClaudeAgentOptions], ClaudeSDKClient] = ClaudeSDKClient,
+        client_factory: Callable[..., Any] = ClaudeSDKClient,
     ):
         self.settings = settings
         self.store = store
@@ -478,7 +422,7 @@ class SessionManager:
     def awaiting_owner(self, conv_id: str) -> bool:
         return conv_id in self._owner_gates
 
-    async def request_approval(self, w: SessionWorker, tool_name: str, tool_input: dict[str, Any]):
+    async def request_approval(self, w: SessionWorker, tool_name: str, tool_input: dict[str, Any]) -> tuple[bool, str]:
         appr = self.store.create_approval(w.conv_id, tool_name, tool_input)
         self.store.audit("approval_requested", agent_id=w.agent.id, peer_agent_id=tool_input.get("to"), tool=tool_name)
         self.store.set_status(w.conv_id, ConversationStatus.AWAITING_APPROVAL)
@@ -494,9 +438,7 @@ class SessionManager:
         finally:
             self._approvals.pop(appr.id, None)
             self.store.set_status(w.conv_id, ConversationStatus.RUNNING)
-        if allow:
-            return PermissionResultAllow(updated_input=tool_input)
-        return PermissionResultDeny(message=reason or f"Owner denied {tool_name}.")
+        return (True, "") if allow else (False, reason or f"Owner denied {tool_name}.")
 
     async def request_acceptance(self, conv_id: str, sender: str | None, task: str, status_hook: StatusHook | None) -> tuple[bool, str]:
         """An Assignment arrived: wait for the owner to accept it (CONTEXT.md). Declined on timeout."""
