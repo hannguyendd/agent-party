@@ -58,7 +58,7 @@ product: nothing here talks to a node, the mesh or the world server, and every a
   front = +Z, clip names) is in `design/office-style/3d/README.md`; if it changes, update `office3d.js`.
 - Models load 6 at a time with one retry (a burst of 100+ requests resets simple local servers).
 - **Links**: Play now goes to the README's `#install`; GitHub and Star to the repo. If the repo moves, change
-  `REPO` and the links in `index.html` (and the URL in `.github/workflows/pages.yml`, the README and here).
+  `REPO` in `app.js` and the links in `index.html` (and the URL in `.github/workflows/pages.yml`, the README and here).
 - English copy, playful but plain. Reduced motion: every animation has a static fallback; keep it that way.
 
 ## Preview and publish
