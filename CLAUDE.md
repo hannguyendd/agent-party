@@ -12,7 +12,8 @@ Assignment, Party, Present, Recap…) is defined in `CONTEXT.md`; use those word
 - `node-server/`: Python node server, one per device. Runs the agents and speaks A2A. The same package also runs
   the team **world server** (`agentfleet-node world`, `make world`) on the hub machine for the Office.
 - `dashboard/`: React app served by the node server: the Office screen plus Settings.
-- `docs/`: `NOTES.md` (repo overview, Vietnamese), `adr/` (decisions), `office/` (art brief and Codex prompts).
+- `docs/`: `GUIDE.md` (how admins and staff run and use the Office), `NOTES.md` (repo overview), `adr/` (decisions),
+  `office/` (art brief and Codex prompts).
 - `design/office-style/`: art sources and export scripts for the Office (owned by the art workflow, see below).
 - `CONTEXT.md`: domain glossary for the Office.
 

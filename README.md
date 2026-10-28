@@ -67,6 +67,8 @@ CONTEXT.md     Office glossary (Steering, Roaming, Inquiry, Assignment, Party, â
 
 ## Setup
 
+**Step-by-step for admins and staff: [docs/GUIDE.md](docs/GUIDE.md).** The rest of this section is the reference.
+
 Quick reference (`make help` lists every target):
 
 | Where | Command |
