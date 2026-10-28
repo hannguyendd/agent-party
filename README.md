@@ -85,6 +85,9 @@ hub, the install commands and a ready-to-send message), see who is online with w
 that the installer has a package and an agentmesh-node for each platform. It opens without a key on the server
 itself; from elsewhere it asks for the admin key, printed by `make server` and saved as `node-server/data/admin-key`.
 
+**If other computers can't reach the server**: run `make doctor` on it (LAN address, listening ports, firewall).
+The office server is `make server`; `make serve` is only a developer's own node on 127.0.0.1.
+
 **Staff installer.** `make server` runs `make bundle` first: it builds the dashboard into the node package
 (`agentfleet_node/static`), builds the wheel into `dist/downloads/`, and copies this machine's `agentmesh-node` there as
 `agentmesh-node-<os>-<arch>`. Put binaries for other platforms next to it (`agentmesh-node-darwin-arm64`,

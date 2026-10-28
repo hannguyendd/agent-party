@@ -25,6 +25,8 @@ say "Installing $TITLE on this machine"
 [ -n "$WHEEL" ] || die "The server has no node package yet. Ask your admin to run 'make bundle' on the server."
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
+[ "$ARCH" = aarch64 ] && ARCH=arm64
+AMVERSION="__AMVERSION__"   # Agent Mesh release, for the fallback download below
 case "$OS" in darwin|linux) ;; *) die "Only macOS and Linux are supported for now (got $OS)." ;; esac
 mkdir -p "$HOME_DIR/data" "$BIN"
 export PATH="$BIN:$HOME/.cargo/bin:$PATH"
@@ -52,7 +54,16 @@ elif curl -fsSL "$BASE/downloads/agentmesh-node-$OS-$ARCH" -o "$tmp/agentmesh-no
   install -m 755 "$tmp/agentmesh-node" "$BIN/agentmesh-node"
   say "Installed agentmesh-node"
 else
-  warn "The server has no agentmesh-node for $OS-$ARCH. The Office works, but your agents can't reach other machines yet. Ask your admin."
+  # Not on the office server: take it from the official release instead.
+  rel_os=$([ "$OS" = darwin ] && echo Darwin || echo Linux)
+  say "Downloading agentmesh-node $AMVERSION from github.com/google/agentmesh"
+  if curl -fsSL "https://github.com/google/agentmesh/releases/download/$AMVERSION/agentmesh_${rel_os}_${ARCH}.tar.gz" -o "$tmp/am.tar.gz" \
+     && tar xzf "$tmp/am.tar.gz" -C "$tmp" agentmesh-node; then
+    install -m 755 "$tmp/agentmesh-node" "$BIN/agentmesh-node"
+    say "Installed agentmesh-node"
+  else
+    warn "Could not get agentmesh-node for $OS-$ARCH. The Office works, but your agents can't reach other machines yet. Ask your admin."
+  fi
 fi
 
 # 4. Claude Code runs the agents; it needs a login on this machine.

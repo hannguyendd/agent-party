@@ -508,6 +508,16 @@ def latest_wheel(downloads: Path | None) -> str:
     return wheels[-1].name if wheels else ""
 
 
+DEFAULT_AGENTMESH_VERSION = "v0.1.0-rc.10"
+
+
+def _agentmesh_version(downloads: Path | None) -> str:
+    try:
+        return (downloads / "agentmesh.version").read_text().strip() if downloads else DEFAULT_AGENTMESH_VERSION
+    except OSError:
+        return DEFAULT_AGENTMESH_VERSION
+
+
 def latest_build(downloads: Path | None) -> str:
     """Build id of the package in downloads (`make bundle` writes build.json next to it); nodes compare to update."""
     try:
@@ -544,6 +554,7 @@ def create_world_app(data_path: Path | None = None, downloads: Path | None = Non
             .replace("__HOST__", server.rsplit(":", 1)[0])
             .replace("__WHEEL__", latest_wheel(downloads))
             .replace("__ORG__", _shell_safe(hub.state.org))
+            .replace("__AMVERSION__", _shell_safe(_agentmesh_version(downloads)))
         )
 
     @app.get("/install", response_class=PlainTextResponse)

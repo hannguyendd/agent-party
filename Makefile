@@ -1,6 +1,7 @@
 # Agent Mesh — run targets. `make help` lists them.
 #
-# Admin (always-on machine): `make server HUB_HOST=<ip>`, then `make hub-token DEVICE=...` per laptop.
+# Admin (always-on machine): `make server`, then everything else on http://<server ip>:7500/admin.
+#   (Not `make serve`: that is a developer's own node on 127.0.0.1, unreachable from other computers.)
 # Staff: `curl -fsSL http://<server ip>:7500/install | bash`, then join in the browser (name, server, join token).
 # Developers: `make setup` once, then `make up`.
 # Device settings can also come from node-server/.env (AGENTFLEET_OWNER, ...); the web setup overrides them.
@@ -20,9 +21,14 @@ WORLD_PORT ?= 7500
 ORG ?=
 HUB_DATA ?= ../hub/data
 AGENTMESH_ONE ?=
+# Agent Mesh release used for agentmesh-node (staff) and agentmesh-one (hub); the stack was verified on rc.10.
+AGENTMESH_VERSION ?= v0.1.0-rc.10
+# Where `make server` puts tools it installs (on PATH for the targets below).
+LOCAL_BIN := $(HOME)/.local/bin
+export PATH := $(LOCAL_BIN):$(HOME)/.bun/bin:$(PATH)
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up server bundle install install-node install-dashboard test build serve dev dev-server dev-dashboard \
+.PHONY: help setup up server server-check node-check doctor bundle install install-node install-dashboard test build serve dev dev-server dev-dashboard \
         mesh-node mesh-config hub hub-token world env codegraph clean
 
 help: ## Show this help
@@ -38,14 +44,14 @@ setup: ## One-time setup on a staff machine: check tools, install deps, build th
 	@$(MAKE) --no-print-directory install build
 	@echo; echo "Done. Run 'make up', then open http://127.0.0.1:9100 to join the team."
 
-up: ## Run this machine's node (dashboard + agents + mesh connection) at http://127.0.0.1:9100
+up: node-check ## Run this machine's node (dashboard + agents + mesh connection) at http://127.0.0.1:9100
 	@test -d $(DASH_DIR)/dist || $(MAKE) --no-print-directory build
 	@(sleep 2; command -v open >/dev/null && open http://127.0.0.1:9100 || command -v xdg-open >/dev/null && xdg-open http://127.0.0.1:9100) >/dev/null 2>&1 &
 	cd $(NODE_DIR) && uv run agentfleet-node serve
 
 # admin: the always-on team machine
 
-server: bundle ## Run hub + Office world server + staff installer; settings live on the admin page (/admin)
+server: server-check bundle ## Run hub + Office world server + staff installer; settings live on the admin page (/admin)
 	@test -n "$(HUB_HOST)" || { echo "Could not find this machine's LAN address; run: make server HUB_HOST=<LAN IP>"; exit 1; }
 	@echo "Server address: $(HUB_HOST) (detected; override with HUB_HOST=...)"
 	@echo "Admin page (invite staff, see who is online): http://$(HUB_HOST):$(WORLD_PORT)/admin"
@@ -61,13 +67,52 @@ bundle: ## Build what the staff installer serves: node package with the dashboar
 	rm -rf $(NODE_DIR)/src/agentfleet_node/static && cp -R $(DASH_DIR)/dist $(NODE_DIR)/src/agentfleet_node/static
 	@# A build id per bundle: installed nodes compare it with the server's to offer an update.
 	@printf '{"build": "%s-%s"}\n' "$$(git rev-parse --short HEAD 2>/dev/null || echo local)" "$$(date +%Y%m%d%H%M%S)" > $(NODE_DIR)/src/agentfleet_node/static/build.json
-	mkdir -p dist/downloads && rm -f dist/downloads/agentfleet_node-*.whl
+	@# Build into a scratch folder and swap only on success, so a failed build never leaves the installer without a package.
+	rm -rf dist/.wheel && mkdir -p dist/downloads dist/.wheel
+	cd $(NODE_DIR) && uv build --wheel --out-dir ../dist/.wheel
+	@ls dist/.wheel/agentfleet_node-*.whl >/dev/null
+	rm -f dist/downloads/agentfleet_node-*.whl && mv dist/.wheel/agentfleet_node-*.whl dist/downloads/ && rm -rf dist/.wheel
 	cp $(NODE_DIR)/src/agentfleet_node/static/build.json dist/downloads/build.json
-	cd $(NODE_DIR) && uv build --wheel --out-dir ../dist/downloads >/dev/null
-	@if command -v agentmesh-node >/dev/null; then \
-	  cp "$$(command -v agentmesh-node)" "dist/downloads/agentmesh-node-$$(uname -s | tr '[:upper:]' '[:lower:]')-$$(uname -m)"; fi
+	@# agentmesh-node for every staff platform, from the official release (checksums verified); kept until the version changes.
+	@if [ "$$(cat dist/downloads/agentmesh.version 2>/dev/null)" != "$(AGENTMESH_VERSION)" ]; then \
+	  echo "Fetching agentmesh-node $(AGENTMESH_VERSION) for macOS, Linux and Windows..."; \
+	  ./scripts/fetch-agentmesh.sh $(AGENTMESH_VERSION) node dist/downloads; fi
 	@ls dist/downloads
-	@echo "Other platforms: put agentmesh-node binaries in dist/downloads as agentmesh-node-<darwin|linux>-<arm64|x86_64>"
+
+server-check: ## What the office server needs (uv, bun, agentmesh-one); offers to install what is missing
+	@for p in $(HUB_PORT) $(WORLD_PORT); do \
+	  if lsof -nP -iTCP:$$p -sTCP:LISTEN >/dev/null 2>&1; then \
+	    echo "Port $$p is already in use (an earlier make server?):"; lsof -nP -iTCP:$$p -sTCP:LISTEN | awk 'NR>1 {print "  pid " $$2 "  " $$1}'; \
+	    echo "Stop it first (Ctrl+C in its terminal, or: kill <pid>), then run make server again."; exit 1; fi; done
+	@ask() { read -r -p "$$1 [Y/n] " a </dev/tty || a=n; case "$$a" in [nN]*) return 1;; *) return 0;; esac; }; \
+	if ! command -v uv >/dev/null; then \
+	  if ask "uv (Python tooling) is missing. Install it now?"; then curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	  else echo "Install uv: https://docs.astral.sh/uv/"; exit 1; fi; fi; \
+	if ! command -v bun >/dev/null; then \
+	  if ask "bun (builds the dashboard) is missing. Install it now?"; then curl -fsSL https://bun.sh/install | bash; \
+	  else echo "Install bun: https://bun.sh"; exit 1; fi; fi; \
+	if ! command -v agentmesh-one >/dev/null; then \
+	  if ask "agentmesh-one (the hub) is missing. Install $(AGENTMESH_VERSION) into $(LOCAL_BIN)?"; then \
+	    mkdir -p $(LOCAL_BIN) && ./scripts/fetch-agentmesh.sh $(AGENTMESH_VERSION) one $(LOCAL_BIN); \
+	  else echo "Install agentmesh-one: https://github.com/google/agentmesh/releases"; exit 1; fi; fi; \
+	echo "uv, bun and agentmesh-one are ready."
+
+doctor: ## Why other computers can't reach this office server: address, firewall, listening ports
+	@echo "This machine's LAN address: $(HUB_HOST)"
+	@echo "Staff and admin should open http://$(HUB_HOST):$(WORLD_PORT)/admin (hub on :$(HUB_PORT))."
+	@echo; echo "Listening (needs 0.0.0.0 or * or $(HUB_HOST), not 127.0.0.1):"
+	@(lsof -nP -iTCP:$(HUB_PORT) -iTCP:$(WORLD_PORT) -sTCP:LISTEN 2>/dev/null || ss -ltnp 2>/dev/null | grep -E ':($(HUB_PORT)|$(WORLD_PORT)) ') \
+	  | awk 'NR==1 || /LISTEN/' || true
+	@lsof -nP -iTCP:$(HUB_PORT) -iTCP:$(WORLD_PORT) -sTCP:LISTEN >/dev/null 2>&1 || ss -ltn 2>/dev/null | grep -qE ':($(HUB_PORT)|$(WORLD_PORT)) ' \
+	  || echo "  nothing on $(HUB_PORT)/$(WORLD_PORT): run make server (not make serve)."
+	@echo; echo "From this machine via the LAN address:"
+	@curl -fsS -m 3 http://$(HUB_HOST):$(WORLD_PORT)/healthz >/dev/null 2>&1 && echo "  office server :$(WORLD_PORT) answers" || echo "  office server :$(WORLD_PORT) does NOT answer"
+	@curl -fsS -m 3 -o /dev/null http://$(HUB_HOST):$(HUB_PORT)/ 2>/dev/null && echo "  hub :$(HUB_PORT) answers" || echo "  hub :$(HUB_PORT) does not answer on / (may be normal; check the listening list above)"
+	@if [ -x /usr/libexec/ApplicationFirewall/socketfilterfw ]; then echo; \
+	  /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate; \
+	  echo "  If enabled: System Settings > Network > Firewall > Options, allow incoming for python3 and agentmesh-one"; \
+	  echo "  (or answer Allow when macOS asks the first time make server runs)."; fi
+	@echo; echo "Also check: both computers on the same network (no guest Wi-Fi / client isolation), and no VPN in between."
 
 # setup pieces
 
@@ -95,7 +140,14 @@ build: ## Build the dashboard into dashboard/dist (served by the node server)
 
 # device
 
-serve: build ## Run the node server with the built dashboard (http://127.0.0.1:9100)
+node-check: ## agentmesh-node on this machine (lets your agents reach other machines); offers to install it
+	@if ! command -v agentmesh-node >/dev/null; then \
+	  read -r -p "agentmesh-node is missing (your agents can't reach other machines without it). Install $(AGENTMESH_VERSION) into $(LOCAL_BIN)? [Y/n] " a </dev/tty || a=n; \
+	  case "$$a" in [nN]*) echo "Skipped: the Office works, but agents stay on this machine.";; \
+	    *) mkdir -p $(LOCAL_BIN) && ./scripts/fetch-agentmesh.sh $(AGENTMESH_VERSION) node-here $(LOCAL_BIN);; esac; fi
+
+serve: node-check build ## Developer: your own node on 127.0.0.1:9100 (NOT the team's office server: that is make server)
+	@echo "This is your own node on http://127.0.0.1:9100 (other computers can't reach it). The team's office server is: make server"
 	cd $(NODE_DIR) && uv run agentfleet-node serve
 
 dev: ## Run node server + dashboard dev server with hot reload (http://localhost:5173)

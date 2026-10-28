@@ -45,6 +45,7 @@ if (-not (Test-Path $Node)) { Die 'agentfleet-node was not installed' }
 
 # 3. agentmesh-node: lets your agents reach other machines.
 $Arch = $env:PROCESSOR_ARCHITECTURE.ToLower()   # amd64 | arm64
+$AmVersion = '__AMVERSION__'
 if (Get-Command agentmesh-node -ErrorAction SilentlyContinue) {
   Say 'agentmesh-node already installed'
 } else {
@@ -52,7 +53,18 @@ if (Get-Command agentmesh-node -ErrorAction SilentlyContinue) {
     Invoke-WebRequest "$Base/downloads/agentmesh-node-windows-$Arch.exe" -OutFile (Join-Path $Bin 'agentmesh-node.exe') -UseBasicParsing
     Say 'Installed agentmesh-node'
   } catch {
-    Warn "The server has no agentmesh-node for windows-$Arch. The Office works, but your agents can't reach other machines yet. Ask your admin."
+    # Not on the office server: take it from the official release instead.
+    try {
+      $RelArch = if ($Arch -eq 'arm64') { 'arm64' } else { 'x86_64' }
+      Say "Downloading agentmesh-node $AmVersion from github.com/google/agentmesh"
+      $Zip = Join-Path $Tmp 'am.zip'
+      Invoke-WebRequest "https://github.com/google/agentmesh/releases/download/$AmVersion/agentmesh_Windows_$RelArch.zip" -OutFile $Zip -UseBasicParsing
+      Expand-Archive $Zip -DestinationPath (Join-Path $Tmp 'am') -Force
+      Copy-Item (Join-Path $Tmp 'am\agentmesh-node.exe') (Join-Path $Bin 'agentmesh-node.exe') -Force
+      Say 'Installed agentmesh-node'
+    } catch {
+      Warn "Could not get agentmesh-node for windows-$Arch. The Office works, but your agents can't reach other machines yet. Ask your admin."
+    }
   }
 }
 

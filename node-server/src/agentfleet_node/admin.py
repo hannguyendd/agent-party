@@ -30,7 +30,9 @@ PLATFORMS = {
     "macOS (Apple chip)": "agentmesh-node-darwin-arm64",
     "macOS (Intel)": "agentmesh-node-darwin-x86_64",
     "Linux (x86_64)": "agentmesh-node-linux-x86_64",
+    "Linux (ARM)": "agentmesh-node-linux-arm64",
     "Windows": "agentmesh-node-windows-amd64.exe",
+    "Windows (ARM)": "agentmesh-node-windows-arm64.exe",
 }
 COOKIE = "agentmesh_admin"
 
