@@ -228,12 +228,12 @@ export async function mount(host, office, opts) {
   }
   function center() { const r = canvas.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
   canvas.addEventListener('wheel', (e) => { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
-  // Drag pans when zoomed in; right-drag, Shift+drag, or a drag at full view rotates.
-  let down = null, dragged = false, rotating = false;
+  // Drag rotates; right-drag or Shift+drag pans (when zoomed in) and stops following the player.
+  let down = null, dragged = false, rotating = false, follow = false;
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   canvas.addEventListener('pointerdown', (e) => {
     down = { x: e.clientX, y: e.clientY }; dragged = false;
-    rotating = e.button === 2 || e.shiftKey || cam.zoom === 1;
+    rotating = !(e.button === 2 || e.shiftKey);
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
@@ -244,7 +244,7 @@ export async function mount(host, office, opts) {
       az -= (e.clientX - down.x) * 0.008; azGoal = az; place(); fit();
     } else {
       const a = groundAt(down.x, down.y), b = groundAt(e.clientX, e.clientY);
-      if (a && b) shift(a.x - b.x, a.z - b.z);
+      if (a && b && cam.zoom > 1) { follow = false; if (opts.onFollow) opts.onFollow(false); shift(a.x - b.x, a.z - b.z); }
     }
     down = { x: e.clientX, y: e.clientY };
   });
@@ -267,6 +267,12 @@ export async function mount(host, office, opts) {
       const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now;
       if (Math.abs(azGoal - az) > 0.001) { az += (azGoal - az) * Math.min(1, dt * 7); place(); fit(); }
       cutaway(Math.min(1, dt * 8));
+      // Follow: keep the visitor's character in the middle while zoomed in.
+      const me = sim.player;
+      if (follow && me.active && cam.zoom > 1) {
+        const k = Math.min(1, dt * 5);
+        shift((me.x - target.x - pan.x) * k, (me.y - target.z - pan.z) * k);
+      }
       const w = host.clientWidth, h = host.clientHeight;
       actors.forEach((act) => {
         const a = act.a;
@@ -292,6 +298,7 @@ export async function mount(host, office, opts) {
     setActive(on) { active = on; root.hidden = !on; if (on) { last = performance.now(); fit(); } },
     zoomBy(f) { const c = center(); zoomAt(f, c[0], c[1]); },
     resetZoom() { cam.zoom = 1; cam.updateProjectionMatrix(); pan.set(0, 0, 0); azGoal = AZ + Math.round((az - AZ) / (2 * Math.PI)) * 2 * Math.PI; place(); },
+    setFollow(on) { follow = on; },
     rotate(dir) { azGoal = Math.round((azGoal - AZ) / (Math.PI / 2)) * (Math.PI / 2) + AZ + dir * Math.PI / 2; },
   };
   office.addView(view);

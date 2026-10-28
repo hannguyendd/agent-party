@@ -89,6 +89,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 .zoom { position: absolute; right: 12px; bottom: 12px; z-index: 4; display: grid; gap: 4px; padding: 4px; border-radius: 14px; background: rgba(255, 247, 238, .92); box-shadow: 0 3px 0 var(--paper-edge); }
 .zoom button { width: 32px; height: 32px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); font: 700 18px/1 var(--display); cursor: pointer; display: grid; place-items: center; transition-property: background-color, scale; transition-duration: .15s; }
 .zoom button:hover { background: var(--paper-2); }
+.zoom button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .zoom .rot { display: none; }
 .mapfit.real3d .zoom .rot { display: grid; }
 .zoom button:active { scale: .92; }
@@ -313,6 +314,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
         <div class="zoom" role="group" aria-label="Zoom">
           <button type="button" id="zin" aria-label="Zoom in">+</button>
           <button type="button" id="zout" aria-label="Zoom out">&minus;</button>
+          <button type="button" id="follow" aria-pressed="false" aria-label="Follow your character" title="Follow your character"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
           <button type="button" class="rot" id="rotl" aria-label="Rotate left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg></button>
           <button type="button" class="rot" id="rotr" aria-label="Rotate right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4"/></svg></button>
           <button type="button" id="zfit" aria-label="Fit the whole office"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
@@ -473,8 +475,8 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
         if (!loading3d) {
           loading3d = has3d.then(function (ok) {
             if (!ok) return null;
-            return import('./office3d.js').then(function (m) { return m.mount(mapfit, office, { hidden: true, onProgress: progress3d }); });
-          }).then(function (v) { view3d = v; return v; }, function (err) { console.warn('3D office unavailable, tilting the map instead', err); return null; });
+            return import('./office3d.js').then(function (m) { return m.mount(mapfit, office, { hidden: true, onProgress: progress3d, onFollow: setFollow }); });
+          }).then(function (v) { view3d = v; if (v) v.setFollow(following); return v; }, function (err) { console.warn('3D office unavailable, tilting the map instead', err); return null; });
         }
         return loading3d;
       }
@@ -532,6 +534,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
         if (!drag) return;
         var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
         if (!dragged && Math.hypot(dx, dy) < 5) return;
+        if (!dragged) setFollow(false);
         dragged = true; mapfit.classList.add('grabbing');
         tx += dx; ty += dy; drag = { x: e.clientX, y: e.clientY }; apply2d();
       });
@@ -544,6 +547,28 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
       }
       document.getElementById('zin').addEventListener('click', function () { zoomBy(1.4); });
       document.getElementById('zout').addEventListener('click', function () { zoomBy(1 / 1.4); });
+      // Follow: when zoomed in, keep the visitor's character in the middle. Walking turns it on; dragging the map off.
+      var following = false, followBtn = document.getElementById('follow');
+      function setFollow(on) {
+        following = on; followBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (view3d) view3d.setFollow(on);
+      }
+      followBtn.addEventListener('click', function () {
+        setFollow(!following);
+        if (following && z === 1 && !(view3d && mapfit.classList.contains('real3d'))) zoomBy(2);
+      });
+      sim.on(function (type) { if (type === 'spawn') setFollow(true); });
+      addEventListener('keydown', function (e) { if (/^(Key[WASD]|Arrow)/.test(e.code) && sim.player.active && !following) setFollow(true); });
+      (function followLoop() {
+        var me = sim.player;
+        if (following && mode === '2d' && z > 1 && me.active) {
+          var w = mapfit.clientWidth, h = mapfit.clientHeight;
+          var ux = me.x * 32 / 1792 * w, uy = (me.y * 32 + 10) / 1152 * h;
+          tx += (w / 2 - ux * z - tx) * 0.12; ty += (h / 2 - uy * z - ty) * 0.12;
+          apply2d();
+        }
+        requestAnimationFrame(followLoop);
+      })();
       document.getElementById('rotl').addEventListener('click', function () { if (view3d) view3d.rotate(-1); });
       document.getElementById('rotr').addEventListener('click', function () { if (view3d) view3d.rotate(1); });
       document.getElementById('zfit').addEventListener('click', function () { if (view3d) view3d.resetZoom(); reset2d(); });
