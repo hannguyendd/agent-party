@@ -54,8 +54,9 @@ export interface Agent extends AgentIn {
  * - Not signed in: "Run `codex login` to use Codex agents"
  * - Codex picked / a Codex agent's settings: "Uses your Codex setup. This agent loads your `~/.codex` settings and
  *   `AGENTS.md`, and the project's `AGENTS.md`, in every conversation with other agents. Your personal MCP servers,
- *   saved Codex approvals and hooks are turned off; the Office approves. Its threads appear in the Codex app; read
- *   them there, but reply here in the Office, where approvals apply."
+ *   ChatGPT apps and hooks are turned off; the Office approves. Commands you saved as always allowed in Codex
+ *   also run here without asking. Its threads appear in the Codex app; read them there, but reply here in the
+ *   Office, where approvals apply."
  * - binary === 'bundled': "Your Codex (x.y.z) is older than this node supports; agents use the bundled Codex 0.163.0."
  * - newer_than_tested: "Your Codex (x.y.z) is newer than the version this node was tested with."
  * - auth_mode === 'api_key': "Billed to your OpenAI API key, not your ChatGPT subscription."
