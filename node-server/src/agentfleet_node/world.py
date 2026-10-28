@@ -351,7 +351,8 @@ class WorldHub:
     def __init__(self, state: WorldState):
         self.state = state
         self.clients: set[WebSocket] = set()
-        self.publisher: dict[str, WebSocket] = {}  # agent_id -> the socket that published it last
+        # agent_id -> sockets publishing it (a node that reconnects, or one owner on two machines, gives several)
+        self.publishers: dict[str, set[WebSocket]] = {}
 
     async def broadcast(self, events: list[dict]) -> None:
         for ev in events:
@@ -388,9 +389,14 @@ class WorldHub:
                         events = self.state.set_present(owner, present, now)
                         present = now
                     elif op == "agents":
-                        events, owned = self.state.sync_agents(owner, list(msg.get("agents") or []), owned)
-                        for agent_id in owned:
-                            self.publisher[agent_id] = ws
+                        # An agent this socket stops publishing leaves only if no other socket still publishes it.
+                        held_elsewhere = {a for a in owned if self.publishers.get(a, set()) - {ws}}
+                        events, new = self.state.sync_agents(owner, list(msg.get("agents") or []), owned - held_elsewhere)
+                        for agent_id in owned - new:
+                            self.publishers.get(agent_id, set()).discard(ws)
+                        for agent_id in new:
+                            self.publishers.setdefault(agent_id, set()).add(ws)
+                        owned = new
                     elif op == "claim_desk":
                         events = self.state.claim_desk(owner, str(msg.get("desk", "")))
                     elif op == "set_skin":
@@ -426,10 +432,12 @@ class WorldHub:
         finally:
             self.clients.discard(ws)
             events = self.state.set_present(owner, present, False)
-            # Only agents this socket still publishes: after a reconnect the newer socket owns them.
+            # An agent leaves when its last publishing socket closes (after a reconnect, the newer socket keeps it).
             for agent_id in owned:
-                if self.publisher.get(agent_id) is ws:
-                    del self.publisher[agent_id]
+                pubs = self.publishers.get(agent_id, set())
+                pubs.discard(ws)
+                if not pubs:
+                    self.publishers.pop(agent_id, None)
                     log.info("%s left: its node's socket closed", agent_id)
                     events += self.state.remove_agent(agent_id)
             events += self.state.owner_connected(owner, -1)

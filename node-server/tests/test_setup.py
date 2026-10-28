@@ -12,6 +12,8 @@ from test_world import RunningWorld
 async def test_setup_saves_applies_and_survives_a_restart(node_factory, tmp_path, monkeypatch):
     monkeypatch.setattr("shutil.which", lambda name: None)  # no agentmesh-node on this machine
     async with RunningWorld(tmp_path) as world:
+        # Point the derived world URL at the test world, never at a live Office on this machine's port 7500.
+        monkeypatch.setattr("agentfleet_node.api.WORLD_PORT", world.port)
         port = world.port
         a = node_factory("me", os_notifications=False)  # fresh install: default owner, no world
         async with a, httpx.AsyncClient(base_url=a.url) as c:
@@ -35,21 +37,19 @@ async def test_setup_saves_applies_and_survives_a_restart(node_factory, tmp_path
 
     # A restart reads setup.json, whatever the env said.
     again = Settings(data_dir=data_dir).apply_setup_file()
-    assert again.owner == "kien" and again.world_url.endswith(":7500/world/ws")
+    assert again.owner == "kien" and again.world_url.endswith(f":{port}/world/ws")
 
 
 async def test_setup_connects_the_office(node_factory, tmp_path, monkeypatch):
     monkeypatch.setattr("shutil.which", lambda name: None)
     async with RunningWorld(tmp_path) as world:
+        monkeypatch.setattr("agentfleet_node.api.WORLD_PORT", world.port)
         a = node_factory("me", os_notifications=False)
         async with a, httpx.AsyncClient(base_url=a.url) as c:
             assert not a.node.world.enabled
-            # A full world URL can't be given in the form; point the derived one at the test world server.
             r = await c.post("/api/setup", json={"owner": "kien", "server": "127.0.0.1"})
             assert r.status_code == 200
-            a.settings.world_url = world.url
-            await a.node.world.stop()
-            a.node.world.start()
+            assert a.settings.world_url == world.url
             await wait_for(lambda: a.node.world.connected)
 
 

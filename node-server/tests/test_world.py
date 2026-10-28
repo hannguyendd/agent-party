@@ -195,3 +195,22 @@ async def test_old_socket_closing_does_not_remove_agents_a_newer_socket_publishe
             await asyncio.sleep(0.3)
             assert "kien/dev" in world.hub.state.agents
         await wait_for(lambda: "kien/dev" not in world.hub.state.agents)  # the last socket closing still removes it
+
+
+async def test_an_agent_published_by_two_nodes_stays_while_either_is_connected(tmp_path):
+    # The same owner on two machines (or a stray process) publishing the same agent: one leaving keeps it.
+    async with RunningWorld(tmp_path) as world:
+        hello = json.dumps({"op": "hello", "owner": "kien"})
+        publish = json.dumps({"op": "agents", "agents": [{"agent_id": "kien/dev", "name": "Dev"}]})
+        async with connect(world.url) as first:
+            await first.send(hello)
+            await first.send(publish)
+            await wait_for(lambda: "kien/dev" in world.hub.state.agents)
+            second = await connect(world.url)
+            await second.send(hello)
+            await second.send(publish)
+            await asyncio.sleep(0.2)
+            await second.close()
+            await asyncio.sleep(0.3)
+            assert "kien/dev" in world.hub.state.agents
+        await wait_for(lambda: "kien/dev" not in world.hub.state.agents)

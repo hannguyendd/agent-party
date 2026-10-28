@@ -133,13 +133,17 @@ class SetupIn(BaseModel):
     token: str = ""
 
 
+# The world server's port next to the hub (`make world`). Tests point it elsewhere so they never join a live Office.
+WORLD_PORT = 7500
+
+
 def _server_urls(server: str) -> tuple[str, str]:
     server = server.strip().rstrip("/")
     if "://" in server:
         host = server.split("://", 1)[1].split("/", 1)[0].rsplit(":", 1)[0]
-        return server, f"ws://{host}:7500/world/ws"
+        return server, f"ws://{host}:{WORLD_PORT}/world/ws"
     host = server.rsplit(":", 1)[0] if server.count(":") == 1 else server
-    return f"http://{server if ':' in server else server + ':7400'}", f"ws://{host}:7500/world/ws"
+    return f"http://{server if ':' in server else server + ':7400'}", f"ws://{host}:{WORLD_PORT}/world/ws"
 
 
 def _setup_view(node) -> dict[str, Any]:

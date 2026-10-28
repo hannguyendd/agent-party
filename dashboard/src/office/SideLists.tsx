@@ -1,12 +1,12 @@
 // Side-column tabs of the Office: every conversation (Chats) and every pending approval (Approvals).
 
 import { useState } from 'react'
-import type { Approval } from '../api'
+import type { Approval, Conversation } from '../api'
 import { ApprovalCard } from '../components/ApprovalCard'
 import { timeAgo } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { Avatar } from './OfficeChat'
-import { who } from './people'
+import { who, type Who } from './people'
 import { useSeen } from './seen'
 import { NEEDS_YOU, STATUS } from './status'
 import { Icon } from './Icon'
@@ -29,6 +29,7 @@ export function ChatsList({ state, me, onOpen, tab: chosen, onTab }: {
 }) {
   const [q, setQ] = useState('')
   const [searching, setSearching] = useState(false)
+  const [showAll, setShowAll] = useState(false)
   const seenMap = useSeen()
   const needle = q.trim().toLowerCase()
   const mineConvs = Object.values(state.conversations).filter((c) => c.agent_id.startsWith(`${me}/`))
@@ -51,6 +52,17 @@ export function ChatsList({ state, me, onOpen, tab: chosen, onTab }: {
     )
     // Waiting on me first, then working, then by time.
     .sort((a, b) => rank(a.c) - rank(b.c) || b.c.updated_at.localeCompare(a.c.updated_at))
+  // The Host's talks with each member fold into its Party row (counted there), unless one of them needs me.
+  const partyRow = new Map(mineConvs.filter((c) => c.kind === 'party').map((c) => [c.party_id, c.id]))
+  const talks: Record<string, number> = {}
+  const shown = needle ? rows : rows.filter(({ c }) => {
+    const host = c.kind !== 'party' && c.direction === 'outbound' && c.party_id ? partyRow.get(c.party_id) : undefined
+    if (!host || rank(c) === 0) return true
+    talks[host] = (talks[host] ?? 0) + 1
+    return false
+  })
+  const now = shown.filter(({ c }) => rank(c) < 2)
+  const earlier = shown.filter(({ c }) => rank(c) === 2)
   const tabInfo = CHAT_TABS.find((t) => t.id === tab)!
   return (
     <div className="o-frame office-card office-list">
@@ -94,75 +106,75 @@ export function ChatsList({ state, me, onOpen, tab: chosen, onTab }: {
       )}
       {!needle && counts[tab].n === 0 && <p className="office-empty">{tabInfo.empty}</p>}
       {needle && rows.length === 0 && <p className="office-empty">Nothing matches “{q}”.</p>}
-      {rows.length > 0 && (
-        <div className="o-chat-group">
-          {rows.map(({ c, mine, peer }) => {
-            const st = STATUS[c.status]
-            const unread = isUnread(c)
-            const sender = c.last_role === 'peer' ? peer?.name : c.last_role === 'owner' ? 'You' : mine.name
-            // Only states worth attention get a chip; idle/done rows stay quiet.
-            const loud = st.tone === 'run' || st.tone === 'wait' || st.tone === 'err'
-            // Every conversation of a Party (the one I host, my agent's talk with a Host, a shared copy) reads as one.
-            const party = c.party_id ? (state.office?.parties ?? []).find((p) => p.party_id === c.party_id) : undefined
-            const inParty = !!c.party_id
-            const kind = inParty
-              ? { icon: '🎉', label: c.kind === 'party' ? 'Party you host' : c.kind === 'party_share' ? 'Shared Party (read only)' : 'Your agent in a Party' }
-              : c.kind === 'assignment'
-                ? { icon: '📋', label: 'Assignment' }
-                : c.kind === 'inquiry'
-                  ? { icon: '🔎', label: 'Question' }
-                  : !peer
-                    ? { icon: '🔒', label: 'Private chat with your agent' }
-                    : { icon: '💬', label: 'Conversation' }
-            // Faces: the Host's party shows everyone in it (up to three), otherwise me and the peer.
-            const faces = c.kind === 'party' && party ? [party.host, ...party.members].slice(0, 3).map((id) => who(state, id)) : [mine, ...(peer ? [peer] : [])]
-            return (
-              <button key={c.id} className={`o-chat-row is-${st.tone} ${unread ? 'is-unread' : ''} ${inParty ? 'is-party' : ''}`} onClick={() => onOpen(c.id)}>
-                <span className={`o-chat-faces ${faces.length > 1 ? 'is-pair' : ''}`}>
-                  {faces.map((f) => <Avatar key={f.id} w={f} size={faces.length > 2 ? 24 : 30} />)}
-                </span>
-                <span className="o-chat-main">
-                  <span className="o-chat-top">
-                    <span className="o-chat-kind" title={kind.label}>
-                      {kind.icon}
-                    </span>
-                    <strong>
-                      {c.kind === 'party' ? (
-                        <>Party<em> · {c.title || mine.name}</em></>
-                      ) : (
-                        <>
-                          {mine.name}
-                          {peer && (
-                            <em>
-                              {' '}
-                              {c.direction === 'inbound' ? '←' : '→'} {peer.name}
-                            </em>
-                          )}
-                        </>
-                      )}
-                    </strong>
-                    {inParty && c.kind !== 'party' && <span className="o-chip is-party">Party</span>}
-                    {inParty && !party && <span className="o-chip is-done">ended</span>}
-                    {loud && <span className={`o-chip is-${st.tone}`}>{st.label}</span>}
-                    <time>{timeAgo(c.updated_at)}</time>
-                    {unread && <i className="o-unread" aria-label="new messages" />}
-                  </span>
-                  <span className="o-chat-preview">
-                    {c.last_preview ? (
-                      <>
-                        <b>{sender}:</b> {c.last_preview}
-                      </>
-                    ) : (
-                      c.title || 'No messages yet'
-                    )}
-                  </span>
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
+      {rows.length > 0 && (needle ? (
+        <div className="o-clist">{rows.map((r) => <ChatRow key={r.c.id} {...r} state={state} unread={isUnread(r.c)} talks={talks[r.c.id]} onOpen={onOpen} />)}</div>
+      ) : (
+        <>
+          {now.length > 0 && (
+            <>
+              <h3 className="o-clist-h">Now</h3>
+              <div className="o-clist">{now.map((r) => <ChatRow key={r.c.id} {...r} state={state} unread={isUnread(r.c)} talks={talks[r.c.id]} onOpen={onOpen} />)}</div>
+            </>
+          )}
+          {earlier.length > 0 && (
+            <>
+              {now.length > 0 && <h3 className="o-clist-h">Earlier</h3>}
+              <div className="o-clist">
+                {earlier.slice(0, showAll ? undefined : EARLIER_SHOWN).map((r) => (
+                  <ChatRow key={r.c.id} {...r} state={state} unread={isUnread(r.c)} talks={talks[r.c.id]} onOpen={onOpen} />
+                ))}
+              </div>
+              {earlier.length > EARLIER_SHOWN && (
+                <button className="o-clist-more" onClick={() => setShowAll((v) => !v)}>
+                  {showAll ? 'Show fewer' : `Show ${earlier.length - EARLIER_SHOWN} more`}
+                </button>
+              )}
+            </>
+          )}
+        </>
+      ))}
     </div>
+  )
+}
+
+const EARLIER_SHOWN = 6
+
+type Row = { c: Conversation; mine: Who; peer: Who | null }
+
+/** One line per conversation: who, what state needs my eyes, the latest line. Quiet unless something is going on. */
+function ChatRow({ c, mine, peer, state, unread, talks, onOpen }: Row & { state: LiveState; unread: boolean; talks?: number; onOpen: (id: string) => void }) {
+  const st = STATUS[c.status]
+  const loud = st.tone === 'run' || st.tone === 'wait' || st.tone === 'err'
+  const party = c.party_id ? (state.office?.parties ?? []).find((p) => p.party_id === c.party_id) : undefined
+  const hosting = c.kind === 'party'
+  const faces = hosting && party ? [party.host, ...party.members].slice(0, 3).map((id) => who(state, id)) : [mine, ...(peer ? [peer] : [])]
+  const sender = c.last_role === 'peer' ? peer?.name : c.last_role === 'owner' ? 'You' : mine.name
+  const meta = [
+    c.party_id && !hosting ? 'Party' : '',
+    hosting ? (party ? `${party.members.length + 1} agents` : 'ended') : '',
+    hosting && talks ? `${talks} talk${talks === 1 ? '' : 's'}` : '',
+    c.kind === 'assignment' ? 'Task' : '',
+  ].filter(Boolean)
+  return (
+    <button className={`o-crow ${loud ? `is-${st.tone}` : ''} ${unread ? 'is-unread' : ''}`} onClick={() => onOpen(c.id)}>
+      <span className={`o-crow-faces n${faces.length}`}>
+        {faces.map((f) => <Avatar key={f.id} w={f} size={faces.length > 2 ? 20 : 26} />)}
+      </span>
+      <span className="o-crow-main">
+        <span className="o-crow-top">
+          <strong>
+            {hosting ? <>🎉 {c.title || 'Party'}</> : <>{mine.name}{peer && <em> {c.direction === 'inbound' ? '←' : '→'} {peer.name}</em>}</>}
+          </strong>
+          {loud && <span className={`o-crow-state is-${st.tone}`}>{st.label}</span>}
+          <time>{timeAgo(c.updated_at)}</time>
+          {unread && <i className="o-unread" aria-label="new messages" />}
+        </span>
+        <span className="o-crow-preview">
+          {meta.length > 0 && <span className="o-crow-meta">{meta.join(' · ')}</span>}
+          {c.last_preview ? <><b>{sender}:</b> {c.last_preview}</> : c.title || 'No messages yet'}
+        </span>
+      </span>
+    </button>
   )
 }
 
