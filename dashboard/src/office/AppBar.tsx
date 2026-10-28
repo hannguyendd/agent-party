@@ -5,6 +5,9 @@ import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
 import { ownerCss } from './skins'
 
+/** "Taggle Office" when the admin named the organization on the server, else the product name. */
+const brand = (org?: string) => (org ? `${org} Office` : 'Agent Mesh')
+
 export function AppBar({ state, view, go, onApprovals }: { state: LiveState; view: View; go: (v: View) => void; onApprovals?: () => void }) {
   const pending = Object.values(state.approvals).filter((a) => a.status === 'pending').length
   const mesh = state.node?.mesh
@@ -25,7 +28,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
     <nav className="office-appbar" aria-label="Navigation">
       <button className="office-logo" onClick={() => go({ kind: 'office' })}>
         <img src="office/ui/logo.png" srcSet="office/ui/logo.png 1x, office/ui/logo@2x.png 2x" width="28" height="28" alt="" />
-        Agent Mesh
+        {brand(office?.org)}
       </button>
       <div className="office-nav">
         <button className={view.kind === 'office' ? 'is-active' : ''} aria-current={view.kind === 'office' ? 'page' : undefined} onClick={() => go({ kind: 'office' })}>

@@ -1,7 +1,8 @@
 # Agent Mesh — run targets. `make help` lists them.
 #
-# Staff: `make setup` once, then `make up` and finish joining in the browser (name, office server, join token).
 # Admin (always-on machine): `make server HUB_HOST=<ip>`, then `make hub-token DEVICE=...` per laptop.
+# Staff: `curl -fsSL http://<server ip>:7500/install | bash`, then join in the browser (name, server, join token).
+# Developers: `make setup` once, then `make up`.
 # Device settings can also come from node-server/.env (AGENTFLEET_OWNER, ...); the web setup overrides them.
 
 SHELL := /bin/bash
@@ -15,9 +16,10 @@ HUB_PORT ?= 7400
 HUB_URL  ?= http://$(if $(HUB_HOST),$(HUB_HOST),127.0.0.1):$(HUB_PORT)
 DEVICE   ?=
 WORLD_PORT ?= 7500
+ORG ?=
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up server install install-node install-dashboard test build serve dev dev-server dev-dashboard \
+.PHONY: help setup up server bundle install install-node install-dashboard test build serve dev dev-server dev-dashboard \
         mesh-node mesh-config hub hub-token world env codegraph clean
 
 help: ## Show this help
@@ -40,12 +42,24 @@ up: ## Run this machine's node (dashboard + agents + mesh connection) at http://
 
 # admin: the always-on team machine
 
-server: ## Run the hub and the Office world server together (HUB_HOST=<fixed LAN IP or hostname>)
+server: bundle ## Run hub + Office world server and serve the staff installer (HUB_HOST=<LAN IP> ORG="Taggle")
 	@test -n "$(HUB_HOST)" || { echo "usage: make server HUB_HOST=<fixed LAN IP or hostname>"; exit 1; }
+	@echo "Staff install (macOS/Linux): curl -fsSL http://$(HUB_HOST):$(WORLD_PORT)/install | bash"
+	@echo "Staff install (Windows, PowerShell): irm http://$(HUB_HOST):$(WORLD_PORT)/install.ps1 | iex"
 	@trap 'kill 0' EXIT INT TERM; \
 	$(MAKE) --no-print-directory hub & \
 	$(MAKE) --no-print-directory world & \
 	wait
+
+bundle: ## Build what the staff installer serves: node package with the dashboard inside (+ this OS's agentmesh-node)
+	cd $(DASH_DIR) && bun install --frozen-lockfile >/dev/null && bun run build
+	rm -rf $(NODE_DIR)/src/agentfleet_node/static && cp -R $(DASH_DIR)/dist $(NODE_DIR)/src/agentfleet_node/static
+	mkdir -p dist/downloads && rm -f dist/downloads/agentfleet_node-*.whl
+	cd $(NODE_DIR) && uv build --wheel --out-dir ../dist/downloads >/dev/null
+	@if command -v agentmesh-node >/dev/null; then \
+	  cp "$$(command -v agentmesh-node)" "dist/downloads/agentmesh-node-$$(uname -s | tr '[:upper:]' '[:lower:]')-$$(uname -m)"; fi
+	@ls dist/downloads
+	@echo "Other platforms: put agentmesh-node binaries in dist/downloads as agentmesh-node-<darwin|linux>-<arm64|x86_64>"
 
 # setup pieces
 
@@ -105,7 +119,7 @@ hub-token: ## Mint a single-use join token for a device (DEVICE="han laptop")
 	cd $(HUB_DIR) && HUB_PORT=$(HUB_PORT) ./mint-token.sh "$(DEVICE)"
 
 world: ## Run the Office world server (one per team, on the hub machine; port WORLD_PORT, default 7500)
-	cd $(NODE_DIR) && uv run agentfleet-node world --port $(WORLD_PORT)
+	cd $(NODE_DIR) && uv run agentfleet-node world --port $(WORLD_PORT) --downloads ../dist/downloads --org "$(ORG)"
 
 codegraph: ## Refresh the codegraph index (.codegraph/, local only)
 	codegraph sync .

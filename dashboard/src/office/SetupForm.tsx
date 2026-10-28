@@ -8,7 +8,9 @@ import { Icon } from './Icon'
 
 export function SetupForm({ initial, onSaved }: { initial: SetupState | null; onSaved: (s: SetupState) => void }) {
   const [owner, setOwner] = useState(initial && initial.owner !== 'me' ? initial.owner : '')
-  const [server, setServer] = useState(initial?.hub_url?.replace(/^https?:\/\//, '').replace(/:7400$/, '') ?? '')
+  // The staff installer opens this page with ?server=<the office server it was downloaded from>.
+  const hinted = new URLSearchParams(location.search).get('server') ?? ''
+  const [server, setServer] = useState(initial?.hub_url?.replace(/^https?:\/\//, '').replace(/:7400$/, '') || hinted)
   const [token, setToken] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)

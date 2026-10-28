@@ -214,3 +214,29 @@ async def test_an_agent_published_by_two_nodes_stays_while_either_is_connected(t
             await asyncio.sleep(0.3)
             assert "kien/dev" in world.hub.state.agents
         await wait_for(lambda: "kien/dev" not in world.hub.state.agents)
+
+
+def test_world_serves_the_staff_installer_and_the_org_name(tmp_path):
+    from fastapi.testclient import TestClient
+
+    downloads = tmp_path / "downloads"
+    downloads.mkdir()
+    (downloads / "agentfleet_node-0.1.0-py3-none-any.whl").write_bytes(b"wheel")
+    (downloads / "agentmesh-node-darwin-arm64").write_bytes(b"bin")
+    c = TestClient(create_world_app(tmp_path / "world.json", downloads, org='Taggle"; rm -rf ~'))
+    sh = c.get("/install", headers={"host": "10.0.0.5:7500"}).text
+    assert 'SERVER="10.0.0.5:7500"' in sh and 'OFFICE="10.0.0.5"' in sh
+    assert 'WHEEL="agentfleet_node-0.1.0-py3-none-any.whl"' in sh
+    assert 'ORG="Taggle rm -rf "' in sh  # quotes, ; and ~ are stripped: the name can't break out of the string
+    ps1 = c.get("/install.ps1", headers={"host": "10.0.0.5:7500"}).text
+    assert "$Server = '10.0.0.5:7500'" in ps1 and "__SERVER__" not in ps1
+    assert c.get("/downloads/agentmesh-node-darwin-arm64").content == b"bin"
+    assert c.get("/downloads/..%2Fworld.json").status_code == 404
+    assert c.get("/downloads/missing").status_code == 404
+    assert c.get("/info").json()["org"].startswith("Taggle")
+    assert c.get("/healthz").json()["org"].startswith("Taggle")
+
+
+def test_org_name_reaches_every_node(tmp_path):
+    w = WorldState(org="Taggle")
+    assert w.snapshot()["org"] == "Taggle"

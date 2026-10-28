@@ -1,23 +1,22 @@
 """Runs this device's agentmesh-node for the owner, so joining the mesh is a web form, not a terminal session.
 
-The node server starts `scripts/start-mesh-node.sh` (same flags as running it by hand) once setup knows the hub,
-and restarts it whenever the published agents change, because agentmesh-node only reads its services at startup.
-If agentmesh-node isn't installed, or the owner runs it themselves, this stays idle.
+The node server starts `agentmesh-node run` once setup knows the hub (the same flags as
+`scripts/start-mesh-node.sh`, which stays for running it by hand) and restarts it whenever the published agents
+change, because agentmesh-node only reads its services at startup. It needs nothing from the repo, so it works
+from the installed package too. If agentmesh-node isn't installed, this stays idle with a reason.
 """
 
 import asyncio
 import contextlib
 import logging
 import os
+import secrets
 import shutil
 from pathlib import Path
 
 from agentfleet_node.config import Settings
 
 log = logging.getLogger(__name__)
-
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "start-mesh-node.sh"
-
 
 class MeshNodeProcess:
     def __init__(self, settings: Settings):
@@ -58,18 +57,32 @@ class MeshNodeProcess:
         if not self.installed:
             self.last_error = "agentmesh-node is not installed on this machine"
             return False
-        s.data_dir.mkdir(parents=True, exist_ok=True)
-        env = {
-            **os.environ,
-            "HUB_URL": s.hub_url,
-            "AGENTFLEET_DATA_DIR": str(s.data_dir.resolve()),
-            "NODE_BIND": s.mesh_node_url.removeprefix("http://").removeprefix("https://"),
-        }
+        data = s.data_dir.resolve()
+        (data / "mesh-node").mkdir(parents=True, exist_ok=True)
+        # The node API token the Python server uses for discovery and the /mesh proxy.
+        if s.mesh_api_token_path is None:
+            s.mesh_api_token_path = data / "mesh-api-token"
+        token = Path(s.mesh_api_token_path)
+        if not token.exists() or not token.read_text().strip():
+            token.write_text(secrets.token_hex(32))
+            token.chmod(0o600)
+        args = [
+            "agentmesh-node", "run",
+            "--control-plane", s.hub_url,
+            "--config", str(Path(s.mesh_node_config_path).resolve()),
+            "--data-dir", str(data / "mesh-node"),
+            "--bind-addr", s.mesh_node_url.removeprefix("http://").removeprefix("https://"),
+            "--api-token-path", str(token.resolve()),
+            "--allow-loopback",
+        ]
+        if s.hub_url.startswith("http://"):
+            args.append("--insecure-control-plane")  # v1 is LAN-only over plain http: trust the hub on this network
+        bootstrap = data / "bootstrap-token"
+        if bootstrap.exists() and not (data / "mesh-node" / "agent.db").exists():
+            args += ["--bootstrap-token-path", str(bootstrap)]  # enroll only until this node has an identity
         logf = self.log_path.open("ab")
         try:
-            self.proc = await asyncio.create_subprocess_exec(
-                "bash", str(SCRIPT), cwd=str(SCRIPT.parents[1]), env=env, stdout=logf, stderr=asyncio.subprocess.STDOUT
-            )
+            self.proc = await asyncio.create_subprocess_exec(*args, cwd=str(data), env=dict(os.environ), stdout=logf, stderr=asyncio.subprocess.STDOUT)
         except OSError as e:
             self.last_error = f"could not start agentmesh-node: {e}"
             return False

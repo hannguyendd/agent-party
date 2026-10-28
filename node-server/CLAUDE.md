@@ -35,6 +35,11 @@ positions reset to desks on restart. When a node reconnects, the newest socket o
 LAN; there is no auth yet). Roaming: an agent with an active outbound conversation walks to its peer (taking over
 from steering) and goes back to its desk when the conversation ends.
 
+It also serves the staff installer: `/install` and `/install.ps1` render `install.sh` / `install.ps1` (package
+data) with the server address, newest wheel and `--org`; `/downloads/<name>` serves `dist/downloads` (safe names
+only). The installed node finds the dashboard in `agentfleet_node/static` (a repo checkout prefers
+`dashboard/dist`). `meshproc` runs `agentmesh-node run` itself, so nothing needs the repo at runtime.
+
 ## Real-stack smoke (for mesh, A2A or session changes)
 
 Unit tests use a fake Claude client and static peers, so they cannot catch the gotchas above. To exercise the

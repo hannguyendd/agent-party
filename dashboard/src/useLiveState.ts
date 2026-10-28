@@ -131,7 +131,7 @@ function applyWorld(s: LiveState, e: WorldEvent): LiveState {
   if (e.type !== 'link' && !o.connected) return applyWorld({ ...s, office: { ...o, enabled: true, connected: true } }, e)
   switch (e.type) {
     case 'snapshot':
-      return { ...s, office: { ...o, enabled: true, connected: true, desks: e.desks, owners: e.owners, agents: e.agents, parties: e.parties ?? [], desk_ids: e.desk_ids, skins: e.skins } }
+      return { ...s, office: { ...o, enabled: true, connected: true, org: e.org ?? o.org, desks: e.desks, owners: e.owners, agents: e.agents, parties: e.parties ?? [], desk_ids: e.desk_ids, skins: e.skins } }
     case 'party':
       return { ...s, office: { ...o, parties: [...(o.parties ?? []).filter((p) => p.party_id !== e.party.party_id), e.party] } }
     case 'party_ended':

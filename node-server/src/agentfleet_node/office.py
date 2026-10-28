@@ -30,7 +30,7 @@ class WorldClient:
         self.store = store
         self.bus = bus
         self.connected = False
-        self.mirror: dict[str, Any] = {"desks": {}, "owners": {}, "agents": {}, "parties": {}, "desk_ids": [], "skins": []}
+        self.mirror: dict[str, Any] = {"org": "", "desks": {}, "owners": {}, "agents": {}, "parties": {}, "desk_ids": [], "skins": []}
         # Called with each Party event from the world (party.PartyService reacts to joins, hand-offs, endings).
         self.party_listeners: list[Callable[[dict[str, Any]], None]] = []
         self._ws: ClientConnection | None = None
@@ -109,6 +109,7 @@ class WorldClient:
         t = ev.get("type")
         m = self.mirror
         if t == "snapshot":
+            m["org"] = ev.get("org", "")
             m["desks"], m["owners"] = ev.get("desks", {}), ev.get("owners", {})
             m["agents"] = {a["agent_id"]: a for a in ev.get("agents", [])}
             m["parties"] = {p["party_id"]: p for p in ev.get("parties", [])}
@@ -140,6 +141,7 @@ class WorldClient:
             "enabled": self.enabled,
             "connected": self.connected,
             "owner": self.settings.owner,
+            "org": m["org"],
             "desks": m["desks"],
             "owners": m["owners"],
             "agents": list(m["agents"].values()),

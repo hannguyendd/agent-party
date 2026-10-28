@@ -21,7 +21,10 @@ from agentfleet_node.recap import RecapService
 from agentfleet_node.sessions import SessionManager
 from agentfleet_node.store import EventBus, Store
 
-DASHBOARD_DIST = Path(__file__).resolve().parents[3] / "dashboard" / "dist"
+# A repo checkout serves dashboard/dist (the latest `bun run build`); the installed package has no repo around it
+# and carries the built dashboard in agentfleet_node/static instead (`make bundle`).
+_REPO_DIST = Path(__file__).resolve().parents[3] / "dashboard" / "dist"
+DASHBOARD_DIST = _REPO_DIST if (_REPO_DIST / "index.html").is_file() else Path(__file__).resolve().parent / "static"
 
 
 @dataclass

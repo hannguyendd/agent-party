@@ -181,6 +181,8 @@ export interface OfficeState {
   enabled: boolean
   connected: boolean
   owner: string
+  /** Organization name set on the world server ('' when none): shown as "<org> Office". */
+  org?: string
   desks: Record<string, string>
   owners: Record<string, OfficeOwner>
   agents: OfficeAgent[]
@@ -212,7 +214,7 @@ export interface Recap {
 }
 
 export type WorldEvent =
-  | { type: 'snapshot'; desks: Record<string, string>; owners: Record<string, OfficeOwner>; agents: OfficeAgent[]; parties?: Party[]; desk_ids: string[]; skins: string[] }
+  | { type: 'snapshot'; org?: string; desks: Record<string, string>; owners: Record<string, OfficeOwner>; agents: OfficeAgent[]; parties?: Party[]; desk_ids: string[]; skins: string[] }
   | { type: 'party'; party: Party; joined?: string; left?: string; handed_off_from?: string }
   | { type: 'party_ended'; party_id: string; host: string; members: string[]; reason: 'closed' | 'host_offline' }
   | { type: 'desks'; desks: Record<string, string> }

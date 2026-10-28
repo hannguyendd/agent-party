@@ -28,6 +28,10 @@ export default function App() {
     api.setup().then(setSetup).catch(() => {})
   }, [state.connected])
   const preview = new URLSearchParams(location.search).has('preview')
+  const org = state.office?.org
+  useEffect(() => {
+    document.title = org ? `${org} Office` : 'Agent Mesh'
+  }, [org])
   const onSetupSaved = (s: SetupState) => {
     if (!setup?.configured) setJustJoined(true)
     setSetup(s)

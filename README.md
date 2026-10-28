@@ -71,10 +71,20 @@ Quick reference (`make help` lists every target):
 
 | Where | Command |
 |---|---|
-| Hub machine (admin) | `make server HUB_HOST=<lan ip>` (hub + Office world server) · `make hub-token DEVICE="han laptop"` per laptop |
-| Each staff machine, once | `make setup` (checks uv / bun / claude / agentmesh-node, installs, builds) |
-| Each staff machine | `make up`, then finish in the browser at http://127.0.0.1:9100 |
+| Hub machine (admin) | `make server HUB_HOST=<lan ip> ORG="Taggle"` (hub + Office world server + staff installer) · `make hub-token DEVICE="han laptop"` per laptop |
+| Staff, macOS / Linux | `curl -fsSL http://<hub ip>:7500/install \| bash` |
+| Staff, Windows | in PowerShell: `irm http://<hub ip>:7500/install.ps1 \| iex` |
+| Developer machine | `make setup` once, then `make up` (runs from the repo) |
 | Development | `make dev` (node server + Vite hot reload on :5173) · `make test` · `make build` |
+
+**Staff installer.** `make server` runs `make bundle` first: it builds the dashboard into the node package
+(`agentfleet_node/static`), builds the wheel into `dist/downloads/`, and copies this machine's `agentmesh-node` there as
+`agentmesh-node-<os>-<arch>`. Put binaries for other platforms next to it (`agentmesh-node-darwin-arm64`,
+`agentmesh-node-linux-x86_64`, `agentmesh-node-windows-amd64.exe`). The world server serves `/install` (bash),
+`/install.ps1` (PowerShell) and `/downloads/*`. The script installs uv if needed, the node with `uv tool install`,
+agentmesh-node into `~/.local/bin`, starts the node at login (launchd / systemd user unit / Windows scheduled task)
+with its data in `~/.agentfleet`, and opens the setup page with the server prefilled. Staff only need Claude Code
+installed and logged in. `ORG` names the organization: every dashboard then says "Taggle Office".
 
 **Joining from the browser.** On first run the dashboard shows a setup page: your name (the owner in agent IDs),
 the office server (the hub machine's IP or hostname; the hub URL `:7400` and world URL `:7500` are derived from
@@ -177,4 +187,6 @@ Local hub + two `agentmesh-node`s + two node servers:
   per-object art. Characters use the native 48×72 sheets (`manifest.characters48`) when present.
 - The web setup and the managed `agentmesh-node` have not been run against a real hub yet (no agentmesh binaries
   on the dev machine); the unit tests cover the form, files and error paths.
+- The bash installer was run end to end on macOS (isolated HOME, no login service). The PowerShell installer and
+  the node on Windows have not been run yet.
 - Agents cannot assign work on their own initiative (only the owner can, from the Office).

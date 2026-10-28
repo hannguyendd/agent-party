@@ -14,11 +14,13 @@ Positions are symbolic targets that every browser resolves against the same map:
 
 import json
 import logging
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, PlainTextResponse
 
 from agentfleet_node.naming import InvalidAgentId, owner_of, validate_agent_id
 
@@ -59,8 +61,9 @@ class PartyState:
 class WorldState:
     """Pure state + rules, so it can be tested without sockets."""
 
-    def __init__(self, data_path: Path | None = None):
+    def __init__(self, data_path: Path | None = None, org: str = ""):
         self.data_path = data_path
+        self.org = org  # shown as "<org> Office" in every dashboard; set by the admin (`make server ORG=...`)
         self.desks: dict[str, str] = {}  # desk -> owner
         self.skins: dict[str, str] = {}  # agent_id -> skin
         self.agents: dict[str, AgentState] = {}
@@ -94,6 +97,7 @@ class WorldState:
     def snapshot(self) -> dict[str, Any]:
         return {
             "type": "snapshot",
+            "org": self.org,
             "desks": self.desks,
             "owners": self.owners_view(),
             "agents": [asdict(a) for a in self.agents.values()],
@@ -444,14 +448,64 @@ class WorldHub:
             await self.broadcast(events)
 
 
-def create_world_app(data_path: Path | None = None) -> FastAPI:
-    hub = WorldHub(WorldState(data_path))
+INSTALL_TEMPLATES = {"sh": Path(__file__).with_name("install.sh"), "ps1": Path(__file__).with_name("install.ps1")}
+_SAFE_NAME = re.compile(r"^[A-Za-z0-9._+-]+$")
+
+
+def _shell_safe(text: str) -> str:
+    """The organization name goes inside double quotes in a shell / PowerShell script."""
+    return re.sub(r'[^A-Za-z0-9 ._&()-]', "", text)
+
+
+def latest_wheel(downloads: Path | None) -> str:
+    """Newest node package in the downloads folder ('' when there is none)."""
+    if downloads is None or not downloads.is_dir():
+        return ""
+    wheels = sorted(downloads.glob("agentfleet_node-*.whl"), key=lambda p: p.stat().st_mtime)
+    return wheels[-1].name if wheels else ""
+
+
+def create_world_app(data_path: Path | None = None, downloads: Path | None = None, org: str = "") -> FastAPI:
+    hub = WorldHub(WorldState(data_path, org.strip()[:60]))
     app = FastAPI(title="agentfleet world")
     app.state.hub = hub
 
+    # Staff machines install from here: `curl -fsSL http://<server>:7500/install | bash`. The script and the
+    # files it fetches (node package, agentmesh-node per OS/arch) come from `downloads` (`make bundle`).
+    def render(kind: str, request: Request) -> str:
+        server = request.headers.get("host") or f"{request.url.hostname}:{request.url.port or 80}"
+        return (
+            INSTALL_TEMPLATES[kind].read_text()
+            .replace("__SERVER__", server)
+            .replace("__HOST__", server.rsplit(":", 1)[0])
+            .replace("__WHEEL__", latest_wheel(downloads))
+            .replace("__ORG__", _shell_safe(hub.state.org))
+        )
+
+    @app.get("/install", response_class=PlainTextResponse)
+    def install(request: Request) -> str:
+        """macOS / Linux: curl -fsSL http://<server>:7500/install | bash"""
+        return render("sh", request)
+
+    @app.get("/install.ps1", response_class=PlainTextResponse)
+    def install_windows(request: Request) -> str:
+        """Windows (PowerShell): irm http://<server>:7500/install.ps1 | iex"""
+        return render("ps1", request)
+
+    @app.get("/info")
+    def info() -> dict[str, Any]:
+        return {"org": hub.state.org, "installer": bool(latest_wheel(downloads))}
+
+    @app.get("/downloads/{name}")
+    def download(name: str) -> FileResponse:
+        path = (downloads / name) if downloads and _SAFE_NAME.match(name) else None
+        if path is None or not path.is_file():
+            raise HTTPException(404, "no such file on this server")
+        return FileResponse(path, filename=name)
+
     @app.get("/healthz")
     def healthz() -> dict[str, Any]:
-        return {"ok": True, "nodes": len(hub.clients), "agents": len(hub.state.agents)}
+        return {"ok": True, "org": hub.state.org, "nodes": len(hub.clients), "agents": len(hub.state.agents)}
 
     @app.websocket("/world/ws")
     async def world_ws(ws: WebSocket) -> None:

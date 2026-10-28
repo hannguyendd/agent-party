@@ -13,4 +13,8 @@ hub/data/
 dashboard/node_modules/
 dashboard/dist/
 
+# Staff installer build (make bundle)
+dist/
+node-server/src/agentfleet_node/static/
+
 .DS_Store

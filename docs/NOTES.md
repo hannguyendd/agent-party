@@ -170,10 +170,14 @@ env on every start (`Settings.apply_setup_file`).
 
 ```sh
 # Hub (once, always-on machine)
-make server HUB_HOST=<lan ip>           # hub (7400) + Office world server (7500)
+make server HUB_HOST=<lan ip> ORG=Taggle   # hub (7400) + Office world server (7500) + staff installer
 make hub-token DEVICE="han laptop"      # single-use token, send privately to each person
 
-# Each machine
+# Each staff machine (served by the world server; `make server` runs `make bundle` first)
+curl -fsSL http://<hub ip>:7500/install | bash      # macOS / Linux
+irm http://<hub ip>:7500/install.ps1 | iex          # Windows PowerShell
+
+# Developer machine (from the repo)
 make setup                              # once: check tools, install, build
 make up                                 # node + dashboard on http://127.0.0.1:9100; join in the browser
 # (manual alternative: make env OWNER=<name>, AGENTFLEET_WORLD_URL in .env, make serve, make mesh-node)
