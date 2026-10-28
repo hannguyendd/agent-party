@@ -141,7 +141,9 @@ function applyWorld(s: LiveState, e: WorldEvent): LiveState {
 export function useLiveState(openConversationId: string | null) {
   const [state, dispatch] = useReducer(reducer, initial)
   const openRef = useRef(openConversationId)
-  openRef.current = openConversationId
+  useEffect(() => {
+    openRef.current = openConversationId
+  }, [openConversationId])
 
   const refreshNode = useCallback(async () => {
     try {

@@ -71,12 +71,6 @@ for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
   const manager = ((x === 39 || x === 55) && y >= 15 && y <= 30) || ((y === 15 || y === 30) && x >= 39)
   if ((outer && !inside(DOOR, x, y)) || (manager && !inside(MANAGER_DOOR, x, y))) WALLS.push({ x, y })
 }
-export function zoneAt(x: number, y: number): Zone {
-  if (inside(MANAGER, x, y)) return 'manager'
-  if (inside(PANTRY, x, y)) return 'pantry'
-  if (y < 6 && x >= 8 && x <= 21) return 'entrance'
-  return 'office'
-}
 export const BLOCKED: boolean[][] = Array.from({ length: ROWS }, () => Array<boolean>(COLS).fill(false))
 for (const p of WALLS) BLOCKED[p.y][p.x] = true
 for (const r of [...DESKS.map(d => d.table), ...DIVIDERS, ...FURNITURE]) {

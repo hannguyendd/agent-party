@@ -1,7 +1,8 @@
 import clsx from 'clsx'
 import { useState } from 'react'
 import { api, type Approval } from '../api'
-import { ErrorLine, Json, errMsg, timeAgo } from './ui'
+import { ErrorLine, Json } from './ui'
+import { errMsg, timeAgo } from './format'
 
 export function ApprovalCard({ approval, context }: { approval: Approval; context?: React.ReactNode }) {
   const [reason, setReason] = useState('')

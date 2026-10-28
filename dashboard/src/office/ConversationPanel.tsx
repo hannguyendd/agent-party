@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { api, type Approval, type Conversation, type ConversationStatus, type Message } from '../api'
 import { ApprovalCard } from '../components/ApprovalCard'
-import { errMsg } from '../components/ui'
+import { errMsg } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
 import { AttachBar } from './AttachBar'

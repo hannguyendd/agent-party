@@ -149,7 +149,7 @@ export class OfficeScene extends Phaser.Scene {
   private stillMs = 0
   private zoomAnchor: { screen: Point; world: Point } | null = null
   private hover!: Phaser.GameObjects.Graphics
-  private trails!: Phaser.GameObjects.Graphics
+  private feedback!: Phaser.GameObjects.Graphics // destination markers and the unreachable cross
   private markers: { x: number; y: number; agentId: string; born: number; bad?: boolean; sprite?: Phaser.GameObjects.Sprite }[] = []
   callbacks: SceneCallbacks | null = null
   onReady: (() => void) | null = null
@@ -200,7 +200,7 @@ export class OfficeScene extends Phaser.Scene {
     this.deskHighlight = this.add.graphics().setDepth(1)
     this.selectBox = this.add.graphics().setDepth(10_000)
     this.hover = this.add.graphics().setDepth(3)
-    this.trails = this.add.graphics().setDepth(3)
+    this.feedback = this.add.graphics().setDepth(3)
 
     const cam = this.cameras.main
     cam.setBackgroundColor(0xe6ddd8)
@@ -1041,7 +1041,7 @@ export class OfficeScene extends Phaser.Scene {
   /** One destination marker per walking agent of mine (the latest click wins); a red cross for a click
    *  nobody can reach. */
   private drawFeedback(time: number) {
-    const g = this.trails.clear()
+    const g = this.feedback.clear()
     this.markers = this.markers.filter((m) => {
       const age = time - m.born
       const s = this.sprites.get(m.agentId)

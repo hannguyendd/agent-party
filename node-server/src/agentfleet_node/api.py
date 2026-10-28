@@ -2,6 +2,7 @@
 
 import asyncio
 import base64
+import contextlib
 import binascii
 import uuid
 from pathlib import Path
@@ -393,10 +394,8 @@ async def office_assign(body: AssignIn, request: Request) -> dict[str, str]:
     context_id = uuid.uuid4().hex
 
     async def run() -> None:
-        try:
+        with contextlib.suppress(Exception):  # OutboundClient already recorded any failure on the conversation
             await node.outbound.send(body.from_agent, body.to_agent, body.text, context_id=context_id, kind="assignment", timeout_s=timeout)
-        except Exception:
-            pass  # OutboundClient already recorded the failure on the conversation
 
     task = asyncio.create_task(run())
     _background.add(task)

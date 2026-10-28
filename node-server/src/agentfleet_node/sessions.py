@@ -13,7 +13,7 @@ import json
 import logging
 import re
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from claude_agent_sdk import (

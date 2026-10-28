@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { api, type Agent, type AgentIn, type Skill } from '../api'
-import { ErrorLine, TagInput, errMsg } from './ui'
+import { ErrorLine, TagInput } from './ui'
+import { errMsg } from './format'
 
 const SOURCES = ['user', 'project', 'local'] as const
 

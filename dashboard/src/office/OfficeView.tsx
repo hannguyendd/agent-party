@@ -3,7 +3,7 @@ import type Phaser from 'phaser'
 import { api, type OfficeAgent, type OfficeTarget } from '../api'
 import type { LiveState } from '../useLiveState'
 import type { SideTab, View } from '../App'
-import { errMsg } from '../components/ui'
+import { errMsg } from '../components/format'
 import { ownerCss } from './skins'
 import type { OfficeScene, PeerClick, SceneCallbacks, SceneData } from './OfficeScene'
 import { Icon } from './Icon'
@@ -112,18 +112,20 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
     return rows.sort((a, b) => Number(live(b)) - Number(live(a)) || b.updated_at.localeCompare(a.updated_at))[0]
   }
   const conv = openConv ? state.conversations[openConv] : undefined
+  // Streaming text arrives per token; the map's bubbles only need a few updates a second.
+  const partial = useThrottled(state.partial, 250)
   const ownDesk = Object.entries(desks).find(([, owner]) => owner === me)?.[0]
   const sceneData: SceneData = useMemo(() => ({
     me, agents, desks, owners: isPreview ? { preview: { connected: true, present: true } } : office?.owners ?? {},
     bubbles: Object.fromEntries(agents.filter(a => a.activity && ['running', 'awaiting_approval', 'awaiting_owner'].includes(a.activity.status)).map(a => {
       // Only my own conversations show words (CONTEXT.md privacy rule); everyone else sees typing dots.
       const c = a.owner === me && !isPreview ? latestConv(a.agent_id) : undefined
-      const live = c ? (state.partial[c.id] ?? '').slice(-60).trim() : ''
+      const live = c ? (partial[c.id] ?? '').slice(-60).trim() : ''
       return [a.agent_id, live ? '…' + live : '…']
     })),
     icons: Object.fromEntries(agents.filter(a => a.activity?.status === 'awaiting_approval').map(a => [a.agent_id, '!'])), pickingDesk,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [me, agents, desks, isPreview, office?.owners, pickingDesk, state.partial, state.conversations])
+  }), [me, agents, desks, isPreview, office?.owners, pickingDesk, partial, state.conversations])
 
   const perform = async (action: () => Promise<unknown>) => {
     if (!canAct) return
@@ -303,4 +305,18 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
     </div>
     <footer className="office-footer"><span className={`office-connection ${isPreview || office?.connected ? 'is-online' : ''}`}>{isPreview ? 'Design preview (sample agents)' : office?.connected ? 'Office connected' : 'Reconnecting'}</span><span>{agents.length} agents · {presentCount} {presentCount === 1 ? 'person' : 'people'} in the office</span></footer>
   </section>
+}
+
+/** Hold a fast-changing value and release it at most every `ms` milliseconds. */
+function useThrottled<T>(value: T, ms: number): T {
+  const [held, setHeld] = useState(value)
+  const last = useRef(0)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      last.current = Date.now()
+      setHeld(value)
+    }, Math.max(0, last.current + ms - Date.now()))
+    return () => clearTimeout(t)
+  }, [value, ms])
+  return held
 }

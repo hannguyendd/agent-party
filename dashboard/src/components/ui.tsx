@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { useState, type KeyboardEvent, type ReactNode } from 'react'
-import type { ConversationStatus, Direction } from '../api'
+import type { ConversationStatus } from '../api'
 
 const STATUS: Record<ConversationStatus, { label: string; cls: string }> = {
   running: { label: 'running', cls: 'bg-blue-500/15 text-blue-700 dark:text-blue-300' },
@@ -22,16 +22,6 @@ export function StatusBadge({ status }: { status: ConversationStatus }) {
   )
 }
 
-export function DirectionIcon({ direction }: { direction: Direction }) {
-  const map = { inbound: ['↙', 'inbound: a peer started it'], outbound: ['↗', 'outbound: your agent started it'], local: ['●', 'local session'] }
-  const [glyph, title] = map[direction]
-  return (
-    <span title={title} className="w-3 shrink-0 text-center font-mono text-[11px] text-muted">
-      {glyph}
-    </span>
-  )
-}
-
 export function Pill({ children, className }: { children: ReactNode; className?: string }) {
   return <span className={clsx('rounded border border-line px-1.5 py-px font-mono text-[11px]', className)}>{children}</span>
 }
@@ -42,20 +32,6 @@ export function Json({ value }: { value: unknown }) {
       {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
     </pre>
   )
-}
-
-export function timeAgo(iso: string): string {
-  const t = Date.parse(iso.endsWith('Z') || /[+-]\d\d:\d\d$/.test(iso) ? iso : iso + 'Z')
-  const s = Math.max(0, (Date.now() - t) / 1000)
-  if (s < 60) return 'now'
-  if (s < 3600) return `${Math.floor(s / 60)}m`
-  if (s < 86400) return `${Math.floor(s / 3600)}h`
-  return `${Math.floor(s / 86400)}d`
-}
-
-export function clockTime(iso: string): string {
-  const t = Date.parse(iso.endsWith('Z') || /[+-]\d\d:\d\d$/.test(iso) ? iso : iso + 'Z')
-  return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
 /** Chips input: type and press Enter/comma to add; Backspace removes the last chip. */
@@ -101,4 +77,3 @@ export function ErrorLine({ error }: { error: string | null }) {
   return <div className="rounded border border-red-500/30 bg-red-500/10 px-2 py-1 text-xs text-red-700 dark:text-red-300">{error}</div>
 }
 
-export const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e))

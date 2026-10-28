@@ -1,7 +1,8 @@
 import clsx from 'clsx'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api, type DirectoryEntry } from '../api'
-import { ErrorLine, errMsg } from './ui'
+import { ErrorLine } from './ui'
+import { errMsg } from './format'
 
 const LOC: Record<DirectoryEntry['location'], string> = {
   local: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
@@ -11,24 +12,28 @@ const LOC: Record<DirectoryEntry['location'], string> = {
 
 export function Directory() {
   const [rows, setRows] = useState<DirectoryEntry[] | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [q, setQ] = useState('')
 
-  const load = useCallback(async () => {
+  // Bumping `tick` refetches; state is only set from the promise callbacks.
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    let live = true
+    api
+      .directory()
+      .then((r) => live && setRows(r))
+      .catch((e) => live && setError(errMsg(e)))
+      .finally(() => live && setLoading(false))
+    return () => {
+      live = false
+    }
+  }, [tick])
+  const load = () => {
     setLoading(true)
     setError(null)
-    try {
-      setRows(await api.directory())
-    } catch (e) {
-      setError(errMsg(e))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-  useEffect(() => {
-    void load()
-  }, [load])
+    setTick((t) => t + 1)
+  }
 
   const needle = q.toLowerCase()
   const shown = (rows ?? []).filter((r) => !needle || `${r.agent_id} ${r.name} ${r.description}`.toLowerCase().includes(needle))

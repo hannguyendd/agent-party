@@ -3,7 +3,8 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { api, type Conversation, type FileRef, type Message } from '../api'
-import { Json, clockTime } from '../components/ui'
+import { Json } from '../components/ui'
+import { clockTime } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { who, type Who } from './people'
 import { SKIN_BY_ID, ownerCss } from './skins'

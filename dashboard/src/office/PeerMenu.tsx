@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { api, type Conversation, type OfficeAgent } from '../api'
-import { errMsg } from '../components/ui'
+import { errMsg } from '../components/format'
 import type { PeerClick } from './OfficeScene'
 import { Icon } from './Icon'
 import { ownerCss } from './skins'

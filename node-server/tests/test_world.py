@@ -173,7 +173,6 @@ async def test_open_dashboard_marks_owner_present(node_factory, tmp_path):
 
 
 async def test_office_disabled_without_world_url(node_factory):
-    async with node_factory("han") as a:
-        async with httpx.AsyncClient(base_url=a.url) as c:
-            assert (await c.get("/api/office")).json()["enabled"] is False
-            assert (await c.post("/api/office/desk", json={"desk": "D1"})).status_code == 409
+    async with node_factory("han") as a, httpx.AsyncClient(base_url=a.url) as c:
+        assert (await c.get("/api/office")).json()["enabled"] is False
+        assert (await c.post("/api/office/desk", json={"desk": "D1"})).status_code == 409

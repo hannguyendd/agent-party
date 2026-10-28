@@ -8,6 +8,7 @@ Privacy: only agent IDs, names, statuses and directions leave the node; never ti
 """
 
 import asyncio
+import contextlib
 import json
 import logging
 from typing import Any
@@ -60,10 +61,8 @@ class WorldClient:
         for t in self._tasks:
             t.cancel()
         for t in self._tasks:
-            try:
+            with contextlib.suppress(asyncio.CancelledError, Exception):
                 await t
-            except (asyncio.CancelledError, Exception):
-                pass
         self._tasks = []
 
     async def _run(self) -> None:
