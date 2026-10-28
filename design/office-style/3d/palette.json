@@ -1,0 +1,359 @@
+{
+  "default": "pastel",
+  "size": 256,
+  "cellSize": 32,
+  "variants": [
+    "office",
+    "pastel"
+  ],
+  "colors": {
+    "floor": {
+      "cell": [
+        0,
+        0
+      ],
+      "uv": [
+        0.0625,
+        0.0625
+      ],
+      "office": "#dcc18f",
+      "pastel": "#f8dcc3"
+    },
+    "seam": {
+      "cell": [
+        1,
+        0
+      ],
+      "uv": [
+        0.1875,
+        0.0625
+      ],
+      "office": "#c6a874",
+      "pastel": "#dfb798"
+    },
+    "wall": {
+      "cell": [
+        2,
+        0
+      ],
+      "uv": [
+        0.3125,
+        0.0625
+      ],
+      "office": "#ecebe4",
+      "pastel": "#f5d6bc"
+    },
+    "blind": {
+      "cell": [
+        3,
+        0
+      ],
+      "uv": [
+        0.4375,
+        0.0625
+      ],
+      "office": "#cfd0ca",
+      "pastel": "#cfeee2"
+    },
+    "blindSide": {
+      "cell": [
+        4,
+        0
+      ],
+      "uv": [
+        0.5625,
+        0.0625
+      ],
+      "office": "#b2b3ad",
+      "pastel": "#b8a9d6"
+    },
+    "gap": {
+      "cell": [
+        5,
+        0
+      ],
+      "uv": [
+        0.6875,
+        0.0625
+      ],
+      "office": "#3a3a3c",
+      "pastel": "#5c6489"
+    },
+    "wood": {
+      "cell": [
+        6,
+        0
+      ],
+      "uv": [
+        0.8125,
+        0.0625
+      ],
+      "office": "#e6d3b3",
+      "pastel": "#eaa775"
+    },
+    "frame": {
+      "cell": [
+        7,
+        0
+      ],
+      "uv": [
+        0.9375,
+        0.0625
+      ],
+      "office": "#f2f2ee",
+      "pastel": "#a8a2bf"
+    },
+    "chair": {
+      "cell": [
+        0,
+        1
+      ],
+      "uv": [
+        0.0625,
+        0.1875
+      ],
+      "office": "#34343a",
+      "pastel": "#8fcfb0"
+    },
+    "dark": {
+      "cell": [
+        1,
+        1
+      ],
+      "uv": [
+        0.1875,
+        0.1875
+      ],
+      "office": "#2a2c33",
+      "pastel": "#3a3f5a"
+    },
+    "screen": {
+      "cell": [
+        2,
+        1
+      ],
+      "uv": [
+        0.3125,
+        0.1875
+      ],
+      "office": "#8fc7e8",
+      "pastel": "#a9def0"
+    },
+    "skin": {
+      "cell": [
+        3,
+        1
+      ],
+      "uv": [
+        0.4375,
+        0.1875
+      ],
+      "office": "#f6d2b8",
+      "pastel": "#f6d2b8"
+    },
+    "hair": {
+      "cell": [
+        4,
+        1
+      ],
+      "uv": [
+        0.5625,
+        0.1875
+      ],
+      "office": "#302c38",
+      "pastel": "#302c38"
+    },
+    "shirt": {
+      "cell": [
+        5,
+        1
+      ],
+      "uv": [
+        0.6875,
+        0.1875
+      ],
+      "office": "#77a8a4",
+      "pastel": "#8fcfb0"
+    },
+    "pants": {
+      "cell": [
+        6,
+        1
+      ],
+      "uv": [
+        0.8125,
+        0.1875
+      ],
+      "office": "#505772",
+      "pastel": "#5c6489"
+    },
+    "white": {
+      "cell": [
+        7,
+        1
+      ],
+      "uv": [
+        0.9375,
+        0.1875
+      ],
+      "office": "#fff8ed",
+      "pastel": "#fbf6f0"
+    },
+    "peach": {
+      "cell": [
+        0,
+        2
+      ],
+      "uv": [
+        0.0625,
+        0.3125
+      ],
+      "office": "#edae9f",
+      "pastel": "#f2a777"
+    },
+    "mint": {
+      "cell": [
+        1,
+        2
+      ],
+      "uv": [
+        0.1875,
+        0.3125
+      ],
+      "office": "#b5d8c4",
+      "pastel": "#8fcfb0"
+    },
+    "lavender": {
+      "cell": [
+        2,
+        2
+      ],
+      "uv": [
+        0.3125,
+        0.3125
+      ],
+      "office": "#c7bbdc",
+      "pastel": "#b8a9d6"
+    },
+    "leaf": {
+      "cell": [
+        3,
+        2
+      ],
+      "uv": [
+        0.4375,
+        0.3125
+      ],
+      "office": "#5c9870",
+      "pastel": "#5aa65e"
+    },
+    "soil": {
+      "cell": [
+        4,
+        2
+      ],
+      "uv": [
+        0.5625,
+        0.3125
+      ],
+      "office": "#705443",
+      "pastel": "#855d46"
+    },
+    "orange": {
+      "cell": [
+        5,
+        2
+      ],
+      "uv": [
+        0.6875,
+        0.3125
+      ],
+      "office": "#df9b63",
+      "pastel": "#eaa775"
+    },
+    "fur": {
+      "cell": [
+        6,
+        2
+      ],
+      "uv": [
+        0.8125,
+        0.3125
+      ],
+      "office": "#dda16d",
+      "pastel": "#e8ad83"
+    },
+    "cat": {
+      "cell": [
+        7,
+        2
+      ],
+      "uv": [
+        0.9375,
+        0.3125
+      ],
+      "office": "#b4a7c2",
+      "pastel": "#b4a7c2"
+    },
+    "cream": {
+      "cell": [
+        0,
+        3
+      ],
+      "uv": [
+        0.0625,
+        0.4375
+      ],
+      "office": "#f8eddb",
+      "pastel": "#fbefd9"
+    },
+    "sage": {
+      "cell": [
+        1,
+        3
+      ],
+      "uv": [
+        0.1875,
+        0.4375
+      ],
+      "office": "#709c78",
+      "pastel": "#83b18c"
+    },
+    "armor": {
+      "cell": [
+        2,
+        3
+      ],
+      "uv": [
+        0.3125,
+        0.4375
+      ],
+      "office": "#b3b6c4",
+      "pastel": "#c8c4d4"
+    },
+    "glass": {
+      "cell": [
+        3,
+        3
+      ],
+      "uv": [
+        0.4375,
+        0.4375
+      ],
+      "office": "#cfe9f2",
+      "pastel": "#cfe9f2"
+    },
+    "grain": {
+      "cell": [
+        4,
+        3
+      ],
+      "uv": [
+        0.5625,
+        0.4375
+      ],
+      "office": "#d6bb88",
+      "pastel": "#efd2b7"
+    }
+  }
+}

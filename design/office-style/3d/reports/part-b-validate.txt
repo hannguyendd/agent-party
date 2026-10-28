@@ -1,0 +1,47 @@
+dev-hoodie bounds: height 1.460, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/dev-hoodie.glb: 1884 / 3000 triangles
+designer bounds: height 1.490, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/designer.glb: 1900 / 3000 triangles
+lead bounds: height 1.500, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/lead.glb: 2488 / 3000 triangles
+shiba bounds: height 1.490, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/shiba.glb: 1772 / 3000 triangles
+cat bounds: height 1.490, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/cat.glb: 1948 / 3000 triangles
+penguin bounds: height 1.450, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/penguin.glb: 1928 / 3000 triangles
+alien bounds: height 1.454, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/alien.glb: 1892 / 3000 triangles
+robot bounds: height 1.450, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/robot.glb: 1644 / 3000 triangles
+mage bounds: height 1.490, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/mage.glb: 1668 / 3000 triangles
+knight bounds: height 1.465, width 0.800; hierarchy + 8 loopable clips PASS
+PASS characters/knight.glb: 2156 / 3000 triangles
+ranger bounds: height 1.490, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/ranger.glb: 1860 / 3000 triangles
+healer bounds: height 1.470, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/healer.glb: 1868 / 3000 triangles
+rogue bounds: height 1.480, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/rogue.glb: 1900 / 3000 triangles
+berserker bounds: height 1.428, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/berserker.glb: 1684 / 3000 triangles
+slime bounds: height 1.490, width 0.723; hierarchy + 8 loopable clips PASS
+PASS characters/slime.glb: 652 / 3000 triangles
+dragon bounds: height 1.428, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/dragon.glb: 1988 / 3000 triangles
+PASS props/desk.glb: 444 / 1500 triangles
+PASS props/monitor-dual.glb: 292 / 1500 triangles
+PASS props/monitor-arm.glb: 244 / 300 triangles
+PASS props/keyboard.glb: 192 / 300 triangles
+PASS props/office-chair.glb: 1256 / 1500 triangles
+PASS props/pc-tower.glb: 348 / 1500 triangles
+PASS props/desk-plant.glb: 300 / 300 triangles
+PASS props/mug.glb: 184 / 300 triangles
+PASS kit/floor-tile.glb: 480 / 1500 triangles
+PASS kit/wall-straight.glb: 108 / 1500 triangles
+PASS kit/wall-blind.glb: 300 / 1500 triangles
+PASS kit/wall-column.glb: 108 / 1500 triangles
+PASS kit/wall-corner.glb: 216 / 1500 triangles
+PASS all registered models; embedded textures, palette UVs, materials, axes/origins, dimensions, budgets, lead hierarchy and loop endpoints.
+PASS style-scene: 4 chairs face their desks; monitor fronts oppose chair fronts.

@@ -1,0 +1,17 @@
+import {lead} from './lead';
+import {create as r0} from './dev-hoodie';
+import {create as r1} from './designer';
+import {create as r3} from './shiba';
+import {create as r4} from './cat';
+import {create as r5} from './penguin';
+import {create as r6} from './alien';
+import {create as r7} from './robot';
+import {create as r8} from './mage';
+import {create as r9} from './knight';
+import {create as r10} from './ranger';
+import {create as r11} from './healer';
+import {create as r12} from './rogue';
+import {create as r13} from './berserker';
+import {create as r14} from './slime';
+import {create as r15} from './dragon';
+export const characters={'dev-hoodie':r0,'designer':r1,'lead':lead,'shiba':r3,'cat':r4,'penguin':r5,'alien':r6,'robot':r7,'mage':r8,'knight':r9,'ranger':r10,'healer':r11,'rogue':r12,'berserker':r13,'slime':r14,'dragon':r15};

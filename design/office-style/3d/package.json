@@ -1,0 +1,1 @@
+{"name":"office-3d-style","private":true,"type":"module","scripts":{"build":"bun src/build.ts","validate":"bun src/validate.ts","preview":"bun src/preview.ts"},"dependencies":{"three":"0.180.0","@gltf-transform/core":"4.2.1","@gltf-transform/functions":"4.2.1","playwright":"1.56.1","pngjs":"7.0.0"}}
