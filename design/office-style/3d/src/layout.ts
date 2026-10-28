@@ -1,3 +1,4 @@
+import {curateF} from './layout-f';
 import {populateD} from './populate-d';
 import {d12Furniture} from './d12-plan';
 import {PNG} from 'pngjs';import {readFile,writeFile} from 'node:fs/promises';
@@ -39,5 +40,5 @@ for(const o of d12Furniture)put(o.model,o.x,o.z,o.rot,{area:o.area});
 wall('wall-corner',1.5,3.5,0,'north');
 for(let z=4;z<34;z++)for(let x=2;x<54;x++)put(x>=41&&z>=15?'floor-manager':'floor-tile',x+.5,z+.5,0,{walkable:true});
 const layout={version:1,grid:{cols:56,rows:36},palette:'pastel',objects,walls,notes:{seatChairs:'User-approved nonblocking visual exception on exactly the seats.json tiles',managerDoorway:{x:40.5,z:[15,17]},foldingFurniture:'Built but unplaced; see REQUESTS-3D.md'}};
-await populateD(layout,meta);
+await populateD(layout,meta);await curateF(layout,meta);
 await writeFile('reports/layout-adjustments.json',JSON.stringify(adjustments,null,2)+'\n');return layout;}

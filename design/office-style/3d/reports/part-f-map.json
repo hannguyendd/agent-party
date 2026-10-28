@@ -1,0 +1,13 @@
+{
+  "revision": "f",
+  "changedPixels": 52574,
+  "raisedMeetingTiles": "x=48..50, y=29..32",
+  "paletteColors": 32,
+  "frozen": {
+    "collision.png": "bbf25bc5530ebc134632108df4538439121abea48c8db3eea7ba0fcaefc3a3f4",
+    "collision@16x.png": "6abfaad831ca12bbbc594a7a5694b07b91bfb68bc7398145f5aa59c76d1d8e9e",
+    "seats.json": "cb4b631d346f487d680ae9c870df8205ebc0a402798a79a62c72c7922b96a1fd"
+  },
+  "unrelatedPixels": "unchanged",
+  "collisionOverlay": "Frozen by owner instruction; intentionally not recomposited against the edited plate."
+}

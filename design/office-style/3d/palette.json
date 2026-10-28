@@ -28,8 +28,8 @@
         0.1875,
         0.0625
       ],
-      "office": "#c6a874",
-      "pastel": "#dfb798"
+      "office": "#d1b989",
+      "pastel": "#f3d6be"
     },
     "wall": {
       "cell": [
@@ -89,7 +89,7 @@
         0.0625
       ],
       "office": "#e6d3b3",
-      "pastel": "#eaa775"
+      "pastel": "#e9bc99"
     },
     "frame": {
       "cell": [
@@ -353,7 +353,7 @@
         0.4375
       ],
       "office": "#d6bb88",
-      "pastel": "#efd2b7"
+      "pastel": "#f6d9c0"
     },
     "aluminium": {
       "cell": [
@@ -414,6 +414,18 @@
       ],
       "office": "#d9efe1",
       "pastel": "#d9efe1"
+    },
+    "desktop": {
+      "cell": [
+        2,
+        4
+      ],
+      "uv": [
+        0.3125,
+        0.5625
+      ],
+      "office": "#f6d1af",
+      "pastel": "#fdcdaa"
     }
   }
 }

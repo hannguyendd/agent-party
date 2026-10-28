@@ -366,7 +366,7 @@
       ]
     ],
     "models": [
-      "desk-long"
+      "spine-middle"
     ],
     "uncoveredAfter": 0
   },
@@ -608,7 +608,9 @@
       ]
     ],
     "models": [
-      "armchair"
+      "guest-chair",
+      "workstation-desk-compact",
+      "pc-tower"
     ],
     "uncoveredAfter": 0
   },
@@ -693,9 +695,7 @@
         27
       ]
     ],
-    "models": [
-      "guest-chair"
-    ],
+    "models": [],
     "uncoveredAfter": 0
   },
   {
@@ -728,7 +728,7 @@
       ]
     ],
     "models": [
-      "desk-long"
+      "spine-bench"
     ],
     "uncoveredAfter": 0
   },
@@ -768,7 +768,7 @@
       ]
     ],
     "models": [
-      "desk-long"
+      "spine-bench"
     ],
     "uncoveredAfter": 0
   },
@@ -808,7 +808,7 @@
       ]
     ],
     "models": [
-      "desk-long"
+      "spine-bench"
     ],
     "uncoveredAfter": 0
   },
@@ -848,7 +848,7 @@
       ]
     ],
     "models": [
-      "desk-long"
+      "spine-bench"
     ],
     "uncoveredAfter": 0
   },
@@ -872,7 +872,7 @@
       ]
     ],
     "models": [
-      "desk-long"
+      "spine-bench"
     ],
     "uncoveredAfter": 0
   }

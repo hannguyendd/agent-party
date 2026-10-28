@@ -1,3 +1,245 @@
+# Office 3D — Part F
+
+Workstations now follow the sitter’s reach rather than the depth of the 2D desk sprites. The lower manager lounge is replaced by a four-person meeting corner. Collision, collision@16x and seats are byte-identical to the Part E snapshots. Only background.png and foreground.png change in the shared map folder.
+
+## Workstations
+
+| Type | Change |
+|---|---|
+| D1–D8 | Own 1.8 × 1.4 desk; near edge 0.55 tile ahead; dual monitor 1.2 tiles from sitter; central low cabinet/planter spine. |
+| D9–D16 | Same own-desk reach; the deep bench centre becomes a continuous low cabinet/planter spine, without extra bare desk tops or an unpictured shared printer. |
+| M1/M2 | Own compact-depth desks and a shared low cabinet spine; monitors stay on the separate sitter axes. |
+| MGR | 0.92 × 1.4 compact desk and one monitor: its front approach is only one blocked tile wide. This is the necessary exception to the requested approximate 1.6–2.0 width. |
+| HR | 1.8 × 0.9 reception desk biased 0.5 tile left of the seat axis to preserve the right-end entry gap. Display and keyboard remain exactly on the seat axis. The desk cannot be laterally centred without crossing the walkable gap. |
+
+Every monitor is 1.2 tiles from its sitter. Keyboards are 0.77 tile ahead, with the mouse beside them. Towers are below the same desk; all desktop items sit on the side portions of that same surface. All 20 seat-chair centres, rotations and seat ids remain unchanged. Mint/lavender variants change only chair upholstery.
+
+## New and removed models
+
+| New model | Triangles | Instances |
+|---|---:|---:|
+| workstation-desk | 288 | 18 |
+| workstation-desk-compact | 288 | 1 |
+| monitor-compact | 192 | 2 |
+| keyboard-compact | 192 | 1 |
+| mouse-compact | 48 | 20 |
+| spine-left | 492 | 4 |
+| spine-middle | 588 | 1 |
+| spine-bench | 684 | 4 |
+| meeting-table | 240 | 1 |
+| meeting-chair-mint | 348 | 2 |
+| meeting-chair-lavender | 348 | 2 |
+| office-chair-lavender | 1256 | 10 |
+| rug-meeting-corner | 48 | 1 |
+
+The old desk, desk-long, desk-wing, desk-return and desk-apron assets remain in the reusable library but are no longer placed. The duplicated extension sofa and lounge table are removed from the layout. Its palm stays at (52.5,32.5). The redundant armchair in the MGR approach is removed, and the two existing visitor chairs move up to the shallower MGR desk; all remain on blocked tiles. Four new chairs and one meeting table stay entirely inside blocked tiles x=48..50, rows=29..32, on a lavender rug with a clean margin before the palm. Native two-pixel map art uses the original 32-colour palette; no lower sofa or round-table sprites are copied.
+
+## Colour and character polish
+
+The desktop palette cell is sampled from the plate’s peach table top (#FDCDaa). Wood is less saturated; floor seams/grain are only slightly darker than the floor. New characters have smoother rounded heads, close-fitting hair caps without protruding fringes, eye highlights and softer smiles, a distinct bun/hood/pockets, and a rounder penguin beak. The existing 16 ids, rigid hierarchy, hidden held items and all eight animation clips remain intact.
+
+| Skin | Triangles / 3000 |
+|---|---:|
+| dev-hoodie | 2708 |
+| designer | 2404 |
+| lead | 2460 |
+| shiba | 2140 |
+| cat | 2316 |
+| penguin | 2312 |
+| alien | 2356 |
+| robot | 1916 |
+| mage | 2000 |
+| knight | 2712 |
+| ranger | 2640 |
+| healer | 2548 |
+| rogue | 2680 |
+| berserker | 2240 |
+| slime | 1396 |
+| dragon | 2320 |
+
+## Checks added
+
+- Every station monitor is 1.0–1.4 tiles away, within ±0.25 of the sitter axis, and faces the sitter.
+- Own desk near edge 0.5–0.6 ahead and depth ≤1.5; support ids and actual footprint containment keep each item on its own desk.
+- Keyboard/mouse are between sitter and monitor; side clutter keeps the keyboard reach area clear.
+- No sizeable desk or meeting table is empty. Cabinet spines are low storage/planters, not unused desk surfaces.
+- Meeting table/chairs stay in the frozen 3 × 4 rectangle. All raised bounds, wall mounts, flat decals and 20 seat exceptions remain validated.
+- Export verifies byte identity of collision.png, collision@16x.png and seats.json. The frozen collision overlay is intentionally not recomposited against the edited plate, as explicitly requested.
+- Negative checks reject distant/off-axis/backward monitors, wrong desk support, empty desks, collision overlaps and chair changes.
+
+212,787 scene triangles, 138 models, 20/20 seat chairs. 137 explicitly empty padding tiles in 31 reasoned clusters; no unlisted uncovered tiles.
+
+```text
+PASS characters/dev-hoodie.glb: 2708/3000 triangles
+PASS characters/designer.glb: 2404/3000 triangles
+PASS characters/lead.glb: 2460/3000 triangles
+PASS characters/shiba.glb: 2140/3000 triangles
+PASS characters/cat.glb: 2316/3000 triangles
+PASS characters/penguin.glb: 2312/3000 triangles
+PASS characters/alien.glb: 2356/3000 triangles
+PASS characters/robot.glb: 1916/3000 triangles
+PASS characters/mage.glb: 2000/3000 triangles
+PASS characters/knight.glb: 2712/3000 triangles
+PASS characters/ranger.glb: 2640/3000 triangles
+PASS characters/healer.glb: 2548/3000 triangles
+PASS characters/rogue.glb: 2680/3000 triangles
+PASS characters/berserker.glb: 2240/3000 triangles
+PASS characters/slime.glb: 1396/3000 triangles
+PASS characters/dragon.glb: 2320/3000 triangles
+PASS props/desk.glb: 444/1500 triangles
+PASS props/monitor-dual.glb: 292/1500 triangles
+PASS props/monitor-arm.glb: 244/300 triangles
+PASS props/keyboard.glb: 192/300 triangles
+PASS props/office-chair.glb: 1256/1500 triangles
+PASS props/pc-tower.glb: 348/1500 triangles
+PASS props/desk-plant.glb: 300/300 triangles
+PASS props/mug.glb: 184/300 triangles
+PASS props/workstation-desk.glb: 288/1500 triangles
+PASS props/workstation-desk-compact.glb: 288/1500 triangles
+PASS props/monitor-compact.glb: 192/300 triangles
+PASS props/keyboard-compact.glb: 192/300 triangles
+PASS props/mouse-compact.glb: 48/300 triangles
+PASS props/spine-left.glb: 492/1500 triangles
+PASS props/spine-middle.glb: 588/1500 triangles
+PASS props/spine-bench.glb: 684/1500 triangles
+PASS props/meeting-table.glb: 240/1500 triangles
+PASS props/meeting-chair-mint.glb: 348/1500 triangles
+PASS props/meeting-chair-lavender.glb: 348/1500 triangles
+PASS props/office-chair-lavender.glb: 1256/1500 triangles
+PASS props/rug-meeting-corner.glb: 48/1500 triangles
+PASS props/desk-long.glb: 444/1500 triangles
+PASS props/cable-tray.glb: 48/300 triangles
+PASS props/monitor-single.glb: 158/300 triangles
+PASS props/mouse.glb: 100/300 triangles
+PASS props/monitor-riser.glb: 144/300 triangles
+PASS props/desk-shelf.glb: 144/300 triangles
+PASS props/power-strip.glb: 192/300 triangles
+PASS props/gaming-chair.glb: 1256/1500 triangles
+PASS props/stool.glb: 204/1500 triangles
+PASS props/photo-frame.glb: 98/300 triangles
+PASS props/water-bottle.glb: 180/300 triangles
+PASS props/figurine.glb: 208/300 triangles
+PASS props/reception-desk.glb: 204/1500 triangles
+PASS props/door-mat.glb: 48/1500 triangles
+PASS props/cabinet.glb: 396/1500 triangles
+PASS props/fridge.glb: 252/1500 triangles
+PASS props/counter.glb: 312/1500 triangles
+PASS props/sink.glb: 160/300 triangles
+PASS props/coffee-machine.glb: 264/300 triangles
+PASS props/jar.glb: 120/300 triangles
+PASS props/round-table.glb: 180/1500 triangles
+PASS props/bench.glb: 540/1500 triangles
+PASS props/shelf.glb: 408/1500 triangles
+PASS props/sofa.glb: 972/1500 triangles
+PASS props/armchair.glb: 972/1500 triangles
+PASS props/coffee-table.glb: 480/1500 triangles
+PASS props/whiteboard.glb: 444/1500 triangles
+PASS props/floor-lamp.glb: 130/1500 triangles
+PASS props/bookshelf.glb: 1488/1500 triangles
+PASS props/printer.glb: 252/1500 triangles
+PASS props/plant-large.glb: 300/1500 triangles
+PASS props/plant-small.glb: 300/1500 triangles
+PASS props/rug-lavender.glb: 48/1500 triangles
+PASS props/rug-mint.glb: 48/1500 triangles
+PASS props/folding-table.glb: 240/1500 triangles
+PASS props/folding-chair.glb: 528/1500 triangles
+PASS props/card-mat.glb: 348/1500 triangles
+PASS props/ludo-mat.glb: 1248/1500 triangles
+PASS props/document-tray.glb: 240/300 triangles
+PASS props/notebook.glb: 144/300 triangles
+PASS props/book-stack.glb: 144/300 triangles
+PASS props/pen-cup.glb: 204/300 triangles
+PASS props/headphones.glb: 192/300 triangles
+PASS props/desk-lamp.glb: 136/300 triangles
+PASS props/phone-stand.glb: 98/300 triangles
+PASS props/sticky-notes.glb: 96/300 triangles
+PASS props/snack-box.glb: 204/300 triangles
+PASS props/desk-cactus.glb: 220/300 triangles
+PASS props/tissue-box.glb: 204/300 triangles
+PASS props/microwave.glb: 252/300 triangles
+PASS props/kettle.glb: 200/300 triangles
+PASS props/toaster.glb: 224/300 triangles
+PASS props/fruit-bowl.glb: 140/300 triangles
+PASS props/cup-rack.glb: 276/300 triangles
+PASS props/paper-towels.glb: 108/300 triangles
+PASS props/filing-cabinet.glb: 396/1500 triangles
+PASS props/storage-cube.glb: 300/1500 triangles
+PASS props/archive-boxes.glb: 468/1500 triangles
+PASS props/recycle-bin.glb: 204/1500 triangles
+PASS props/water-dispenser.glb: 312/1500 triangles
+PASS props/coat-rack.glb: 312/1500 triangles
+PASS props/shoe-rack.glb: 416/1500 triangles
+PASS props/bean-bag.glb: 128/1500 triangles
+PASS props/floor-palm.glb: 428/1500 triangles
+PASS props/printer-stand.glb: 600/1500 triangles
+PASS props/counter-wide.glb: 312/1500 triangles
+PASS props/counter-compact.glb: 312/1500 triangles
+PASS props/desk-apron.glb: 300/1500 triangles
+PASS props/desk-wing.glb: 300/1500 triangles
+PASS props/desk-return.glb: 300/1500 triangles
+PASS props/guest-chair.glb: 408/1500 triangles
+PASS props/lounge-table.glb: 456/1500 triangles
+PASS props/wall-clock.glb: 216/300 triangles
+PASS props/wall-shelf.glb: 400/1500 triangles
+PASS props/corkboard.glb: 336/1500 triangles
+PASS props/framed-poster.glb: 192/300 triangles
+PASS props/wall-tv.glb: 192/1500 triangles
+PASS props/hanging-planter.glb: 336/1500 triangles
+PASS props/company-sign.glb: 504/1500 triangles
+PASS props/calendar.glb: 192/300 triangles
+PASS props/wall-whiteboard.glb: 192/1500 triangles
+PASS props/sun-patch.glb: 2/1500 triangles
+PASS props/sun-patch-edge.glb: 3/1500 triangles
+PASS props/cable-cover.glb: 12/1500 triangles
+PASS props/rug-meeting.glb: 12/1500 triangles
+PASS props/floor-sticker.glb: 8/1500 triangles
+PASS kit/floor-tile.glb: 12/24 triangles
+PASS kit/wall-straight.glb: 108/1500 triangles
+PASS kit/wall-blind.glb: 300/1500 triangles
+PASS kit/wall-column.glb: 108/1500 triangles
+PASS kit/wall-corner.glb: 216/1500 triangles
+PASS kit/wall-door.glb: 420/1500 triangles
+PASS kit/glass-wall.glb: 196/1500 triangles
+PASS kit/glass-post.glb: 108/1500 triangles
+PASS kit/air-conditioner.glb: 144/1500 triangles
+PASS kit/picture-frame.glb: 192/1500 triangles
+PASS kit/window-wall.glb: 458/1500 triangles
+PASS kit/wall-half.glb: 108/1500 triangles
+PASS kit/door-glass-double.glb: 496/1500 triangles
+PASS kit/door-glass.glb: 104/1500 triangles
+PASS kit/floor-manager.glb: 12/24 triangles
+PASS 138 models; all budgets, embedded palette, dimensions, 16 character rigs/clips and both 0.6s/85-degree door animations.
+PASS layout: 1954 objects, 202 wall pieces; 20/20 seat chairs, including HR.
+PASS blocked coverage: 137 uncovered; 137 explicitly allowed furniture-padding / floor-shadow tiles.
+PASS wall decor: 46 supported mounts; projection <=0.12, deep-item bottom >=1.7; manager wall density curated to match the plate (Part E).
+PASS all 20 stations: monitors 1.0–1.4 tiles from sitter, axis offset <=0.25, screens face sitter; keyboard/mouse in reach; all equipment on its own desk; side clutter only; no empty sizeable desk.
+PASS north solid walls, west clear windows, 10 sunlight patches, frosted manager room extended to row 34, exactly two nonblocking doors.
+PASS shared map: exactly 34 authorized D12/HR collision edits; 20 seats and extras reachable; 32-color plate + binary foreground; unrelated pixels unchanged; collision.png, collision@16x.png and seats.json byte-identical to Part E.
+PASS scene triangles: 165607 static + 47180 preview characters = 212787/500000.
+PASS negative checks: chair, collision, coverage, mounts, doors, keyboard zones, filler caps, monitor reach/axis/facing, own-desk support and empty desks are rejected.
+```
+
+## Review outputs
+
+- previews/full-office-000.png
+- previews/full-office-090.png
+- previews/full-office-180.png
+- previews/full-office-270.png
+- previews/topdown-overlay.png
+- previews/left-bank-closeup.png
+- previews/bottom-bench-closeup.png
+- previews/manager-room-closeup.png
+- previews/manager-room-before-after-f.png
+- previews/characters-before-after.png
+- previews/lineup-16.png
+- previews/lead-turntable.png
+
+Sources: src/layout-f.ts, src/props/part-f.ts, src/map-f.ts, src/validate-layout-f.ts, src/characters/features.ts, src/characters/lead.ts, src/characters/skins.ts, plus build/preview/validation integration. FILES.md contains the full inventory. No app/server/docs/manifest changes or commit.
+
+---
+
+# Historical Part E (superseded by Part F above)
+
 # Office 3D — Part E curation
 
 Part E replaces the tile-filling pass with the furniture shown on the plate. No collision tile, seat record, wall footprint, or doorway changed. The only map-art corrections are the HR desktop props and the faint line at the former manager partition.

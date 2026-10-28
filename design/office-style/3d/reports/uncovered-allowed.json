@@ -1,6 +1,6 @@
 [
   {
-    "id": "e-padding-1",
+    "id": "f-padding-1",
     "tiles": [
       [
         10,
@@ -11,14 +11,22 @@
         4
       ],
       [
+        10,
+        5
+      ],
+      [
         12,
         4
+      ],
+      [
+        11,
+        5
       ]
     ],
-    "reason": "Floor/shadow padding around the reception or pantry cabinets drawn on the plate. Nearest real piece: reception-desk at (12.3, 5.45)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-2",
+    "id": "f-padding-2",
     "tiles": [
       [
         31,
@@ -29,10 +37,10 @@
         4
       ]
     ],
-    "reason": "Floor/shadow padding around the reception or pantry cabinets drawn on the plate. Nearest real piece: shelf at (34.5, 4.5)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-3",
+    "id": "f-padding-3",
     "tiles": [
       [
         36,
@@ -59,10 +67,10 @@
         5
       ]
     ],
-    "reason": "Floor/shadow padding around the reception or pantry cabinets drawn on the plate. Nearest real piece: shelf at (34.5, 4.5)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-4",
+    "id": "f-padding-4",
     "tiles": [
       [
         39,
@@ -137,10 +145,10 @@
         4
       ]
     ],
-    "reason": "Pantry furniture padding and floor/shadow gaps drawn between counter, fridge and table. Nearest real piece: counter at (46, 5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
   },
   {
-    "id": "e-padding-5",
+    "id": "f-padding-5",
     "tiles": [
       [
         52,
@@ -151,10 +159,10 @@
         6
       ]
     ],
-    "reason": "Pantry furniture padding and floor/shadow gaps drawn between counter, fridge and table. Nearest real piece: counter-wide at (53, 9.5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
   },
   {
-    "id": "e-padding-6",
+    "id": "f-padding-6",
     "tiles": [
       [
         9,
@@ -181,10 +189,10 @@
         7
       ]
     ],
-    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: reception-desk at (12.3, 5.45)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-7",
+    "id": "f-padding-7",
     "tiles": [
       [
         39,
@@ -195,20 +203,20 @@
         7
       ]
     ],
-    "reason": "Floor/shadow padding around the central workstations and plants; no storage boxes on the plate. Nearest real piece: fridge at (40.5, 6)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-8",
+    "id": "f-padding-8",
     "tiles": [
       [
         46,
         8
       ]
     ],
-    "reason": "Pantry furniture padding and floor/shadow gaps drawn between counter, fridge and table. Nearest real piece: stool at (44.5, 9.5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
   },
   {
-    "id": "e-padding-9",
+    "id": "f-padding-9",
     "tiles": [
       [
         47,
@@ -219,20 +227,20 @@
         10
       ]
     ],
-    "reason": "Pantry furniture padding and floor/shadow gaps drawn between counter, fridge and table. Nearest real piece: stool at (47.5, 9.5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
   },
   {
-    "id": "e-padding-10",
+    "id": "f-padding-10",
     "tiles": [
       [
         9,
         11
       ]
     ],
-    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: desk at (9.55, 9.5)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-11",
+    "id": "f-padding-11",
     "tiles": [
       [
         13,
@@ -243,20 +251,20 @@
         11
       ]
     ],
-    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: pc-tower at (14.389999999999999, 10.3)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-12",
+    "id": "f-padding-12",
     "tiles": [
       [
         36,
         11
       ]
     ],
-    "reason": "Floor/shadow padding around the central workstations and plants; no storage boxes on the plate. Nearest real piece: water-dispenser at (41.5, 7.5)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-13",
+    "id": "f-padding-13",
     "tiles": [
       [
         24,
@@ -287,10 +295,10 @@
         12
       ]
     ],
-    "reason": "Floor/shadow padding around the central workstations and plants; no storage boxes on the plate. Nearest real piece: plant-small at (27.5, 11.5)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-14",
+    "id": "f-padding-14",
     "tiles": [
       [
         9,
@@ -317,28 +325,10 @@
         15
       ]
     ],
-    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: desk-long at (11.05, 13.5)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-15",
-    "tiles": [
-      [
-        26,
-        15
-      ],
-      [
-        27,
-        15
-      ],
-      [
-        28,
-        15
-      ]
-    ],
-    "reason": "Floor/shadow padding around the central workstations and plants; no storage boxes on the plate. Nearest real piece: desk-long at (27.5, 14)."
-  },
-  {
-    "id": "e-padding-16",
+    "id": "f-padding-15",
     "tiles": [
       [
         48,
@@ -393,10 +383,10 @@
         17
       ]
     ],
-    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: floor-palm at (52.5, 17.5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
   },
   {
-    "id": "e-padding-17",
+    "id": "f-padding-16",
     "tiles": [
       [
         9,
@@ -423,10 +413,10 @@
         19
       ]
     ],
-    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: desk-long at (11.05, 17.5)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-18",
+    "id": "f-padding-17",
     "tiles": [
       [
         41,
@@ -445,20 +435,20 @@
         21
       ]
     ],
-    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: bookshelf at (42, 23.5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
   },
   {
-    "id": "e-padding-19",
+    "id": "f-padding-18",
     "tiles": [
       [
         44,
         20
       ]
     ],
-    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: floor-palm at (44.5, 19.5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
   },
   {
-    "id": "e-padding-20",
+    "id": "f-padding-19",
     "tiles": [
       [
         9,
@@ -485,10 +475,10 @@
         23
       ]
     ],
-    "reason": "Floor/shadow padding around the paired left-bank desks; the plate draws no side cabinets. Nearest real piece: desk-long at (11.05, 21.5)."
+    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
   },
   {
-    "id": "e-padding-21",
+    "id": "f-padding-20",
     "tiles": [
       [
         45,
@@ -531,6 +521,10 @@
         25
       ],
       [
+        48,
+        26
+      ],
+      [
         47,
         27
       ],
@@ -563,8 +557,20 @@
         26
       ],
       [
+        51,
+        25
+      ],
+      [
+        51,
+        27
+      ],
+      [
         53,
         26
+      ],
+      [
+        52,
+        25
       ],
       [
         52,
@@ -579,24 +585,18 @@
         27
       ],
       [
+        52,
+        24
+      ],
+      [
         53,
         24
       ]
     ],
-    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: guest-chair at (48.5, 26.5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
   },
   {
-    "id": "e-padding-22",
-    "tiles": [
-      [
-        51,
-        23
-      ]
-    ],
-    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: armchair at (51.5, 22.5)."
-  },
-  {
-    "id": "e-padding-23",
+    "id": "f-padding-21",
     "tiles": [
       [
         41,
@@ -607,6 +607,130 @@
         25
       ]
     ],
-    "reason": "Manager-room floor/shadow padding around the sofa, visitor chairs, desk and narrow book cabinet. Nearest real piece: bookshelf at (42, 23.5)."
+    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
+  },
+  {
+    "id": "f-padding-22",
+    "tiles": [
+      [
+        16,
+        26
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-23",
+    "tiles": [
+      [
+        20,
+        26
+      ],
+      [
+        21,
+        26
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-24",
+    "tiles": [
+      [
+        25,
+        26
+      ],
+      [
+        26,
+        26
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-25",
+    "tiles": [
+      [
+        30,
+        26
+      ],
+      [
+        31,
+        26
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-26",
+    "tiles": [
+      [
+        35,
+        26
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-27",
+    "tiles": [
+      [
+        16,
+        29
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-28",
+    "tiles": [
+      [
+        20,
+        29
+      ],
+      [
+        21,
+        29
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-29",
+    "tiles": [
+      [
+        25,
+        29
+      ],
+      [
+        26,
+        29
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-30",
+    "tiles": [
+      [
+        30,
+        29
+      ],
+      [
+        31,
+        29
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+  },
+  {
+    "id": "f-padding-31",
+    "tiles": [
+      [
+        35,
+        29
+      ]
+    ],
+    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
   }
 ]

@@ -1,0 +1,1 @@
+Reproduced Part F plate; collision.png, collision@16x.png and seats.json byte-identical; 20 seats.

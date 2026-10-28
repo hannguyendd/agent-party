@@ -65,7 +65,7 @@
       "after": 0
     }
   },
-  "allowedEmptyTiles": 118,
+  "allowedEmptyTiles": 119,
   "allowedClusters": 23,
   "bottomBenchSegments": 5
 }

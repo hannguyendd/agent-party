@@ -1,5 +1,5 @@
 {
-  "models": 125,
+  "models": 138,
   "newModels": [
     "document-tray",
     "notebook",
@@ -53,156 +53,148 @@
     "wall-half",
     "door-glass-double",
     "door-glass",
-    "floor-manager"
+    "floor-manager",
+    "workstation-desk",
+    "workstation-desk-compact",
+    "monitor-compact",
+    "keyboard-compact",
+    "mouse-compact",
+    "spine-left",
+    "spine-middle",
+    "spine-bench",
+    "meeting-table",
+    "meeting-chair-mint",
+    "meeting-chair-lavender",
+    "office-chair-lavender",
+    "rug-meeting-corner"
   ],
   "uncoveredBefore": 169,
-  "uncoveredAfter": 118,
-  "allowed": 118,
+  "uncoveredAfter": 137,
+  "allowed": 137,
   "wallDecor": 46,
   "deskItems": {
     "D1": [
-      "tissue-box",
-      "figurine",
-      "book-stack",
-      "desk-lamp",
-      "desk-cactus"
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
     ],
     "D2": [
-      "figurine",
-      "book-stack",
-      "desk-lamp",
-      "desk-cactus",
       "mug",
-      "notebook"
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
     ],
     "D3": [
-      "book-stack",
-      "desk-lamp",
+      "mug",
+      "notebook",
       "desk-cactus",
-      "mug"
+      "pen-cup"
     ],
     "D4": [
-      "desk-lamp",
-      "desk-cactus",
       "mug",
       "notebook",
-      "headphones"
+      "desk-cactus",
+      "pen-cup"
     ],
     "D5": [
-      "desk-cactus",
       "mug",
       "notebook",
-      "headphones",
-      "snack-box",
-      "water-bottle"
+      "desk-cactus",
+      "pen-cup"
     ],
     "D6": [
       "mug",
       "notebook",
-      "headphones",
-      "snack-box"
+      "desk-cactus",
+      "pen-cup"
     ],
     "D7": [
+      "mug",
       "notebook",
-      "headphones",
-      "snack-box",
-      "water-bottle",
-      "desk-plant"
+      "desk-cactus",
+      "pen-cup"
     ],
     "D8": [
-      "headphones",
-      "snack-box",
-      "water-bottle",
-      "desk-plant",
-      "pen-cup",
-      "phone-stand"
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
     ],
     "D9": [
-      "snack-box",
-      "water-bottle",
-      "desk-plant",
+      "mug",
+      "notebook",
+      "desk-cactus",
       "pen-cup"
     ],
     "D10": [
-      "phone-stand",
-      "tissue-box",
-      "figurine",
-      "book-stack"
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
     ],
     "D11": [
-      "tissue-box",
-      "figurine",
-      "book-stack",
-      "desk-lamp",
-      "desk-cactus"
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
     ],
     "D12": [
-      "figurine",
-      "book-stack",
-      "desk-lamp",
-      "desk-cactus",
       "mug",
-      "notebook"
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
     ],
     "D13": [
-      "book-stack",
-      "desk-lamp",
+      "mug",
+      "notebook",
       "desk-cactus",
-      "mug"
+      "pen-cup"
     ],
     "D14": [
-      "desk-lamp",
-      "desk-cactus",
       "mug",
       "notebook",
-      "headphones"
+      "desk-cactus",
+      "pen-cup"
     ],
     "D15": [
-      "desk-cactus",
       "mug",
       "notebook",
-      "headphones",
-      "snack-box",
-      "water-bottle"
+      "desk-cactus",
+      "pen-cup"
     ],
     "D16": [
       "mug",
       "notebook",
-      "headphones",
-      "snack-box"
+      "desk-cactus",
+      "pen-cup"
     ],
     "M1": [
-      "desk-plant",
-      "pen-cup",
-      "phone-stand",
-      "tissue-box",
-      "figurine"
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
     ],
     "M2": [
-      "pen-cup",
-      "phone-stand",
-      "tissue-box",
-      "figurine",
-      "book-stack",
-      "desk-lamp"
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
     ],
     "MGR": [
-      "pen-cup",
-      "phone-stand",
-      "tissue-box",
-      "figurine",
-      "book-stack"
+      "mug",
+      "desk-cactus"
     ],
     "HR": [
       "mug",
-      "desk-plant",
+      "desk-cactus",
       "document-tray"
     ]
   },
-  "staticTriangles": 180791,
-  "characterTriangles": 37992,
-  "sceneTriangles": 218783,
-  "longestBareWall": 3.2399999797344208,
+  "staticTriangles": 165607,
+  "characterTriangles": 47180,
+  "sceneTriangles": 212787,
+  "longestBareWall": 0,
   "sharedMapChanges": 34,
   "counts": {
     "filing-cabinet": {
@@ -270,7 +262,7 @@
       "after": 0
     }
   },
-  "allowedEmptyTiles": 118,
+  "allowedEmptyTiles": 119,
   "allowedClusters": 23,
   "bottomBenchSegments": 5
 }

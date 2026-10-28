@@ -1,3 +1,17 @@
+# Part F (current): reachable workstations and meeting corner
+
+Every station is generated in `src/layout-f.ts` from its unchanged seat centre and facing. Monitor distance is 1.2 tiles, with a 0.55 near desk edge and depth ≤1.4 (HR 0.9). Standard desks are 1.8 wide. MGR is limited to 0.92 by its one-tile blocked approach; HR has a 0.5 left-biased reception top to retain its walkable right-hand entry. Every item has an explicit own-desk support id and must fit that actual footprint. New fixed-size GLBs replace the Part E scaled bench bridges; no placement-scale integration is required by Part F.
+
+`src/props/part-f.ts` builds desks, compact hardware, low cabinet/planter spines, lavender chair upholstery, and a four-chair meeting corner. `manifest-models3d.json` registers them without touching the shared manifest. The meeting corner is entirely inside x=48..50 / rows=29..32. Chair variants retain the existing seat positions and orientations.
+
+The map exporter dispatches to `src/map-f.ts`: it writes **only background.png and foreground.png** and checks collision.png, collision@16x.png and seats.json against `src/map-before-f/` byte-for-byte. The frozen collision overlay intentionally retains its Part E artwork per the owner's explicit instruction. No shared map metadata is rewritten. Run the existing `python3 design/office-style/C/map/export-map.py` from the repository root to reproduce the two plate layers.
+
+Character polish is shared by `src/characters/features.ts`: smooth heads, close-fitting caps, eye glints and soft smiles. The 16 ids, rigid node contract, hidden mug, footprint/height and eight clip timings remain unchanged. `previews/characters-before-after.png` compares the old lineup (top) and current lineup (bottom).
+
+Build / validate / preview: `bun run build`, `bun run validate`, `bun run preview` from this package. The validator also tests monitor distance/axis/facing, desk containment, reach zones, nonempty desk surfaces, frozen map bytes and the meeting footprint. Final counts and exceptions are in REPORT.md.
+
+---
+
 # Part E curation (current)
 
 The current layout follows the plate rather than filling collision padding with storage. The source pass is `src/curate-e.ts`; `reports/part-e-curation.json` records before/after counts. `reports/uncovered-allowed.json` lists connected padding/floor-shadow clusters with explicit tile arrays and reasons. Validation rejects any unlisted uncovered tile and enforces filler caps. No collision or seat changes are part of Part E.

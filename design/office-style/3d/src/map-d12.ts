@@ -1,9 +1,10 @@
+import {applyMapF} from './map-f';
 import {fixPlate} from './fix-plate';
 import {PNG} from 'pngjs';import {readFile,writeFile} from 'node:fs/promises';import {createHash} from 'node:crypto';import {footprint,tiles} from './layout';import {d12Furniture} from './d12-plan';
 const base='src/map-before/',dest='../../../dashboard/public/office/map/';
 const read=async(name:string)=>PNG.sync.read(await readFile(base+name));const clone=(p:any)=>{const q=new PNG({width:p.width,height:p.height});p.data.copy(q.data);return q;};
 export function allowedMapPixel(x:number,y:number){return (x>=448&&x<490&&y>=112&&y<196)||(x>=446&&x<448&&y>=120&&y<196)||(x>=432&&x<448&&y>=184&&y<208)||(x>=434&&x<458&&y>=132&&y<166)||(x>=354&&x<374&&y>=160&&y<182)||(x>=1280&&x<1760&&y>=896&&y<1096)||(x>=1312&&x<1728&&y>=894&&y<896)||(x>=1280&&x<1312&&y>=1094&&y<1126);}
-export async function applyMapD12(metadata:any){const original=await read('background.png'),originalFg=await read('foreground.png'),before=await read('collision.png');const bg=clone(original),fg=clone(originalFg),collision=clone(before);
+export async function applyMapD12(metadata:any){if(await Bun.file('src/map-before-f/background.png').exists())return applyMapF();const original=await read('background.png'),originalFg=await read('foreground.png'),before=await read('collision.png');const bg=clone(original),fg=clone(originalFg),collision=clone(before);
 const changed=new Map<string,any>();function tile(x:number,z:number,blocked:boolean,reason:string){const i=(z*56+x)*4,old=[...before.data.subarray(i,i+3)],rgb=blocked?[0,0,0]:[255,255,255];collision.data.set([...rgb,255],i);if(old.some((v,j)=>v!==rgb[j]))changed.set(x+','+z,{tile:[x,z],before:old,after:rgb,reason});}
 for(let x=41;x<=53;x++)tile(x,28,false,'remove old manager south partition');for(let z=29;z<=33;z++)tile(40,z,true,'extend manager west partition');
 tile(14,4,false,'HR entry gap');tile(14,5,false,'HR entry gap');tile(13,4,false,'HR seat');{const i=(4*56+13)*4;collision.data.set([255,0,0,255],i);changed.set('13,4',{tile:[13,4],before:[...before.data.subarray(i,i+3)],after:[255,0,0],reason:'new HR seat'});}

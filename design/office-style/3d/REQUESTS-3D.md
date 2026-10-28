@@ -1,3 +1,9 @@
+## Part F integration update (current)
+
+Use the updated `manifest-models3d.json` registrations for the fixed-size workstation and spine models, compact MGR display/keyboard, office-chair-lavender, and meeting furniture. Both office-chair variants are unchanged seat-centre visual exceptions and must participate in the same seat rendering logic. Part F no longer instances the Part E scaled bridge/chair placements. Standard x/z/rot transforms are sufficient for the current layout.
+
+Collision, the collision overlay and seats are frozen. The manager meeting corner uses existing blocked tiles, so it needs no pathfinding or map metadata change. No app, server, shared manifest or docs source was edited.
+
 ## Part E integration note
 
 The curated layout uses optional `scale: [x, 1, z]` on five bottom desk-long bridges, the central desk-long seam, and the lounge armchair. Consumers must apply this before computing/rendering footprints, as `src/viewer.html` and `src/layout.ts` do. This needs no collision, seat, or manifest change. No application source was edited.

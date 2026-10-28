@@ -14,7 +14,7 @@ if(id==='stool'){c(.31,.12,'lavender',0,.44,0);for(let i=0;i<3;i++){const a=i*Ma
 if(id==='photo-frame'){b(.27,.33,.045,'wood',0,.165,0);m.mesh(new T.PlaneGeometry(.21,.25),'mint',[0,.165,.024],m.root,'photo');b(.1,.12,.1,'frame',0,.06,-.06);}
 if(id==='water-bottle'){c(.065,.28,'screen',0,.14,0);c(.043,.08,'screen',0,.31,0);c(.05,.045,'white',0,.367,0);}
 if(id==='figurine'){m.mesh(new T.IcosahedronGeometry(.09,1),'peach',[0,.21,0]);m.mesh(new T.IcosahedronGeometry(.085,1),'lavender',[0,.09,0]);b(.21,.03,.19,'wood',0,.015,0);}
-if(id==='reception-desk'){b(3.2,.18,.88,'wood',0,.79,0);b(2.9,.7,.64,'peach',0,.35,-.02);b(2.9,.08,.68,'frame',0,.04,-.02);}
+if(id==='reception-desk'){b(1.8,.11,.9,'desktop',0,.685,0);b(1.6,.62,.7,'cream',0,.31,0);b(1.6,.07,.72,'aluminium',0,.035,0);}
 if(id==='door-mat'||id==='rug-lavender'||id==='rug-mint'){b(id==='door-mat'?1.8:4,.025,id==='door-mat'?.8:3,id==='rug-lavender'?'lavender':'mint',0,.0125,0);}
 if(id==='cabinet'){b(1.8,1.2,.8,'wood',0,.6,0);for(const y of [.25,.65,1.02]){b(1.65,.04,.05,'peach',0,y,.42);b(.3,.055,.07,'white',0,y+.08,.46);}}
 if(id==='fridge'){b(1.6,2.4,1.5,'mint',0,1.2,0);b(1.46,.055,.05,'sage',0,1.55,.77);for(const y of [.95,1.9])b(.065,.38,.09,'white',.55,y,.81);}
