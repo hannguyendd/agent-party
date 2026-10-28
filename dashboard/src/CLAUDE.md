@@ -28,7 +28,9 @@
     `Composer.tsx` (the one message box: `MentionInput` @picker + `AttachBar` + Send), `PeerMenu.tsx` (Ask / Assign),
     `attachments.ts` (pick / drop / paste, checked against `node.files`, sent base64), `status.ts` (status labels and
     tones), `seen.ts` (per-browser "seen" marks for unread dots), `people.ts` (`who()`: display name / owner / skin),
-    `SettingsView.tsx`, `SetupView.tsx` + `SetupForm.tsx` (first-run join page; the form is reused in Settings),
+    `SettingsView.tsx` (Agents, Mesh & office, Notifications, This computer: version, update, start at sign-in,
+    Claude Code, uninstall), `SetupView.tsx` + `SetupForm.tsx` (first-run join page; the form is reused in Settings),
+    `ClaudeCheck.tsx` (Claude Code installed / logged in, with the command to run; polls until ready),
     `NotificationBell.tsx` (the bell: notification history popover + live toasts; `nav.ts` says where one leads),
     `OfficeDock.tsx` (under the map: status, zoom, "Happening now" from world activity, recent notifications; it
     shrinks to one line, then to its bar, through a `dock` container query), `HistoryView.tsx` + `history.ts`

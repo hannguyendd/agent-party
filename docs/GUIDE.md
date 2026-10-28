@@ -21,9 +21,10 @@ git clone <this repo> && cd internal-agent-fleet
 make server
 ```
 
-`make server` checks what it needs and offers to install what is missing (`uv`, `bun`, and the hub program
-`agentmesh-one`); answer **Y**. The first run also downloads `agentmesh-node` for every staff platform (a few
-minutes, once per version). When it is up it prints:
+`make server` checks what it needs and offers to install what is missing (`uv` and the hub program
+`agentmesh-one`); answer **Y**. It also prepares the staff package: built here when **bun** is installed, otherwise
+downloaded from the project's GitHub release (so bun is optional). The first run also downloads `agentmesh-node` for
+every staff platform (a few minutes, once per version). When it is up it prints:
 
 ```
 Server address: 192.168.1.65
@@ -55,12 +56,21 @@ asks for the **admin key** (printed by `make server`, also in `node-server/data/
 ### Inviting someone
 
 1. Admin page → **Invite a computer** → type the computer's name (e.g. `Han's MacBook`) → **Create invite**.
-2. Press **Copy message to send** and send it to the person privately (it contains a single-use join token).
+2. Press **Copy message to send** and send it to the person privately (it contains a single-use join token and the
+   office server address).
 3. Under the invite, *The hub's answer* shows what the hub printed: the join token in the message must match it.
+
+The message has two install commands: from the office server, and the same version from GitHub (for a computer
+that can't download from the server). Either way the computer must reach the server afterwards.
 
 One token works for one computer, once. If someone reinstalls on a new computer, create a new invite.
 
 ### Publishing an update
+
+1. Whoever made the change (a developer or an agent) merges it into `develop` and publishes a version from there:
+   `make release` (details:
+   [RELEASE.md](RELEASE.md)). GitHub builds it and attaches it to a Release.
+2. On the office server:
 
 ```sh
 # in the server terminal: Ctrl+C, then
@@ -85,20 +95,32 @@ Install **Claude Code** and log in once (your agents run on it): https://docs.cl
 
 ### Install (once)
 
-Your admin sends you a message with one command and a join token.
+Your admin sends you a message with one command, the office server address and a join token.
 
 - **macOS / Linux**: open **Terminal**, paste the command, press Enter:
   `curl -fsSL http://<server address>:7500/install | bash`
 - **Windows**: open **PowerShell**, paste the command, press Enter:
   `irm http://<server address>:7500/install.ps1 | iex`
+- **If it can't download from the server**, use the GitHub command from the same message (same version):
+  `curl -fsSL https://github.com/<repo>/releases/download/vX.Y.Z/install.sh | bash -s -- --server <server address>:7500`
+  (Windows: `$env:AGENTMESH_SERVER='<server address>:7500'; irm https://github.com/<repo>/releases/download/vX.Y.Z/install.ps1 | iex`)
 
-It installs everything it needs, starts the Office in the background (and at every login from now on), adds a
-**"&lt;Org&gt; Office"** shortcut (Applications / Start menu / Desktop) and opens your browser.
+It installs everything it needs in your own user folder (no admin password), starts the Office in the background
+(and at every login from now on), adds a **"&lt;Org&gt; Office"** shortcut (Applications / Start menu / Desktop) and
+opens your browser.
+
+Your computer may ask once:
+- **macOS**: "Do you want agentmesh-node to accept incoming network connections?" → **Allow**.
+- **Windows**: SmartScreen → **More info** → **Run anyway**; Windows Firewall → **Allow access**.
+
+That's the only time you need the terminal, apart from logging in to Claude Code once (below).
 
 ### Join (once)
 
-On the page that opens: enter **your name** (agents will be called `yourname/...`), check the **office server**
-address (already filled in), paste the **join token**, press **Connect**. Then the short guide helps you create your
+On the page that opens: check the **Claude Code** box at the top. If it says *Log in to Claude Code once*, open
+Terminal (Windows: PowerShell), run `claude` and follow the steps; the page notices by itself. Then enter **your
+name** (agents will be called `yourname/...`), check the **office server** address (filled in, or type the one from
+the admin's message), paste the **join token**, press **Connect**. Then the short guide helps you create your
 first agent (name, what it does, which project folder), pick your desk and turn on notifications.
 
 ### Every day
@@ -139,10 +161,18 @@ When the top bar says **Update available**, click it. The page reloads on the ne
 
 ### Uninstall
 
-- **macOS / Linux**: `curl -fsSL http://<server address>:7500/uninstall | bash`
-- **Windows**: `irm http://<server address>:7500/uninstall.ps1 | iex`
+In the Office: **Settings → This computer → Uninstall the Office…**, choose whether to keep your agents and chats
+(kept by default in `~/.agentfleet`), confirm. No terminal needed.
 
-It asks whether to delete your agents and chats too (default: keep them in `~/.agentfleet`).
+From a terminal instead: `curl -fsSL http://<server address>:7500/uninstall | bash` (Windows:
+`irm http://<server address>:7500/uninstall.ps1 | iex`).
+
+### Everything else is in the web page
+
+Joining, agents, permissions, desk, chats, approvals, History, notifications, sound, going online / offline, start at
+sign-in, updates and uninstall are all in the Office page (**Settings → This computer** shows the version, updates,
+start at sign-in, the Claude Code status and uninstall). The terminal is only for the first install and the
+one-time Claude Code login.
 
 ---
 
@@ -159,5 +189,8 @@ It asks whether to delete your agents and chats too (default: keep them in `~/.a
 | Office says "You're offline" | Press **Yes, go online**. |
 | Nothing opens at http://127.0.0.1:9100 | Open the Office shortcut (it starts the node), or run `agentfleet-node` and choose **1**. |
 | The agent card shows no Claude usage | It appears after the agent's next turn. |
+| Staff install: "Could not download the node package" | Open the server address in that computer's browser. If it works, use the GitHub command from the invite; if not, it's the network. |
+| Setup page: "Log in to Claude Code once" | In Terminal run `claude` and log in; the page updates by itself (or press **Check again**). |
+| `make server` without bun: "No GitHub release vX yet" | Publish that version (`make release`, see RELEASE.md) or install bun on the server. |
 
 Commands on a staff computer, if ever needed: `agentfleet-node` (menu), `agentfleet-node status`, `agentfleet-node logs`.

@@ -1,5 +1,5 @@
 # Agent Mesh: remove this machine's node on Windows. Served by the team's office server:
-#   irm http://__SERVER__/uninstall.ps1 | iex
+#   irm http://<office server>:7500/uninstall.ps1 | iex   (or Settings > This computer > Uninstall)
 # Stops the node, removes start-at-sign-in, the Office shortcuts and the package (and agentmesh-node if the installer
 # put it there). Your agents and chats in %USERPROFILE%\.agentfleet are kept unless you say so.
 $HomeDir = Join-Path $env:USERPROFILE '.agentfleet'

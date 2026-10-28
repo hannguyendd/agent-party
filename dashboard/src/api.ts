@@ -63,6 +63,8 @@ export interface SetupState {
   enrolled: boolean
   agents: number
   mesh_node: MeshProcess
+  /** Claude Code on this machine (agents run on it); logged_in is read from where it keeps its login. */
+  claude?: { installed: boolean; path: string; logged_in: boolean }
 }
 
 /** A file the owner attaches to a message, base64-encoded. */
@@ -368,6 +370,7 @@ export const api = {
 
   usage: () => req<{ usage: PlanUsage }>('GET', '/api/usage'),
   service: () => req<{ installed: boolean; autostart: boolean }>('GET', '/api/service'),
+  uninstall: (keepData: boolean) => req<{ status: string }>('POST', '/api/service/uninstall', { keep_data: keepData }),
   serviceAutostart: (on: boolean) => req<{ autostart: boolean }>('POST', '/api/service/autostart', { on }),
   notifications: () => req<AppNotification[]>('GET', '/api/notifications?limit=150'),
   readNotifications: (ids: string[] | null) => req<{ ok: boolean }>('POST', '/api/notifications/read', { ids }),

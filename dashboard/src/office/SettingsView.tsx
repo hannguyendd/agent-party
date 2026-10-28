@@ -1,6 +1,6 @@
 // Settings: the one other screen. Configuration only (agents, mesh, notifications); daily work stays in the Office.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api, type NodeInfo, type SetupState } from '../api'
 import type { SettingsSection, View } from '../App'
 import { AgentForm } from '../components/AgentForm'
@@ -10,6 +10,7 @@ import type { LiveState } from '../useLiveState'
 import { enableNotifications, notificationsSupported } from '../useNotifications'
 import { AppBar } from './AppBar'
 import { SetupForm, SetupStatus } from './SetupForm'
+import { ClaudeCheck } from './ClaudeCheck'
 import { Icon, type IconName } from './Icon'
 import { SKIN_BY_ID } from './skins'
 import './office.css'
@@ -18,6 +19,7 @@ const SECTIONS: { id: SettingsSection; label: string; icon: IconName; hint: stri
   { id: 'agents', label: 'Agents', icon: 'agents', hint: 'Create and configure the agents on this machine' },
   { id: 'mesh', label: 'Mesh & office', icon: 'directory', hint: 'Connection to the team and who is online' },
   { id: 'notifications', label: 'Notifications', icon: 'notifications-on', hint: 'How you get pinged' },
+  { id: 'computer', label: 'This computer', icon: 'settings', hint: 'Version, updates, start at sign-in, uninstall' },
 ]
 
 interface Props {
@@ -55,6 +57,7 @@ export default function SettingsView({ state, view, go, setNode, setup, onSetupS
           {section === 'agents' && <AgentsSection state={state} agentId={view.agentId} at={at} go={go} />}
           {section === 'mesh' && <MeshSection state={state} setNode={setNode} setup={setup} onSetupSaved={onSetupSaved} />}
           {section === 'notifications' && <NotificationsSection />}
+          {section === 'computer' && <ComputerSection setup={setup} />}
         </main>
       </div>
     </section>
@@ -218,6 +221,84 @@ function NotificationsSection() {
         </div>
         {osResult && <p className="settings-note">{osResult}</p>}
       </div>
+    </div>
+  )
+}
+
+/** The installed Office on this machine: what runs, updates, start at sign-in, Claude Code, and removing it. */
+function ComputerSection({ setup }: { setup: SetupState | null }) {
+  const [svc, setSvc] = useState<{ installed: boolean; autostart: boolean } | null>(null)
+  const [upd, setUpd] = useState<{ installed: boolean; build: string; latest: string | null; available: boolean } | null>(null)
+  const [confirm, setConfirm] = useState(false)
+  const [keep, setKeep] = useState(true)
+  const [phase, setPhase] = useState<'idle' | 'busy' | 'gone' | 'updating'>('idle')
+  const [err, setErr] = useState<string | null>(null)
+  useEffect(() => {
+    api.service().then(setSvc).catch(() => setSvc(null))
+    api.updateInfo().then(setUpd).catch(() => setUpd(null))
+  }, [])
+  const run = async (fn: () => Promise<unknown>) => {
+    setErr(null)
+    try { await fn() } catch (e) { setErr(errMsg(e)) }
+  }
+  const uninstall = () => run(async () => {
+    setPhase('busy')
+    await api.uninstall(keep)
+    setPhase('gone')
+  })
+  if (phase === 'gone') {
+    return (
+      <div className="o-frame settings-card">
+        <h2>The Office was removed from this computer</h2>
+        <p className="settings-note">{keep ? 'Your agents and chats are kept in ~/.agentfleet, in case you install it again.' : 'Your agents and chats were deleted too.'} You can close this tab.</p>
+      </div>
+    )
+  }
+  return (
+    <div className="settings-stack">
+      <div className="o-frame settings-card">
+        <h2>This computer</h2>
+        <dl className="settings-facts">
+          <dt>Version</dt>
+          <dd>{upd ? (upd.installed ? upd.build : 'developer checkout (updated with git pull)') : '…'}</dd>
+          {upd?.installed && <><dt>Office server has</dt><dd>{upd.latest ?? 'not reachable'}{upd.available ? ' (newer)' : ''}</dd></>}
+          {svc?.installed && <><dt>Start when I sign in</dt><dd><span className={`settings-dot ${svc.autostart ? 'is-on' : ''}`} />{svc.autostart ? 'on' : 'off'}</dd></>}
+        </dl>
+        <div className="settings-actions">
+          {upd?.available && (
+            <button className="btn-primary" disabled={phase === 'updating'} onClick={() => run(async () => { setPhase('updating'); await api.startUpdate() })}>
+              {phase === 'updating' ? 'Updating… the page reloads when done' : 'Update now'}
+            </button>
+          )}
+          {svc?.installed && (
+            <button className="btn" onClick={() => run(async () => setSvc({ ...svc, autostart: (await api.serviceAutostart(!svc.autostart)).autostart }))}>
+              {svc.autostart ? "Don't start when I sign in" : 'Start when I sign in'}
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="o-frame settings-card">
+        <h2>Claude Code</h2>
+        <ClaudeCheck initial={setup?.claude} />
+      </div>
+      {svc?.installed && (
+        <div className="o-frame settings-card is-danger">
+          <h2>Uninstall</h2>
+          <p className="settings-note">Removes the Office from this computer: the background service, start at sign-in, the shortcut and the program. Your colleagues are not affected.</p>
+          {!confirm ? (
+            <div className="settings-actions"><button className="btn-danger" onClick={() => setConfirm(true)}>Uninstall the Office…</button></div>
+          ) : (
+            <div className="settings-confirm">
+              <label><input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} /> Keep my agents and chats (to install again later)</label>
+              <div className="settings-actions">
+                <button className="btn-danger" disabled={phase === 'busy'} onClick={() => void uninstall()}>{phase === 'busy' ? 'Removing…' : keep ? 'Yes, uninstall' : 'Yes, uninstall and delete everything'}</button>
+                <button className="btn" onClick={() => setConfirm(false)}>Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {err && <p className="settings-note is-err">{err}</p>}
     </div>
   )
 }

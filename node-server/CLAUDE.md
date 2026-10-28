@@ -38,7 +38,9 @@ LAN; there is no auth yet). Roaming: an agent with an active outbound conversati
 from steering) and goes back to its desk when the conversation ends.
 
 It also serves the staff installer: `/install` and `/install.ps1` render `install.sh` / `install.ps1` (package
-data) with the server address, newest wheel and `--org`; `/downloads/<name>` serves `dist/downloads` (safe names
+data) through `installer.py` with the server address, newest wheel, `--org` and the GitHub release of the same version
+(the scripts' fallback download). The release workflow renders the same templates without a server
+(`python -m agentfleet_node.installer`); those scripts take `--server host:port` / `AGENTMESH_SERVER`; `/downloads/<name>` serves `dist/downloads` (safe names
 only). The installed node finds the dashboard in `agentfleet_node/static` (a repo checkout prefers
 `dashboard/dist`). `meshproc` runs `agentmesh-node run` itself, so nothing needs the repo at runtime.
 `presence.py`: online/offline chosen in the dashboard (`/api/presence`), kept in `data/presence.json`. Offline
@@ -51,7 +53,11 @@ content-like keys again on the server; a test asserts message text never reaches
 localhost needs no key, the LAN needs `admin-key` (an HMAC cookie). Tests fake `agentmesh-one` on PATH.
 `service.py` manages an installed node (menu, background run with a pid file, opt-in start at login, update by
 re-running the installer, uninstall); `make bundle` writes `static/build.json`, which `/info` and `/api/update`
-compare. Test it with `HOME=<scratch> AGENTFLEET_PORT=<free port>` so it never touches a real install.
+compare. Test it with `HOME=<scratch> AGENTFLEET_PORT=<free port>` so it never touches a real install. Exception: never run
+`uninstall` / autostart-off from a scratch HOME on a machine with a real install; macOS start-at-login is the
+launchd label `com.agentmesh.node`, shared by both. `/api/service/uninstall` (Settings > This computer) runs
+`agentfleet-node uninstall [--purge]` detached; `/api/setup` includes `claude` (installed / logged in, read from
+`~/.claude.json`, `~/.claude/.credentials.json` or `ANTHROPIC_API_KEY`).
 
 ## Real-stack smoke (for mesh, A2A or session changes)
 

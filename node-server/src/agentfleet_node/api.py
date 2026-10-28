@@ -158,7 +158,27 @@ def _setup_view(node) -> dict[str, Any]:
         "enrolled": node.meshproc.enrolled,
         "agents": len([a for a in node.store.list_agents() if a.enabled]),
         "mesh_node": node.meshproc.status(),
+        "claude": claude_status(s.claude_cli_path),
     }
+
+
+def claude_status(cli_path: str | None = None) -> dict[str, Any]:
+    """Is Claude Code here, and does it look logged in? Agents run on it. Login can't be checked without a call that
+    costs tokens, so this reads where Claude Code keeps its login: an API key in the environment, the credentials
+    file (Linux / Windows) or the account it records in ~/.claude.json after `/login` (macOS keeps the secret in the
+    keychain)."""
+    import os
+    import shutil
+
+    path = cli_path if cli_path and Path(cli_path).exists() else shutil.which("claude")
+    home = Path.home()
+    logged_in = bool(os.environ.get("ANTHROPIC_API_KEY")) or (home / ".claude" / ".credentials.json").exists()
+    if not logged_in:
+        try:
+            logged_in = bool(json.loads((home / ".claude.json").read_text()).get("oauthAccount"))
+        except (OSError, ValueError, AttributeError):
+            logged_in = False
+    return {"installed": bool(path), "path": path or "", "logged_in": bool(path) and logged_in}
 
 
 @router.get("/setup")
@@ -727,6 +747,24 @@ async def service_autostart(body: AutostartIn, request: Request) -> dict[str, An
     else:
         _detached("autostart", "off")
     return {"autostart": body.on}
+
+
+class UninstallIn(BaseModel):
+    keep_data: bool = True
+
+
+@router.post("/service/uninstall")
+async def uninstall(body: UninstallIn, request: Request) -> dict[str, str]:
+    """Remove this installed node (start-at-login, shortcuts, the package; agents and chats unless keep_data is
+    false). Runs on its own because it stops this very process; the page then shows that the Office is gone."""
+    from agentfleet_node import service
+
+    if not service.installed():
+        raise HTTPException(409, "this node runs from a repo checkout; nothing to uninstall")
+    node = _node(request)
+    node.store.audit("uninstall", keep_data=body.keep_data)
+    _detached("uninstall", *([] if body.keep_data else ["--purge"]))
+    return {"status": "uninstalling"}
 
 
 # updates (installed nodes only; see service.py)

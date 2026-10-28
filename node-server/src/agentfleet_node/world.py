@@ -14,6 +14,7 @@ Positions are symbolic targets that every browser resolves against the same map:
 
 import json
 import logging
+import os
 import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -22,6 +23,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, PlainTextResponse
 
+from agentfleet_node import installer
 from agentfleet_node.naming import InvalidAgentId, owner_of, validate_agent_id
 
 log = logging.getLogger(__name__)
@@ -491,13 +493,7 @@ class WorldHub:
             await self.broadcast(events)
 
 
-INSTALL_TEMPLATES = {name: Path(__file__).with_name(name) for name in ("install.sh", "install.ps1", "uninstall.sh", "uninstall.ps1")}
 _SAFE_NAME = re.compile(r"^[A-Za-z0-9._+-]+$")
-
-
-def _shell_safe(text: str) -> str:
-    """The organization name goes inside double quotes in a shell / PowerShell script."""
-    return re.sub(r'[^A-Za-z0-9 ._&()-]', "", text)
 
 
 def latest_wheel(downloads: Path | None) -> str:
@@ -548,13 +544,13 @@ def create_world_app(data_path: Path | None = None, downloads: Path | None = Non
     # files it fetches (node package, agentmesh-node per OS/arch) come from `downloads` (`make bundle`).
     def render(kind: str, request: Request) -> str:
         server = request.headers.get("host") or f"{request.url.hostname}:{request.url.port or 80}"
-        return (
-            INSTALL_TEMPLATES[kind].read_text()
-            .replace("__SERVER__", server)
-            .replace("__HOST__", server.rsplit(":", 1)[0])
-            .replace("__WHEEL__", latest_wheel(downloads))
-            .replace("__ORG__", _shell_safe(hub.state.org))
-            .replace("__AMVERSION__", _shell_safe(_agentmesh_version(downloads)))
+        wheel = latest_wheel(downloads)
+        repo = os.environ.get("AGENTFLEET_RELEASE_REPO", installer.DEFAULT_REPO)
+        return installer.render(
+            kind, server=server, host=server.rsplit(":", 1)[0], wheel=wheel, org=hub.state.org,
+            amversion=_agentmesh_version(downloads),
+            # Same version on GitHub: the script's fallback when a download from this server fails.
+            github=installer.release_base(repo, installer.wheel_version(wheel)),
         )
 
     @app.get("/install", response_class=PlainTextResponse)

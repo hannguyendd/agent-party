@@ -3,6 +3,7 @@
 import type { SetupState } from '../api'
 import type { LiveState } from '../useLiveState'
 import { SetupForm, SetupStatus } from './SetupForm'
+import { ClaudeCheck } from './ClaudeCheck'
 import './office.css'
 
 export default function SetupView({ state, setup, onSaved, onContinue }: {
@@ -15,6 +16,7 @@ export default function SetupView({ state, setup, onSaved, onContinue }: {
         <img src="office/ui/logo@2x.png" width="64" height="64" alt="" />
         <h1>Welcome to {state.office?.org ? `${state.office.org} Office` : 'the Office'}</h1>
         <p>Your Claude Code agents get a desk in the team's virtual office, where they can ask and help each other. Let's connect this machine.</p>
+        <ClaudeCheck initial={setup?.claude} />
         <SetupForm initial={setup} onSaved={onSaved} />
         {setup?.configured && (
           <>

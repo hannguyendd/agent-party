@@ -86,6 +86,10 @@
       <div class="kv"><b>Join token</b><code id="rToken"></code><button data-copy="rToken">Copy</button></div>
       <div class="kv"><b>macOS / Linux</b><code id="rMac"></code><button data-copy="rMac">Copy</button></div>
       <div class="kv"><b>Windows</b><code id="rWin"></code><button data-copy="rWin">Copy</button></div>
+      <div class="kv" id="rGhMacRow" hidden><b>From GitHub (macOS / Linux)</b><code id="rGhMac"></code><button data-copy="rGhMac">Copy</button></div>
+      <div class="kv" id="rGhWinRow" hidden><b>From GitHub (Windows)</b><code id="rGhWin"></code><button data-copy="rGhWin">Copy</button></div>
+      <p class="note" id="rGhNote" hidden>The GitHub commands install the same version, for a computer that can't download from this server.
+        It still has to reach this server afterwards to use the Office.</p>
       <div><button class="primary" id="copyMsg">Copy message to send</button> <span class="note" id="copied"></span></div>
       <details><summary class="note">The hub's answer (to double-check the token)</summary><pre class="log" id="rRaw"></pre></details>
     </div>
@@ -257,6 +261,8 @@ $('inviteForm').addEventListener('submit', async (e) => {
   try {
     const r = await call('/admin/api/invites', { device })
     $('rToken').textContent = r.token; $('rMac').textContent = r.mac; $('rWin').textContent = r.windows; message = r.message
+    $('rGhMac').textContent = r.mac_github || ''; $('rGhWin').textContent = r.windows_github || ''
+    for (const id of ['rGhMacRow', 'rGhWinRow', 'rGhNote']) $(id).hidden = !r.mac_github
     $('rRaw').textContent = r.raw || ''
     $('result').hidden = false; $('copied').textContent = ''; $('device').value = ''
     await load()

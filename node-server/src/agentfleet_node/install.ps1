@@ -1,16 +1,20 @@
-# Agent Mesh: install this machine's node on Windows. Served by the team's world server:
-#   irm http://__SERVER__/install.ps1 | iex
+# Agent Mesh: install this machine's node on Windows. Served by the team's office server, or attached to a GitHub release:
+#   irm http://<office server>:7500/install.ps1 | iex
+#   $env:AGENTMESH_SERVER='<host>:7500'; irm https://github.com/<repo>/releases/download/v<version>/install.ps1 | iex
 # Installs uv (if missing), the node server (dashboard included) and agentmesh-node, runs the node in the background
 # now and at every sign-in, adds Office shortcuts and opens the dashboard so you can join. Run it again to update.
 # $env:AGENTMESH_AUTOSTART='off' skips start-at-sign-in; $env:AGENTMESH_NO_OPEN=1 skips the browser;
 # $env:AGENTMESH_UPDATE=1 (the in-app Update) keeps the current choice.
 $ErrorActionPreference = 'Stop'
-$Server = '__SERVER__'      # the world server this script came from (host:port)
+$Server = '__SERVER__'      # the office server this script came from (host:port; '' for the GitHub copy)
 $Office = '__HOST__'        # prefilled as "Office server" in the setup form
 $Wheel = '__WHEEL__'
 $Org = '__ORG__'
+$GitHub = '__GITHUB__'      # the GitHub release of this version: where to download when the office server can't serve it
+# The GitHub copy doesn't know the office server: $env:AGENTMESH_SERVER='host:port' tells it (downloads try it first).
+if (-not $Server -and $env:AGENTMESH_SERVER) { $Server = $env:AGENTMESH_SERVER; $Office = ($Server -split ':')[0] }
 $Title = if ($Org) { "$Org Office" } else { 'Office' }
-$Base = "http://$Server"
+$Base = if ($Server) { "http://$Server" } else { '' }
 $HomeDir = Join-Path $env:USERPROFILE '.agentfleet'
 $Bin = Join-Path $env:USERPROFILE '.local\bin'
 $Port = 9100
@@ -20,7 +24,7 @@ function Warn($m) { Write-Host "!!  $m" -ForegroundColor Yellow }
 function Die($m) { Write-Host "xx  $m" -ForegroundColor Red; throw $m }
 
 Say "Installing $Title on this machine"
-if (-not $Wheel) { Die "The server has no node package yet. Ask your admin to run 'make bundle' on the server." }
+if (-not $Wheel) { Die "The server has no node package yet. Ask your admin to run 'make server' again (it builds or downloads it)." }
 New-Item -ItemType Directory -Force -Path (Join-Path $HomeDir 'data'), $Bin | Out-Null
 $env:Path = "$Bin;$env:Path"
 
@@ -37,7 +41,14 @@ Say "Installing the Agent Mesh node ($Wheel)"
 $Tmp = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid())
 New-Item -ItemType Directory -Path $Tmp | Out-Null
 $WheelPath = Join-Path $Tmp $Wheel
-Invoke-WebRequest "$Base/downloads/$Wheel" -OutFile $WheelPath -UseBasicParsing
+# From the office server when there is one; else (or when that fails) from the GitHub release of the same version.
+$Got = $false
+if ($Base) { try { Invoke-WebRequest "$Base/downloads/$Wheel" -OutFile $WheelPath -UseBasicParsing; $Got = $true } catch {} }
+if (-not $Got -and $GitHub) {
+  Say "Downloading from GitHub ($($GitHub -replace '^https://github.com/', ''))"
+  try { Invoke-WebRequest "$GitHub/$Wheel" -OutFile $WheelPath -UseBasicParsing; $Got = $true } catch {}
+}
+if (-not $Got) { Die "Could not download the node package. Check this computer can open $(if ($Base) { $Base } else { $GitHub }) in a browser; if not, ask IT to allow it." }
 uv tool install --force --reinstall --python 3.12 $WheelPath | Out-Null
 $Node = (Get-Command agentfleet-node -ErrorAction SilentlyContinue).Source
 if (-not $Node) { $Node = Join-Path $Bin 'agentfleet-node.exe' }
@@ -50,6 +61,7 @@ if (Get-Command agentmesh-node -ErrorAction SilentlyContinue) {
   Say 'agentmesh-node already installed'
 } else {
   try {
+    if (-not $Base) { throw 'no office server' }
     Invoke-WebRequest "$Base/downloads/agentmesh-node-windows-$Arch.exe" -OutFile (Join-Path $Bin 'agentmesh-node.exe') -UseBasicParsing
     New-Item -ItemType File -Force (Join-Path $HomeDir 'installed-agentmesh-node') | Out-Null
     Say 'Installed agentmesh-node'
@@ -101,7 +113,7 @@ foreach ($Dir in @("$env:APPDATA\Microsoft\Windows\Start Menu\Programs", [Enviro
   $Lnk.Save()
 }
 
-$Url = "http://127.0.0.1:$Port/?server=$Office"
+$Url = if ($Office) { "http://127.0.0.1:$Port/?server=$Office" } else { "http://127.0.0.1:$Port/" }
 Say "Done. $Title is running at http://127.0.0.1:$Port"
-Write-Host "    Open it any time from the '$Title' shortcut. To remove it: irm $Base/uninstall.ps1 | iex"
+Write-Host "    Open it any time from the '$Title' shortcut. To remove it: Settings > This computer > Uninstall."
 if (-not $env:AGENTMESH_NO_OPEN) { Start-Process $Url }
