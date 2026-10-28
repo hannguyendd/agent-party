@@ -10,7 +10,9 @@ agents from a web dashboard. The design of record is the "Agent Mesh Architectur
 - `node-server/`: Python node server, one per device. Runs the agents and speaks A2A.
 - `dashboard/`: React owner dashboard, served by the node server once built.
 
-Each has its own CLAUDE.md. Commands live in the root `Makefile` (`make help`).
+Each has its own CLAUDE.md. Commands live in the root `Makefile` (`make help`); `docs/RUNNING.md` is the
+running guide for people. Keep it, and the `.env.example` files in `node-server/` and `dashboard/`, in step
+with any change to the Makefile, scripts or settings.
 
 ## Cross-cutting contracts
 

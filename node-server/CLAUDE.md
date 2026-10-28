@@ -1,7 +1,8 @@
 # node-server
 
 Per-device server: FastAPI + Claude Agent SDK (`ClaudeSDKClient`) + `a2a-sdk` + SQLModel/SQLite, packages via uv.
-Settings are `AGENTFLEET_*` env vars or `.env` (`src/agentfleet_node/config.py`). Module map and invariants:
+Settings are `AGENTFLEET_*` env vars or `.env` (`src/agentfleet_node/config.py`); `.env.example` lists every one
+with its default, so update it with any change to `Settings`. Module map and invariants:
 `src/agentfleet_node/CLAUDE.md`. Test harness: `tests/CLAUDE.md`.
 
 ## Library gotchas
@@ -20,10 +21,8 @@ Settings are `AGENTFLEET_*` env vars or `.env` (`src/agentfleet_node/config.py`)
 
 ## Real-stack smoke (for mesh, A2A or session changes)
 
-Unit tests use a fake Claude client and static peers, so they cannot catch the gotchas above. To exercise the
-real path locally: start `agentmesh-one` on a scratch data dir with `--policy-file ../hub/policy.json
---no-join-token`, mint two tokens, run two node servers on different ports/data dirs (`AGENTFLEET_PORT`,
-`AGENTFLEET_DATA_DIR`, `AGENTFLEET_MESH_NODE_URL`, `AGENTFLEET_MESH_API_TOKEN_PATH`) and two
-`scripts/start-mesh-node.sh` with `NODE_BIND=127.0.0.1:<port> MESH_LISTEN=/ip4/127.0.0.1/tcp/0`, then send with
-`build_node(Settings()).outbound.send(...)`. Give real agents `model="claude-haiku-5-5"` and `setting_sources=[]`
-to keep runs cheap. Keep all scratch dirs out of the repo.
+Unit tests use a fake Claude client and static peers, so they cannot catch the gotchas above. Bring up the
+one-machine demo from `docs/RUNNING.md` (hub, two node servers, two mesh nodes), then send with
+`build_node(Settings()).outbound.send(...)` under one device's env vars. Give real agents
+`model="claude-haiku-5-5"` and `setting_sources=[]` to keep runs cheap. Delete `hub/data/` and
+`node-server/data/` afterwards.

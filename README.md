@@ -42,6 +42,8 @@ Take over (owner answers the peer by hand) / Hand back · Fork · Approve/deny t
 
 ## Setup
 
+Step-by-step instructions, a one-machine demo and troubleshooting: [docs/RUNNING.md](docs/RUNNING.md).
+
 Quick reference (`make help` lists every target):
 
 | Where | Command |
