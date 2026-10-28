@@ -1,0 +1,16 @@
+{
+  "mapFilesByteIdentical": {
+    "seats.json": true,
+    "collision.png": true,
+    "background.png": true,
+    "foreground.png": true,
+    "collision@16x.png": true
+  },
+  "models3dSynchronized": true,
+  "noVariantsOrKaykit": true,
+  "activeProps": 57,
+  "activeKit": 12,
+  "facingPairs": 9,
+  "maximumAbsoluteBackGap": 1.2397766369076635e-07,
+  "characterContract": "pass"
+}

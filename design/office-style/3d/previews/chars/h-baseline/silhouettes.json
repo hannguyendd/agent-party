@@ -1,0 +1,213 @@
+{
+  "method": "48x72 orthographic, fixed sprite pixel scale (1.96 / opaque height), alpha >127, feet row71. Baseline Part F normalized to same height only. Side chooses narrowest summed foot span across frames4–7; ties earliest.",
+  "skins": {
+    "dev-hoodie": {
+      "sideFrame": 7,
+      "front": {
+        "before": 0.7163155316021558,
+        "after": 0.9735868991019546,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.6500311915159077,
+        "after": 0.890488110137672,
+        "target": 0.7
+      }
+    },
+    "designer": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.6883838383838384,
+        "after": 0.9732386673948662,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.5316614420062696,
+        "after": 0.8731241473396999,
+        "target": 0.7
+      }
+    },
+    "lead": {
+      "sideFrame": 7,
+      "front": {
+        "before": 0.7357512953367875,
+        "after": 0.9778138528138528,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.5860349127182045,
+        "after": 0.8847117794486216,
+        "target": 0.7
+      }
+    },
+    "shiba": {
+      "sideFrame": 7,
+      "front": {
+        "before": 0.6382730455075846,
+        "after": 0.9754385964912281,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.49936628643852976,
+        "after": 0.8748419721871049,
+        "target": 0.7
+      }
+    },
+    "cat": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.5865885416666666,
+        "after": 0.969939879759519,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.42483660130718953,
+        "after": 0.8114285714285714,
+        "target": 0.7
+      }
+    },
+    "penguin": {
+      "sideFrame": 4,
+      "front": {
+        "before": 0.5217696629213483,
+        "after": 0.842436974789916,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.40016233766233766,
+        "after": 0.8361445783132531,
+        "target": 0.7
+      }
+    },
+    "alien": {
+      "sideFrame": 7,
+      "front": {
+        "before": 0.6028602860286029,
+        "after": 0.9236947791164659,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.543046357615894,
+        "after": 0.8708029197080291,
+        "target": 0.7
+      }
+    },
+    "robot": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.5856493178372916,
+        "after": 0.9544175576814856,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.4824387011265739,
+        "after": 0.8937269372693727,
+        "target": 0.7
+      }
+    },
+    "mage": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.6296296296296297,
+        "after": 0.950354609929078,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.45598194130925507,
+        "after": 0.8614814814814815,
+        "target": 0.7
+      }
+    },
+    "knight": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.6026528258362168,
+        "after": 0.9227618490345231,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.5030384875084403,
+        "after": 0.9050847457627119,
+        "target": 0.7
+      }
+    },
+    "ranger": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.6178038379530917,
+        "after": 0.962534435261708,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.5184067592033796,
+        "after": 0.8890221955608878,
+        "target": 0.7
+      }
+    },
+    "healer": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.6337719298245614,
+        "after": 0.935868754660701,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.5012126111560227,
+        "after": 0.862370723945903,
+        "target": 0.7
+      }
+    },
+    "rogue": {
+      "sideFrame": 7,
+      "front": {
+        "before": 0.6681766704416761,
+        "after": 0.9691322073383809,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.5388440024860162,
+        "after": 0.8940886699507389,
+        "target": 0.7
+      }
+    },
+    "berserker": {
+      "sideFrame": 7,
+      "front": {
+        "before": 0.6276864728192162,
+        "after": 0.9497549019607843,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.403530895334174,
+        "after": 0.8746081504702194,
+        "target": 0.7
+      }
+    },
+    "slime": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.6352040816326531,
+        "after": 0.9169520547945206,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.5518485121731289,
+        "after": 0.8358744394618834,
+        "target": 0.7
+      }
+    },
+    "dragon": {
+      "sideFrame": 5,
+      "front": {
+        "before": 0.6875,
+        "after": 0.952416918429003,
+        "target": 0.8
+      },
+      "side": {
+        "before": 0.4900398406374502,
+        "after": 0.8301886792452831,
+        "target": 0.7
+      }
+    }
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "cabinet": {
+    "before": 1,
+    "after": 1
+  },
+  "fridge": {
+    "before": 1,
+    "after": 1
+  },
+  "counter": {
+    "before": 3,
+    "after": 3
+  },
+  "sink": {
+    "before": 1,
+    "after": 1
+  },
+  "coffee-machine": {
+    "before": 1,
+    "after": 1
+  },
+  "jar": {
+    "before": 2,
+    "after": 2
+  },
+  "round-table": {
+    "before": 1,
+    "after": 1
+  },
+  "shelf": {
+    "before": 1,
+    "after": 1
+  },
+  "sofa": {
+    "before": 1,
+    "after": 1
+  },
+  "coffee-table": {
+    "before": 1,
+    "after": 1
+  },
+  "floor-lamp": {
+    "before": 1,
+    "after": 1
+  },
+  "bookshelf": {
+    "before": 1,
+    "after": 1
+  },
+  "gaming-chair": {
+    "before": 1,
+    "after": 1
+  },
+  "stool": {
+    "before": 4,
+    "after": 4
+  },
+  "plant-large": {
+    "before": 1,
+    "after": 1
+  },
+  "plant-small": {
+    "before": 1,
+    "after": 1
+  },
+  "door-mat": {
+    "before": 1,
+    "after": 1
+  },
+  "rug-lavender": {
+    "before": 1,
+    "after": 1
+  },
+  "rug-mint": {
+    "before": 1,
+    "after": 1
+  },
+  "card-mat": {
+    "before": 1,
+    "after": 1
+  },
+  "ludo-mat": {
+    "before": 1,
+    "after": 1
+  },
+  "floor-palm": {
+    "before": 3,
+    "after": 3
+  },
+  "floor-tile": {
+    "before": 1313,
+    "after": 1313
+  },
+  "floor-manager": {
+    "before": 247,
+    "after": 247
+  },
+  "counter-wide": {
+    "before": 1,
+    "after": 1
+  },
+  "counter-compact": {
+    "before": 1,
+    "after": 1
+  },
+  "microwave": {
+    "before": 1,
+    "after": 1
+  },
+  "kettle": {
+    "before": 1,
+    "after": 1
+  },
+  "toaster": {
+    "before": 1,
+    "after": 1
+  },
+  "paper-towels": {
+    "before": 1,
+    "after": 1
+  },
+  "cable-cover": {
+    "before": 3,
+    "after": 3
+  },
+  "floor-sticker": {
+    "before": 2,
+    "after": 2
+  },
+  "sun-patch-edge": {
+    "before": 1,
+    "after": 1
+  },
+  "sun-patch": {
+    "before": 9,
+    "after": 9
+  },
+  "framed-poster": {
+    "before": 4,
+    "after": 0
+  },
+  "calendar": {
+    "before": 5,
+    "after": 0
+  },
+  "corkboard": {
+    "before": 6,
+    "after": 0
+  },
+  "wall-clock": {
+    "before": 6,
+    "after": 6
+  },
+  "wall-shelf": {
+    "before": 4,
+    "after": 7
+  },
+  "air-conditioner": {
+    "before": 2,
+    "after": 0
+  },
+  "picture-frame": {
+    "before": 5,
+    "after": 7
+  },
+  "company-sign": {
+    "before": 2,
+    "after": 0
+  },
+  "wall-whiteboard": {
+    "before": 1,
+    "after": 0
+  },
+  "wall-tv": {
+    "before": 1,
+    "after": 0
+  },
+  "hanging-planter": {
+    "before": 10,
+    "after": 0
+  },
+  "water-dispenser": {
+    "before": 1,
+    "after": 0
+  },
+  "book-stack": {
+    "before": 11,
+    "after": 3
+  },
+  "desk-plant": {
+    "before": 4,
+    "after": 4
+  },
+  "guest-chair": {
+    "before": 2,
+    "after": 2
+  },
+  "office-chair": {
+    "before": 10,
+    "after": 10
+  },
+  "workstation-desk": {
+    "before": 18,
+    "after": 18
+  },
+  "monitor-dual": {
+    "before": 18,
+    "after": 18
+  },
+  "monitor-arm": {
+    "before": 18,
+    "after": 18
+  },
+  "keyboard": {
+    "before": 19,
+    "after": 18
+  },
+  "mouse-compact": {
+    "before": 20,
+    "after": 20
+  },
+  "pc-tower": {
+    "before": 20,
+    "after": 20
+  },
+  "cable-tray": {
+    "before": 18,
+    "after": 0
+  },
+  "mug": {
+    "before": 21,
+    "after": 21
+  },
+  "notebook": {
+    "before": 19,
+    "after": 19
+  },
+  "desk-cactus": {
+    "before": 46,
+    "after": 34
+  },
+  "pen-cup": {
+    "before": 18,
+    "after": 0
+  },
+  "office-chair-lavender": {
+    "before": 10,
+    "after": 10
+  },
+  "workstation-desk-compact": {
+    "before": 1,
+    "after": 1
+  },
+  "monitor-compact": {
+    "before": 2,
+    "after": 2
+  },
+  "keyboard-compact": {
+    "before": 1,
+    "after": 2
+  },
+  "reception-desk": {
+    "before": 1,
+    "after": 1
+  },
+  "document-tray": {
+    "before": 3,
+    "after": 0
+  },
+  "spine-left": {
+    "before": 4,
+    "after": 4
+  },
+  "spine-middle": {
+    "before": 1,
+    "after": 1
+  },
+  "spine-bench": {
+    "before": 4,
+    "after": 4
+  },
+  "meeting-table": {
+    "before": 1,
+    "after": 1
+  },
+  "meeting-chair-mint": {
+    "before": 2,
+    "after": 2
+  },
+  "meeting-chair-lavender": {
+    "before": 2,
+    "after": 2
+  },
+  "water-bottle": {
+    "before": 1,
+    "after": 1
+  },
+  "rug-meeting-corner": {
+    "before": 1,
+    "after": 1
+  }
+}

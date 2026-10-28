@@ -1,0 +1,920 @@
+{
+  "pack": "kenney",
+  "license": "CC0",
+  "licenseFile": "vendor/kenney/LICENSE",
+  "covered": {
+    "desk": {
+      "sourceModel": "desk",
+      "fallback": false,
+      "triangles": 198,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.6100000143051147,
+          0,
+          -0.7700000405311584
+        ],
+        "max": [
+          1.6100000143051147,
+          1.0399999618530273,
+          0.7700000405311584
+        ]
+      }
+    },
+    "monitor-dual": {
+      "sourceModel": "computerScreen",
+      "fallback": false,
+      "triangles": 144,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.0500000715255737,
+          0,
+          -0.17499999701976776
+        ],
+        "max": [
+          1.0500000715255737,
+          0.9520000219345093,
+          0.17499999701976776
+        ]
+      }
+    },
+    "keyboard": {
+      "sourceModel": "computerKeyboard",
+      "fallback": false,
+      "triangles": 32,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.4059999883174896,
+          0,
+          -0.15399999916553497
+        ],
+        "max": [
+          0.4059999883174896,
+          0.10570000112056732,
+          0.15399999916553497
+        ]
+      }
+    },
+    "office-chair": {
+      "sourceModel": "chairDesk",
+      "fallback": false,
+      "triangles": 588,
+      "sourceSeat": 0.23349999874830252,
+      "targetSeat": 0.7,
+      "bounds": {
+        "min": [
+          -0.5633324980735779,
+          0,
+          -0.5357610583305359
+        ],
+        "max": [
+          0.5633324980735779,
+          1.5189999341964722,
+          0.5357610583305359
+        ]
+      }
+    },
+    "desk-plant": {
+      "sourceModel": "plantSmall1",
+      "fallback": false,
+      "triangles": 102,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.26097816228866577,
+          0,
+          -0.26392433047294617
+        ],
+        "max": [
+          0.26097816228866577,
+          0.7957614660263062,
+          0.26392433047294617
+        ]
+      }
+    },
+    "workstation-desk": {
+      "sourceModel": "desk",
+      "fallback": false,
+      "triangles": 198,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.2599999904632568,
+          0,
+          -0.9799999594688416
+        ],
+        "max": [
+          1.2599999904632568,
+          1.0399999618530273,
+          0.9799999594688416
+        ]
+      }
+    },
+    "workstation-desk-compact": {
+      "sourceModel": "desk",
+      "fallback": false,
+      "triangles": 198,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.6439999938011169,
+          0,
+          -0.9799999594688416
+        ],
+        "max": [
+          0.6439999938011169,
+          1.0399999618530273,
+          0.9799999594688416
+        ]
+      }
+    },
+    "monitor-compact": {
+      "sourceModel": "computerScreen",
+      "fallback": false,
+      "triangles": 72,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.4899999797344208,
+          0,
+          -0.14000000059604645
+        ],
+        "max": [
+          0.4899999797344208,
+          0.902999997138977,
+          0.14000000059604645
+        ]
+      }
+    },
+    "keyboard-compact": {
+      "sourceModel": "computerKeyboard",
+      "fallback": false,
+      "triangles": 32,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.2800000011920929,
+          0,
+          -0.1119999960064888
+        ],
+        "max": [
+          0.2800000011920929,
+          0.08259999752044678,
+          0.1119999960064888
+        ]
+      }
+    },
+    "mouse-compact": {
+      "sourceModel": "computerMouse",
+      "fallback": false,
+      "triangles": 71,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.06650000065565109,
+          0,
+          -0.09799999743700027
+        ],
+        "max": [
+          0.06650000065565109,
+          0.07699999958276749,
+          0.09799999743700027
+        ]
+      }
+    },
+    "spine-left": {
+      "sourceModel": "cabinetTelevisionDoors",
+      "fallback": false,
+      "triangles": 210,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -2.0999999046325684,
+          0,
+          -1.1539499759674072
+        ],
+        "max": [
+          2.0999999046325684,
+          0.9695000052452087,
+          1.1539499759674072
+        ]
+      }
+    },
+    "spine-middle": {
+      "sourceModel": "cabinetTelevisionDoors",
+      "fallback": false,
+      "triangles": 210,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -2.799999952316284,
+          0,
+          -1.1539499759674072
+        ],
+        "max": [
+          2.799999952316284,
+          0.9695000052452087,
+          1.1539499759674072
+        ]
+      }
+    },
+    "spine-bench": {
+      "sourceModel": "cabinetTelevisionDoors",
+      "fallback": false,
+      "triangles": 210,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -3.430000066757202,
+          0,
+          -0.7059500217437744
+        ],
+        "max": [
+          3.430000066757202,
+          0.9695000052452087,
+          0.7059500217437744
+        ]
+      }
+    },
+    "meeting-table": {
+      "sourceModel": "table",
+      "fallback": false,
+      "triangles": 120,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.8259999752044678,
+          0,
+          -1.5260000228881836
+        ],
+        "max": [
+          0.8259999752044678,
+          1.0399999618530273,
+          1.5260000228881836
+        ]
+      }
+    },
+    "meeting-chair-mint": {
+      "sourceModel": "chairCushion",
+      "fallback": false,
+      "triangles": 198,
+      "sourceSeat": 0.24000000953674314,
+      "targetSeat": 0.7,
+      "bounds": {
+        "min": [
+          -0.4479999840259552,
+          0,
+          -0.3814999759197235
+        ],
+        "max": [
+          0.4479999840259552,
+          1.309000015258789,
+          0.3814999759197235
+        ]
+      }
+    },
+    "meeting-chair-lavender": {
+      "sourceModel": "chairCushion",
+      "fallback": false,
+      "triangles": 198,
+      "sourceSeat": 0.24000000953674314,
+      "targetSeat": 0.7,
+      "bounds": {
+        "min": [
+          -0.4479999840259552,
+          0,
+          -0.3814999759197235
+        ],
+        "max": [
+          0.4479999840259552,
+          1.309000015258789,
+          0.3814999759197235
+        ]
+      }
+    },
+    "office-chair-lavender": {
+      "sourceModel": "chairDesk",
+      "fallback": false,
+      "triangles": 588,
+      "sourceSeat": 0.23349999874830252,
+      "targetSeat": 0.7,
+      "bounds": {
+        "min": [
+          -0.5633324980735779,
+          0,
+          -0.5357610583305359
+        ],
+        "max": [
+          0.5633324980735779,
+          1.5189999341964722,
+          0.5357610583305359
+        ]
+      }
+    },
+    "desk-long": {
+      "sourceModel": "desk",
+      "fallback": false,
+      "triangles": 198,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.6100000143051147,
+          0,
+          -1.2599999904632568
+        ],
+        "max": [
+          1.6100000143051147,
+          1.0399999618530273,
+          1.2599999904632568
+        ]
+      }
+    },
+    "monitor-single": {
+      "sourceModel": "computerScreen",
+      "fallback": false,
+      "triangles": 72,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.5460000038146973,
+          0,
+          -0.17499999701976776
+        ],
+        "max": [
+          0.5460000038146973,
+          0.9940000176429749,
+          0.17499999701976776
+        ]
+      }
+    },
+    "mouse": {
+      "sourceModel": "computerMouse",
+      "fallback": false,
+      "triangles": 71,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.09099999815225601,
+          0,
+          -0.1331479251384735
+        ],
+        "max": [
+          0.09099999815225601,
+          0.09799999743700027,
+          0.1331479251384735
+        ]
+      }
+    },
+    "stool": {
+      "sourceModel": "stoolBar",
+      "fallback": false,
+      "triangles": 176,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.375855028629303,
+          0,
+          -0.43400001525878906
+        ],
+        "max": [
+          0.375855028629303,
+          0.699999988079071,
+          0.43400001525878906
+        ]
+      }
+    },
+    "reception-desk": {
+      "sourceModel": "desk",
+      "fallback": false,
+      "triangles": 198,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.2599999904632568,
+          0,
+          -0.6299999952316284
+        ],
+        "max": [
+          1.2599999904632568,
+          1.0399999618530273,
+          0.6299999952316284
+        ]
+      }
+    },
+    "cabinet": {
+      "sourceModel": "cabinetBed",
+      "fallback": false,
+      "triangles": 72,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.2599999904632568,
+          0,
+          -0.6265000104904175
+        ],
+        "max": [
+          1.2599999904632568,
+          1.6800000667572021,
+          0.6265000104904175
+        ]
+      }
+    },
+    "fridge": {
+      "sourceModel": "kitchenFridge",
+      "fallback": false,
+      "triangles": 250,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.1200000047683716,
+          0,
+          -1.1234999895095825
+        ],
+        "max": [
+          1.1200000047683716,
+          3.3600001335144043,
+          1.1234999895095825
+        ]
+      }
+    },
+    "counter": {
+      "sourceModel": "kitchenCabinet",
+      "fallback": false,
+      "triangles": 114,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.399999976158142,
+          0,
+          -0.6754999756813049
+        ],
+        "max": [
+          1.399999976158142,
+          1.371999979019165,
+          0.6754999756813049
+        ]
+      }
+    },
+    "coffee-machine": {
+      "sourceModel": "kitchenCoffeeMachine",
+      "fallback": false,
+      "triangles": 166,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.335999995470047,
+          0,
+          -0.3569999933242798
+        ],
+        "max": [
+          0.335999995470047,
+          0.8400000333786011,
+          0.3569999933242798
+        ]
+      }
+    },
+    "round-table": {
+      "sourceModel": "tableRound",
+      "fallback": false,
+      "triangles": 80,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.4549226760864258,
+          0,
+          -1.6800000667572021
+        ],
+        "max": [
+          1.4549226760864258,
+          1.0429999828338623,
+          1.6800000667572021
+        ]
+      }
+    },
+    "shelf": {
+      "sourceModel": "bookcaseOpen",
+      "fallback": false,
+      "triangles": 320,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.8400000333786011,
+          0,
+          -0.3499999940395355
+        ],
+        "max": [
+          0.8400000333786011,
+          2.6600000858306885,
+          0.3499999940395355
+        ]
+      }
+    },
+    "sofa": {
+      "sourceModel": "loungeSofa",
+      "fallback": false,
+      "triangles": 128,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.8969999551773071,
+          0,
+          -0.7735000252723694
+        ],
+        "max": [
+          1.8969999551773071,
+          1.4210000038146973,
+          0.7735000252723694
+        ]
+      }
+    },
+    "armchair": {
+      "sourceModel": "loungeChair",
+      "fallback": false,
+      "triangles": 128,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.812000036239624,
+          0,
+          -0.7735000252723694
+        ],
+        "max": [
+          0.812000036239624,
+          1.4210000038146973,
+          0.7735000252723694
+        ]
+      }
+    },
+    "coffee-table": {
+      "sourceModel": "tableCoffee",
+      "fallback": false,
+      "triangles": 124,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.1549999713897705,
+          0,
+          -0.699999988079071
+        ],
+        "max": [
+          1.1549999713897705,
+          0.6790000200271606,
+          0.699999988079071
+        ]
+      }
+    },
+    "floor-lamp": {
+      "sourceModel": "lampRoundFloor",
+      "fallback": false,
+      "triangles": 76,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.4660176634788513,
+          0,
+          -0.4899999797344208
+        ],
+        "max": [
+          0.4660176634788513,
+          2.7300000190734863,
+          0.4899999797344208
+        ]
+      }
+    },
+    "bookshelf": {
+      "sourceModel": "bookcaseOpen",
+      "fallback": false,
+      "triangles": 320,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.2599999904632568,
+          0,
+          -0.3499999940395355
+        ],
+        "max": [
+          1.2599999904632568,
+          2.6600000858306885,
+          0.3499999940395355
+        ]
+      }
+    },
+    "plant-large": {
+      "sourceModel": "pottedPlant",
+      "fallback": false,
+      "triangles": 60,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.7829344868659973,
+          0,
+          -0.7917729616165161
+        ],
+        "max": [
+          0.7829344868659973,
+          2.387284278869629,
+          0.7917729616165161
+        ]
+      }
+    },
+    "plant-small": {
+      "sourceModel": "plantSmall2",
+      "fallback": false,
+      "triangles": 158,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.4697606861591339,
+          0,
+          -0.4750638008117676
+        ],
+        "max": [
+          0.4697606861591339,
+          1.432370662689209,
+          0.4750638008117676
+        ]
+      }
+    },
+    "book-stack": {
+      "sourceModel": "books",
+      "fallback": false,
+      "triangles": 62,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.17149999737739563,
+          0,
+          -0.12600000202655792
+        ],
+        "max": [
+          0.17149999737739563,
+          0.14980000257492065,
+          0.12600000202655792
+        ]
+      }
+    },
+    "desk-lamp": {
+      "sourceModel": "lampRoundTable",
+      "fallback": false,
+      "triangles": 76,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.12600000202655792,
+          0,
+          -0.15049999952316284
+        ],
+        "max": [
+          0.12600000202655792,
+          0.47600001096725464,
+          0.15049999952316284
+        ]
+      }
+    },
+    "desk-cactus": {
+      "sourceModel": "plantSmall3",
+      "fallback": false,
+      "triangles": 98,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.12250000238418579,
+          0,
+          -0.09099999815225601
+        ],
+        "max": [
+          0.12250000238418579,
+          0.3779999911785126,
+          0.09099999815225601
+        ]
+      }
+    },
+    "microwave": {
+      "sourceModel": "kitchenMicrowave",
+      "fallback": false,
+      "triangles": 152,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.4479999840259552,
+          0,
+          -0.3167499899864197
+        ],
+        "max": [
+          0.4479999840259552,
+          0.5460000038146973,
+          0.3167499899864197
+        ]
+      }
+    },
+    "toaster": {
+      "sourceModel": "toaster",
+      "fallback": false,
+      "triangles": 220,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.2913863956928253,
+          0,
+          -0.17499999701976776
+        ],
+        "max": [
+          0.2913863956928253,
+          0.3499999940395355,
+          0.17499999701976776
+        ]
+      }
+    },
+    "filing-cabinet": {
+      "sourceModel": "cabinetBedDrawer",
+      "fallback": false,
+      "triangles": 182,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.5740000009536743,
+          0,
+          -0.6177499890327454
+        ],
+        "max": [
+          0.5740000009536743,
+          1.3299999237060547,
+          0.6177499890327454
+        ]
+      }
+    },
+    "floor-palm": {
+      "sourceModel": "pottedPlant",
+      "fallback": false,
+      "triangles": 60,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.539082407951355,
+          0,
+          -0.5120279788970947
+        ],
+        "max": [
+          0.539082407951355,
+          1.9961925745010376,
+          0.5120279788970947
+        ]
+      }
+    },
+    "counter-wide": {
+      "sourceModel": "kitchenCabinet",
+      "fallback": false,
+      "triangles": 114,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.959999918937683,
+          0,
+          -1.2897499799728394
+        ],
+        "max": [
+          1.959999918937683,
+          1.371999979019165,
+          1.2897499799728394
+        ]
+      }
+    },
+    "counter-compact": {
+      "sourceModel": "kitchenCabinetDrawer",
+      "fallback": false,
+      "triangles": 174,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -1.2599999904632568,
+          0,
+          -1.2897499799728394
+        ],
+        "max": [
+          1.2599999904632568,
+          1.371999979019165,
+          1.2897499799728394
+        ]
+      }
+    },
+    "guest-chair": {
+      "sourceModel": "chairModernCushion",
+      "fallback": false,
+      "triangles": 92,
+      "sourceSeat": 0.24000000953674316,
+      "targetSeat": 0.7,
+      "bounds": {
+        "min": [
+          -0.5040000081062317,
+          0,
+          -0.4584999978542328
+        ],
+        "max": [
+          0.5040000081062317,
+          1.3860000371932983,
+          0.4584999978542328
+        ]
+      }
+    },
+    "lounge-table": {
+      "sourceModel": "tableCoffee",
+      "fallback": false,
+      "triangles": 124,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.751710057258606,
+          0,
+          -0.8680000305175781
+        ],
+        "max": [
+          0.751710057258606,
+          1.1480000019073486,
+          0.8680000305175781
+        ]
+      }
+    },
+    "wall-shelf": {
+      "sourceModel": "bookcaseOpenLow",
+      "fallback": false,
+      "triangles": 184,
+      "sourceSeat": null,
+      "bounds": {
+        "min": [
+          -0.9799999594688416,
+          0,
+          3.251162394857232e-10
+        ],
+        "max": [
+          0.9799999594688416,
+          0.4829999804496765,
+          0.11999999731779099
+        ]
+      }
+    }
+  },
+  "fallback": {
+    "monitor-arm": "Not covered by this pack; own ×1.4 model retained.",
+    "pc-tower": "Not covered by this pack; own ×1.4 model retained.",
+    "mug": "Not covered by this pack; own ×1.4 model retained.",
+    "rug-meeting-corner": "Not covered by this pack; own ×1.4 model retained.",
+    "cable-tray": "Not covered by this pack; own ×1.4 model retained.",
+    "monitor-riser": "Not covered by this pack; own ×1.4 model retained.",
+    "desk-shelf": "Not covered by this pack; own ×1.4 model retained.",
+    "power-strip": "Not covered by this pack; own ×1.4 model retained.",
+    "gaming-chair": "Not covered by this pack; own ×1.4 model retained.",
+    "photo-frame": "Not covered by this pack; own ×1.4 model retained.",
+    "water-bottle": "Not covered by this pack; own ×1.4 model retained.",
+    "figurine": "Not covered by this pack; own ×1.4 model retained.",
+    "door-mat": "Not covered by this pack; own ×1.4 model retained.",
+    "sink": "Not covered by this pack; own ×1.4 model retained.",
+    "jar": "Not covered by this pack; own ×1.4 model retained.",
+    "bench": "Not covered by this pack; own ×1.4 model retained.",
+    "whiteboard": "Not covered by this pack; own ×1.4 model retained.",
+    "printer": "Not covered by this pack; own ×1.4 model retained.",
+    "rug-lavender": "Not covered by this pack; own ×1.4 model retained.",
+    "rug-mint": "Not covered by this pack; own ×1.4 model retained.",
+    "folding-table": "Not covered by this pack; own ×1.4 model retained.",
+    "folding-chair": "Not covered by this pack; own ×1.4 model retained.",
+    "card-mat": "Not covered by this pack; own ×1.4 model retained.",
+    "ludo-mat": "Not covered by this pack; own ×1.4 model retained.",
+    "document-tray": "Not covered by this pack; own ×1.4 model retained.",
+    "notebook": "Not covered by this pack; own ×1.4 model retained.",
+    "pen-cup": "Not covered by this pack; own ×1.4 model retained.",
+    "headphones": "Not covered by this pack; own ×1.4 model retained.",
+    "phone-stand": "Not covered by this pack; own ×1.4 model retained.",
+    "sticky-notes": "Not covered by this pack; own ×1.4 model retained.",
+    "snack-box": "Not covered by this pack; own ×1.4 model retained.",
+    "tissue-box": "Not covered by this pack; own ×1.4 model retained.",
+    "kettle": "Not covered by this pack; own ×1.4 model retained.",
+    "fruit-bowl": "Not covered by this pack; own ×1.4 model retained.",
+    "cup-rack": "Not covered by this pack; own ×1.4 model retained.",
+    "paper-towels": "Not covered by this pack; own ×1.4 model retained.",
+    "storage-cube": "Not covered by this pack; own ×1.4 model retained.",
+    "archive-boxes": "Not covered by this pack; own ×1.4 model retained.",
+    "recycle-bin": "Not covered by this pack; own ×1.4 model retained.",
+    "water-dispenser": "Not covered by this pack; own ×1.4 model retained.",
+    "coat-rack": "Not covered by this pack; own ×1.4 model retained.",
+    "shoe-rack": "Not covered by this pack; own ×1.4 model retained.",
+    "bean-bag": "Not covered by this pack; own ×1.4 model retained.",
+    "printer-stand": "Not covered by this pack; own ×1.4 model retained.",
+    "desk-apron": "Not covered by this pack; own ×1.4 model retained.",
+    "desk-wing": "Not covered by this pack; own ×1.4 model retained.",
+    "desk-return": "Not covered by this pack; own ×1.4 model retained.",
+    "wall-clock": "Not covered by this pack; own ×1.4 model retained.",
+    "corkboard": "Not covered by this pack; own ×1.4 model retained.",
+    "framed-poster": "Not covered by this pack; own ×1.4 model retained.",
+    "wall-tv": "Not covered by this pack; own ×1.4 model retained.",
+    "hanging-planter": "Not covered by this pack; own ×1.4 model retained.",
+    "company-sign": "Not covered by this pack; own ×1.4 model retained.",
+    "calendar": "Not covered by this pack; own ×1.4 model retained.",
+    "wall-whiteboard": "Not covered by this pack; own ×1.4 model retained.",
+    "sun-patch": "Not covered by this pack; own ×1.4 model retained.",
+    "sun-patch-edge": "Not covered by this pack; own ×1.4 model retained.",
+    "cable-cover": "Not covered by this pack; own ×1.4 model retained.",
+    "rug-meeting": "Not covered by this pack; own ×1.4 model retained.",
+    "floor-sticker": "Not covered by this pack; own ×1.4 model retained."
+  }
+}

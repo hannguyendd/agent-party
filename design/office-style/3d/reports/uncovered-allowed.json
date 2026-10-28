@@ -1,6 +1,6 @@
 [
   {
-    "id": "f-padding-1",
+    "id": "g2-padding-1",
     "tiles": [
       [
         10,
@@ -11,22 +11,14 @@
         4
       ],
       [
-        10,
-        5
-      ],
-      [
         12,
         4
-      ],
-      [
-        11,
-        5
       ]
     ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-2",
+    "id": "g2-padding-2",
     "tiles": [
       [
         31,
@@ -37,10 +29,10 @@
         4
       ]
     ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-3",
+    "id": "g2-padding-3",
     "tiles": [
       [
         36,
@@ -67,23 +59,11 @@
         5
       ]
     ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-4",
+    "id": "g2-padding-4",
     "tiles": [
-      [
-        39,
-        4
-      ],
-      [
-        40,
-        4
-      ],
-      [
-        41,
-        4
-      ],
       [
         42,
         4
@@ -145,10 +125,10 @@
         4
       ]
     ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-5",
+    "id": "g2-padding-5",
     "tiles": [
       [
         52,
@@ -159,64 +139,20 @@
         6
       ]
     ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-6",
-    "tiles": [
-      [
-        9,
-        7
-      ],
-      [
-        10,
-        7
-      ],
-      [
-        11,
-        7
-      ],
-      [
-        12,
-        7
-      ],
-      [
-        13,
-        7
-      ],
-      [
-        14,
-        7
-      ]
-    ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
-  },
-  {
-    "id": "f-padding-7",
-    "tiles": [
-      [
-        39,
-        7
-      ],
-      [
-        40,
-        7
-      ]
-    ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
-  },
-  {
-    "id": "f-padding-8",
+    "id": "g2-padding-6",
     "tiles": [
       [
         46,
         8
       ]
     ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-9",
+    "id": "g2-padding-7",
     "tiles": [
       [
         47,
@@ -227,44 +163,20 @@
         10
       ]
     ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-10",
-    "tiles": [
-      [
-        9,
-        11
-      ]
-    ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
-  },
-  {
-    "id": "f-padding-11",
-    "tiles": [
-      [
-        13,
-        11
-      ],
-      [
-        14,
-        11
-      ]
-    ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
-  },
-  {
-    "id": "f-padding-12",
+    "id": "g2-padding-8",
     "tiles": [
       [
         36,
         11
       ]
     ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-13",
+    "id": "g2-padding-9",
     "tiles": [
       [
         24,
@@ -275,12 +187,24 @@
         12
       ],
       [
+        24,
+        13
+      ],
+      [
         26,
         12
       ],
       [
+        24,
+        14
+      ],
+      [
         27,
         12
+      ],
+      [
+        24,
+        15
       ],
       [
         28,
@@ -293,42 +217,24 @@
       [
         30,
         12
-      ]
-    ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
-  },
-  {
-    "id": "f-padding-14",
-    "tiles": [
-      [
-        9,
-        15
       ],
       [
-        10,
-        15
+        30,
+        13
       ],
       [
-        11,
-        15
+        30,
+        14
       ],
       [
-        12,
-        15
-      ],
-      [
-        13,
-        15
-      ],
-      [
-        14,
+        30,
         15
       ]
     ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-15",
+    "id": "g2-padding-10",
     "tiles": [
       [
         48,
@@ -339,10 +245,6 @@
         17
       ],
       [
-        48,
-        18
-      ],
-      [
         50,
         17
       ],
@@ -351,20 +253,8 @@
         18
       ],
       [
-        48,
-        19
-      ],
-      [
-        51,
-        17
-      ],
-      [
         50,
         18
-      ],
-      [
-        48,
-        20
       ],
       [
         51,
@@ -377,46 +267,12 @@
       [
         53,
         18
-      ],
-      [
-        53,
-        17
       ]
     ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-16",
-    "tiles": [
-      [
-        9,
-        19
-      ],
-      [
-        10,
-        19
-      ],
-      [
-        11,
-        19
-      ],
-      [
-        12,
-        19
-      ],
-      [
-        13,
-        19
-      ],
-      [
-        14,
-        19
-      ]
-    ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
-  },
-  {
-    "id": "f-padding-17",
+    "id": "g2-padding-11",
     "tiles": [
       [
         41,
@@ -425,60 +281,12 @@
       [
         42,
         20
-      ],
-      [
-        41,
-        21
-      ],
-      [
-        42,
-        21
       ]
     ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "f-padding-18",
-    "tiles": [
-      [
-        44,
-        20
-      ]
-    ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
-  },
-  {
-    "id": "f-padding-19",
-    "tiles": [
-      [
-        9,
-        23
-      ],
-      [
-        10,
-        23
-      ],
-      [
-        11,
-        23
-      ],
-      [
-        12,
-        23
-      ],
-      [
-        13,
-        23
-      ],
-      [
-        14,
-        23
-      ]
-    ],
-    "reason": "Original plate desk/cabinet shadow padding; 3D desk depth follows realistic sitter reach rather than the drawn sprite depth."
-  },
-  {
-    "id": "f-padding-20",
+    "id": "g2-padding-12",
     "tiles": [
       [
         45,
@@ -505,20 +313,12 @@
         25
       ],
       [
-        49,
-        24
-      ],
-      [
         48,
         25
       ],
       [
         47,
         26
-      ],
-      [
-        49,
-        25
       ],
       [
         48,
@@ -558,10 +358,6 @@
       ],
       [
         51,
-        25
-      ],
-      [
-        51,
         27
       ],
       [
@@ -593,144 +389,6 @@
         24
       ]
     ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
-  },
-  {
-    "id": "f-padding-21",
-    "tiles": [
-      [
-        41,
-        25
-      ],
-      [
-        42,
-        25
-      ]
-    ],
-    "reason": "Plate floor/shadow padding around the manager/pantry furniture; the meeting corner stays in its existing blocked rectangle."
-  },
-  {
-    "id": "f-padding-22",
-    "tiles": [
-      [
-        16,
-        26
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-23",
-    "tiles": [
-      [
-        20,
-        26
-      ],
-      [
-        21,
-        26
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-24",
-    "tiles": [
-      [
-        25,
-        26
-      ],
-      [
-        26,
-        26
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-25",
-    "tiles": [
-      [
-        30,
-        26
-      ],
-      [
-        31,
-        26
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-26",
-    "tiles": [
-      [
-        35,
-        26
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-27",
-    "tiles": [
-      [
-        16,
-        29
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-28",
-    "tiles": [
-      [
-        20,
-        29
-      ],
-      [
-        21,
-        29
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-29",
-    "tiles": [
-      [
-        25,
-        29
-      ],
-      [
-        26,
-        29
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-30",
-    "tiles": [
-      [
-        30,
-        29
-      ],
-      [
-        31,
-        29
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
-  },
-  {
-    "id": "f-padding-31",
-    "tiles": [
-      [
-        35,
-        29
-      ]
-    ],
-    "reason": "Original deep desk-bank padding around the compact workstations and shared cabinet spine."
+    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   }
 ]

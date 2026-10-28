@@ -11,7 +11,12 @@
       "x": 7,
       "z": 4.5,
       "rot": 0,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        0.653,
+        1,
+        0.657
+      ]
     },
     {
       "model": "fridge",
@@ -25,52 +30,48 @@
       "x": 44,
       "z": 5,
       "rot": 0,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        0.5823529248419109,
+        1,
+        1
+      ]
     },
     {
       "model": "counter",
       "x": 46,
       "z": 5,
       "rot": 0,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        0.5823529248419109,
+        1,
+        1
+      ]
     },
     {
       "model": "counter",
       "x": 48,
       "z": 5,
       "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "sink",
-      "x": 44,
-      "z": 5,
-      "rot": 0,
       "walkable": false,
-      "y": 0.98
-    },
-    {
-      "model": "coffee-machine",
-      "x": 46,
-      "z": 5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.98
-    },
-    {
-      "model": "jar",
-      "x": 48,
-      "z": 5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.98
+      "scale": [
+        0.5823529248419109,
+        1,
+        1
+      ]
     },
     {
       "model": "round-table",
       "x": 45.5,
       "z": 10.5,
       "rot": 0,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        0.849,
+        1,
+        0.735
+      ]
     },
     {
       "model": "shelf",
@@ -92,14 +93,24 @@
       "x": 46.5,
       "z": 22.5,
       "rot": 0,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        1,
+        1,
+        0.588
+      ]
     },
     {
       "model": "floor-lamp",
       "x": 44.5,
       "z": 18.5,
       "rot": 0,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        0.883,
+        1,
+        0.84
+      ]
     },
     {
       "model": "bookshelf",
@@ -113,14 +124,24 @@
       "x": 36.5,
       "z": 30.5,
       "rot": 270,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        0.73,
+        1,
+        0.768
+      ]
     },
     {
       "model": "stool",
       "x": 27.5,
       "z": 16.5,
       "rot": 0,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        1,
+        1,
+        0.948
+      ]
     },
     {
       "model": "plant-large",
@@ -134,7 +155,12 @@
       "x": 27.5,
       "z": 11.5,
       "rot": 0,
-      "walkable": false
+      "walkable": false,
+      "scale": [
+        0.876,
+        1,
+        0.866
+      ]
     },
     {
       "model": "door-mat",
@@ -177,7 +203,12 @@
       "z": 32.5,
       "rot": 0,
       "walkable": false,
-      "area": "manager-extension"
+      "area": "manager-extension",
+      "scale": [
+        0.763,
+        1,
+        0.804
+      ]
     },
     {
       "model": "floor-tile",
@@ -11105,7 +11136,12 @@
       "z": 9.5,
       "rot": 90,
       "walkable": false,
-      "density": "d2"
+      "density": "d2",
+      "scale": [
+        0.5000000260457286,
+        1,
+        0.638
+      ]
     },
     {
       "model": "counter-compact",
@@ -11113,43 +11149,12 @@
       "z": 11.9,
       "rot": 90,
       "walkable": false,
-      "density": "d2"
-    },
-    {
-      "model": "microwave",
-      "x": 43.33,
-      "z": 4.95,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.98,
-      "role": "pantry-item"
-    },
-    {
-      "model": "kettle",
-      "x": 44.61,
-      "z": 4.95,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.98,
-      "role": "pantry-item"
-    },
-    {
-      "model": "toaster",
-      "x": 45.39,
-      "z": 4.95,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.98,
-      "role": "pantry-item"
-    },
-    {
-      "model": "paper-towels",
-      "x": 48.61,
-      "z": 4.95,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.98,
-      "role": "pantry-item"
+      "density": "d2",
+      "scale": [
+        0.7186666801053717,
+        1,
+        0.638
+      ]
     },
     {
       "model": "cable-cover",
@@ -11287,606 +11292,17 @@
       "panel": 9
     },
     {
-      "model": "framed-poster",
-      "x": 3.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-3.5-3.5"
-    },
-    {
-      "model": "calendar",
-      "x": 9.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-9.5-3.5"
-    },
-    {
-      "model": "corkboard",
-      "x": 12.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-12.5-3.5"
-    },
-    {
-      "model": "wall-clock",
-      "x": 15.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-15.5-3.5"
-    },
-    {
-      "model": "wall-shelf",
-      "x": 24.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-24.5-3.5"
-    },
-    {
-      "model": "calendar",
-      "x": 27.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-27.5-3.5"
-    },
-    {
-      "model": "air-conditioner",
-      "x": 30.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 2.7,
-      "wallId": "north-wall-straight-30.5-3.5"
-    },
-    {
-      "model": "wall-clock",
-      "x": 33.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-33.5-3.5"
-    },
-    {
-      "model": "picture-frame",
-      "x": 36.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-36.5-3.5"
-    },
-    {
-      "model": "framed-poster",
-      "x": 39.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-39.5-3.5"
-    },
-    {
-      "model": "wall-shelf",
-      "x": 42.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-42.5-3.5"
-    },
-    {
-      "model": "air-conditioner",
-      "x": 45.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 2.7,
-      "wallId": "north-wall-straight-45.5-3.5"
-    },
-    {
-      "model": "corkboard",
-      "x": 48.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-48.5-3.5"
-    },
-    {
-      "model": "wall-clock",
-      "x": 51.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-51.5-3.5"
-    },
-    {
-      "model": "picture-frame",
-      "x": 7.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 1.95,
-      "wallId": "north-wall-straight-7.5-3.5"
-    },
-    {
-      "model": "company-sign",
-      "x": 17.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 2.45,
-      "wallId": "north-wall-straight-17.5-3.5"
-    },
-    {
-      "model": "company-sign",
-      "x": 21.5,
-      "z": 3.800000011920929,
-      "rot": 0,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "north",
-      "y": 2.45,
-      "wallId": "north-wall-straight-21.5-3.5"
-    },
-    {
-      "model": "corkboard",
-      "x": 54.19999998807907,
-      "z": 6.5,
-      "rot": 270,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "east",
-      "y": 1.95,
-      "wallId": "east-wall-straight-54.5-6.5"
-    },
-    {
-      "model": "wall-clock",
-      "x": 54.19999998807907,
-      "z": 9.5,
-      "rot": 270,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "east",
-      "y": 1.95,
-      "wallId": "east-wall-straight-54.5-9.5"
-    },
-    {
-      "model": "picture-frame",
-      "x": 54.19999998807907,
-      "z": 12.5,
-      "rot": 270,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "east",
-      "y": 1.95,
-      "wallId": "east-wall-straight-54.5-12.5"
-    },
-    {
-      "model": "wall-whiteboard",
-      "x": 54.19999998807907,
-      "z": 18.5,
-      "rot": 270,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "east",
-      "y": 1.95,
-      "wallId": "east-wall-straight-54.5-18.5"
-    },
-    {
-      "model": "wall-tv",
-      "x": 54.19999998807907,
-      "z": 24.5,
-      "rot": 270,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "east",
-      "y": 1.9,
-      "wallId": "east-wall-straight-54.5-24.5"
-    },
-    {
-      "model": "calendar",
-      "x": 3.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-3.5-34.5"
-    },
-    {
-      "model": "corkboard",
-      "x": 6.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-6.5-34.5"
-    },
-    {
-      "model": "wall-clock",
-      "x": 9.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-9.5-34.5"
-    },
-    {
-      "model": "picture-frame",
-      "x": 12.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-12.5-34.5"
-    },
-    {
-      "model": "framed-poster",
-      "x": 15.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-15.5-34.5"
-    },
-    {
-      "model": "wall-shelf",
-      "x": 18.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-18.5-34.5"
-    },
-    {
-      "model": "calendar",
-      "x": 21.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-21.5-34.5"
-    },
-    {
-      "model": "corkboard",
-      "x": 24.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-24.5-34.5"
-    },
-    {
-      "model": "wall-clock",
-      "x": 27.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-27.5-34.5"
-    },
-    {
-      "model": "picture-frame",
-      "x": 30.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-30.5-34.5"
-    },
-    {
-      "model": "framed-poster",
-      "x": 33.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-33.5-34.5"
-    },
-    {
-      "model": "wall-shelf",
-      "x": 36.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-36.5-34.5"
-    },
-    {
-      "model": "calendar",
-      "x": 39.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-39.5-34.5"
-    },
-    {
-      "model": "corkboard",
-      "x": 42.5,
-      "z": 34.19999998807907,
-      "rot": 180,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "south",
-      "y": 1.95,
-      "wallId": "south-wall-straight-42.5-34.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 5.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-5.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 8.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-8.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 11.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-11.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 14.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-14.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 17.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-17.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 20.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-20.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 23.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-23.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 26.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-26.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 29.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-29.5"
-    },
-    {
-      "model": "hanging-planter",
-      "x": 1.59,
-      "z": 32.5,
-      "rot": 90,
-      "walkable": false,
-      "mount": "wall",
-      "facing": "west",
-      "y": 2.1,
-      "wallId": "west-window-wall-1.5-32.5"
-    },
-    {
-      "model": "water-dispenser",
-      "x": 41.5,
-      "z": 7.5,
-      "rot": 0,
-      "walkable": false,
-      "curation": "e"
-    },
-    {
-      "model": "book-stack",
-      "x": 53,
-      "z": 9.25,
-      "rot": 90,
-      "walkable": false,
-      "curation": "e",
-      "y": 0.98,
-      "role": "plate-counter-item"
-    },
-    {
-      "model": "desk-plant",
-      "x": 53,
-      "z": 10.5,
-      "rot": 90,
-      "walkable": false,
-      "curation": "e",
-      "y": 0.98,
-      "role": "plate-counter-item"
-    },
-    {
-      "model": "jar",
-      "x": 53,
-      "z": 11.9,
-      "rot": 90,
-      "walkable": false,
-      "curation": "e",
-      "y": 0.98,
-      "role": "plate-counter-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 53,
-      "z": 12.5,
-      "rot": 90,
-      "walkable": false,
-      "curation": "e",
-      "y": 0.98,
-      "role": "plate-counter-item"
-    },
-    {
-      "model": "desk-plant",
-      "x": 45.5,
-      "z": 10.5,
-      "rot": 0,
-      "walkable": false,
-      "curation": "e",
-      "y": 0.745,
-      "role": "plate-table-item"
-    },
-    {
-      "model": "desk-plant",
-      "x": 46.5,
-      "z": 22.5,
-      "rot": 0,
-      "walkable": false,
-      "curation": "e",
-      "y": 0.485,
-      "role": "plate-table-item"
-    },
-    {
-      "model": "desk-plant",
-      "x": 42,
-      "z": 22.95,
-      "rot": 0,
-      "walkable": false,
-      "curation": "e",
-      "y": 1.9,
-      "role": "cabinet-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 42,
-      "z": 24,
-      "rot": 90,
-      "walkable": false,
-      "curation": "e",
-      "y": 1.9,
-      "role": "cabinet-item"
-    },
-    {
       "model": "floor-palm",
       "x": 52.5,
       "z": 17.5,
       "rot": 0,
       "walkable": false,
-      "curation": "e"
+      "curation": "e",
+      "scale": [
+        1,
+        1,
+        0.804
+      ]
     },
     {
       "model": "floor-palm",
@@ -11894,7 +11310,12 @@
       "z": 19.5,
       "rot": 0,
       "walkable": false,
-      "curation": "e"
+      "curation": "e",
+      "scale": [
+        0.763,
+        1,
+        1
+      ]
     },
     {
       "model": "guest-chair",
@@ -11903,7 +11324,12 @@
       "rot": 180,
       "walkable": false,
       "curation": "e",
-      "plate": "manager visitor chair"
+      "plate": "manager visitor chair",
+      "scale": [
+        0.817,
+        1,
+        1
+      ]
     },
     {
       "model": "guest-chair",
@@ -11912,7 +11338,12 @@
       "rot": 135,
       "walkable": false,
       "curation": "e",
-      "plate": "manager visitor chair"
+      "plate": "manager visitor chair",
+      "scale": [
+        0.787,
+        1,
+        0.786
+      ]
     },
     {
       "model": "stool",
@@ -11921,7 +11352,12 @@
       "rot": 90,
       "walkable": false,
       "curation": "e",
-      "plate": "pantry table stool"
+      "plate": "pantry table stool",
+      "scale": [
+        1,
+        1,
+        0.948
+      ]
     },
     {
       "model": "stool",
@@ -11930,7 +11366,12 @@
       "rot": 270,
       "walkable": false,
       "curation": "e",
-      "plate": "pantry table stool"
+      "plate": "pantry table stool",
+      "scale": [
+        1,
+        1,
+        0.948
+      ]
     },
     {
       "model": "stool",
@@ -11939,2957 +11380,12 @@
       "rot": 90,
       "walkable": false,
       "curation": "e",
-      "plate": "pantry table stool"
-    },
-    {
-      "model": "office-chair",
-      "x": 8.5,
-      "z": 9.5,
-      "rot": 90,
-      "walkable": true,
-      "seatId": "D1",
-      "station": "D1",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 9.75,
-      "z": 9.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "role": "station-desk",
-      "id": "desk-D1",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 9.7,
-      "z": 9.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D1"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 9.86,
-      "z": 9.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D1"
-    },
-    {
-      "model": "keyboard",
-      "x": 9.27,
-      "z": 9.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D1"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 9.27,
-      "z": 9.03,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D1"
-    },
-    {
-      "model": "pc-tower",
-      "x": 9.75,
-      "z": 8.86,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D1"
-    },
-    {
-      "model": "cable-tray",
-      "x": 10.05,
-      "z": 9.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D1"
-    },
-    {
-      "model": "mug",
-      "x": 9.24,
-      "z": 10.19,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D1"
-    },
-    {
-      "model": "notebook",
-      "x": 10.2,
-      "z": 10.16,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D1"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 10.2,
-      "z": 8.83,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D1"
-    },
-    {
-      "model": "pen-cup",
-      "x": 9.22,
-      "z": 8.8,
-      "rot": 270,
-      "walkable": false,
-      "station": "D1",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D1"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 15.5,
-      "z": 9.5,
-      "rot": 270,
-      "walkable": true,
-      "seatId": "D2",
-      "station": "D2",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 14.25,
-      "z": 9.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "role": "station-desk",
-      "id": "desk-D2",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 14.3,
-      "z": 9.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D2"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 14.14,
-      "z": 9.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D2"
-    },
-    {
-      "model": "keyboard",
-      "x": 14.73,
-      "z": 9.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D2"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 14.73,
-      "z": 9.97,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D2"
-    },
-    {
-      "model": "pc-tower",
-      "x": 14.25,
-      "z": 10.14,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D2"
-    },
-    {
-      "model": "cable-tray",
-      "x": 13.95,
-      "z": 9.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D2"
-    },
-    {
-      "model": "mug",
-      "x": 14.76,
-      "z": 8.81,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D2"
-    },
-    {
-      "model": "notebook",
-      "x": 13.8,
-      "z": 8.84,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D2"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 13.8,
-      "z": 10.17,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D2"
-    },
-    {
-      "model": "pen-cup",
-      "x": 14.78,
-      "z": 10.2,
-      "rot": 90,
-      "walkable": false,
-      "station": "D2",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D2"
-    },
-    {
-      "model": "office-chair",
-      "x": 8.5,
-      "z": 13.5,
-      "rot": 90,
-      "walkable": true,
-      "seatId": "D3",
-      "station": "D3",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 9.75,
-      "z": 13.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "role": "station-desk",
-      "id": "desk-D3",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 9.7,
-      "z": 13.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D3"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 9.86,
-      "z": 13.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D3"
-    },
-    {
-      "model": "keyboard",
-      "x": 9.27,
-      "z": 13.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D3"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 9.27,
-      "z": 13.03,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D3"
-    },
-    {
-      "model": "pc-tower",
-      "x": 9.75,
-      "z": 12.86,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D3"
-    },
-    {
-      "model": "cable-tray",
-      "x": 10.05,
-      "z": 13.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D3"
-    },
-    {
-      "model": "mug",
-      "x": 9.24,
-      "z": 14.19,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D3"
-    },
-    {
-      "model": "notebook",
-      "x": 10.2,
-      "z": 14.16,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D3"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 10.2,
-      "z": 12.83,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D3"
-    },
-    {
-      "model": "pen-cup",
-      "x": 9.22,
-      "z": 12.8,
-      "rot": 270,
-      "walkable": false,
-      "station": "D3",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D3"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 15.5,
-      "z": 13.5,
-      "rot": 270,
-      "walkable": true,
-      "seatId": "D4",
-      "station": "D4",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 14.25,
-      "z": 13.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "role": "station-desk",
-      "id": "desk-D4",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 14.3,
-      "z": 13.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D4"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 14.14,
-      "z": 13.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D4"
-    },
-    {
-      "model": "keyboard",
-      "x": 14.73,
-      "z": 13.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D4"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 14.73,
-      "z": 13.97,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D4"
-    },
-    {
-      "model": "pc-tower",
-      "x": 14.25,
-      "z": 14.14,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D4"
-    },
-    {
-      "model": "cable-tray",
-      "x": 13.95,
-      "z": 13.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D4"
-    },
-    {
-      "model": "mug",
-      "x": 14.76,
-      "z": 12.81,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D4"
-    },
-    {
-      "model": "notebook",
-      "x": 13.8,
-      "z": 12.84,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D4"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 13.8,
-      "z": 14.17,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D4"
-    },
-    {
-      "model": "pen-cup",
-      "x": 14.78,
-      "z": 14.2,
-      "rot": 90,
-      "walkable": false,
-      "station": "D4",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D4"
-    },
-    {
-      "model": "office-chair",
-      "x": 8.5,
-      "z": 17.5,
-      "rot": 90,
-      "walkable": true,
-      "seatId": "D5",
-      "station": "D5",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 9.75,
-      "z": 17.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "role": "station-desk",
-      "id": "desk-D5",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 9.7,
-      "z": 17.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D5"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 9.86,
-      "z": 17.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D5"
-    },
-    {
-      "model": "keyboard",
-      "x": 9.27,
-      "z": 17.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D5"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 9.27,
-      "z": 17.03,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D5"
-    },
-    {
-      "model": "pc-tower",
-      "x": 9.75,
-      "z": 16.86,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D5"
-    },
-    {
-      "model": "cable-tray",
-      "x": 10.05,
-      "z": 17.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D5"
-    },
-    {
-      "model": "mug",
-      "x": 9.24,
-      "z": 18.19,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D5"
-    },
-    {
-      "model": "notebook",
-      "x": 10.2,
-      "z": 18.16,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D5"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 10.2,
-      "z": 16.83,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D5"
-    },
-    {
-      "model": "pen-cup",
-      "x": 9.22,
-      "z": 16.8,
-      "rot": 270,
-      "walkable": false,
-      "station": "D5",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D5"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 15.5,
-      "z": 17.5,
-      "rot": 270,
-      "walkable": true,
-      "seatId": "D6",
-      "station": "D6",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 14.25,
-      "z": 17.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "role": "station-desk",
-      "id": "desk-D6",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 14.3,
-      "z": 17.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D6"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 14.14,
-      "z": 17.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D6"
-    },
-    {
-      "model": "keyboard",
-      "x": 14.73,
-      "z": 17.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D6"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 14.73,
-      "z": 17.97,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D6"
-    },
-    {
-      "model": "pc-tower",
-      "x": 14.25,
-      "z": 18.14,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D6"
-    },
-    {
-      "model": "cable-tray",
-      "x": 13.95,
-      "z": 17.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D6"
-    },
-    {
-      "model": "mug",
-      "x": 14.76,
-      "z": 16.81,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D6"
-    },
-    {
-      "model": "notebook",
-      "x": 13.8,
-      "z": 16.84,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D6"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 13.8,
-      "z": 18.17,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D6"
-    },
-    {
-      "model": "pen-cup",
-      "x": 14.78,
-      "z": 18.2,
-      "rot": 90,
-      "walkable": false,
-      "station": "D6",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D6"
-    },
-    {
-      "model": "office-chair",
-      "x": 8.5,
-      "z": 21.5,
-      "rot": 90,
-      "walkable": true,
-      "seatId": "D7",
-      "station": "D7",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 9.75,
-      "z": 21.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "role": "station-desk",
-      "id": "desk-D7",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 9.7,
-      "z": 21.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D7"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 9.86,
-      "z": 21.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D7"
-    },
-    {
-      "model": "keyboard",
-      "x": 9.27,
-      "z": 21.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D7"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 9.27,
-      "z": 21.03,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D7"
-    },
-    {
-      "model": "pc-tower",
-      "x": 9.75,
-      "z": 20.86,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D7"
-    },
-    {
-      "model": "cable-tray",
-      "x": 10.05,
-      "z": 21.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D7"
-    },
-    {
-      "model": "mug",
-      "x": 9.24,
-      "z": 22.19,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D7"
-    },
-    {
-      "model": "notebook",
-      "x": 10.2,
-      "z": 22.16,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D7"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 10.2,
-      "z": 20.83,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D7"
-    },
-    {
-      "model": "pen-cup",
-      "x": 9.22,
-      "z": 20.8,
-      "rot": 270,
-      "walkable": false,
-      "station": "D7",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D7"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 15.5,
-      "z": 21.5,
-      "rot": 270,
-      "walkable": true,
-      "seatId": "D8",
-      "station": "D8",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 14.25,
-      "z": 21.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "role": "station-desk",
-      "id": "desk-D8",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 14.3,
-      "z": 21.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D8"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 14.14,
-      "z": 21.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D8"
-    },
-    {
-      "model": "keyboard",
-      "x": 14.73,
-      "z": 21.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D8"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 14.73,
-      "z": 21.97,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D8"
-    },
-    {
-      "model": "pc-tower",
-      "x": 14.25,
-      "z": 22.14,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D8"
-    },
-    {
-      "model": "cable-tray",
-      "x": 13.95,
-      "z": 21.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D8"
-    },
-    {
-      "model": "mug",
-      "x": 14.76,
-      "z": 20.81,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D8"
-    },
-    {
-      "model": "notebook",
-      "x": 13.8,
-      "z": 20.84,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D8"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 13.8,
-      "z": 22.17,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D8"
-    },
-    {
-      "model": "pen-cup",
-      "x": 14.78,
-      "z": 22.2,
-      "rot": 90,
-      "walkable": false,
-      "station": "D8",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D8"
-    },
-    {
-      "model": "office-chair",
-      "x": 18.5,
-      "z": 25.5,
-      "rot": 0,
-      "walkable": true,
-      "seatId": "D9",
-      "station": "D9",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 18.5,
-      "z": 26.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "role": "station-desk",
-      "id": "desk-D9",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 18.5,
-      "z": 26.7,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D9"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 18.5,
-      "z": 26.86,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D9"
-    },
-    {
-      "model": "keyboard",
-      "x": 18.5,
-      "z": 26.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D9"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 18.97,
-      "z": 26.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D9"
-    },
-    {
-      "model": "pc-tower",
-      "x": 19.14,
-      "z": 26.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D9"
-    },
-    {
-      "model": "cable-tray",
-      "x": 18.5,
-      "z": 27.05,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D9"
-    },
-    {
-      "model": "mug",
-      "x": 17.81,
-      "z": 26.24,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D9"
-    },
-    {
-      "model": "notebook",
-      "x": 17.84,
-      "z": 27.2,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D9"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 19.17,
-      "z": 27.2,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D9"
-    },
-    {
-      "model": "pen-cup",
-      "x": 19.2,
-      "z": 26.22,
-      "rot": 180,
-      "walkable": false,
-      "station": "D9",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D9"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 23.5,
-      "z": 25.5,
-      "rot": 0,
-      "walkable": true,
-      "seatId": "D10",
-      "station": "D10",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 23.5,
-      "z": 26.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "role": "station-desk",
-      "id": "desk-D10",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 23.5,
-      "z": 26.7,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D10"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 23.5,
-      "z": 26.86,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D10"
-    },
-    {
-      "model": "keyboard",
-      "x": 23.5,
-      "z": 26.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D10"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 23.97,
-      "z": 26.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D10"
-    },
-    {
-      "model": "pc-tower",
-      "x": 24.14,
-      "z": 26.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D10"
-    },
-    {
-      "model": "cable-tray",
-      "x": 23.5,
-      "z": 27.05,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D10"
-    },
-    {
-      "model": "mug",
-      "x": 22.81,
-      "z": 26.24,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D10"
-    },
-    {
-      "model": "notebook",
-      "x": 22.84,
-      "z": 27.2,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D10"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 24.17,
-      "z": 27.2,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D10"
-    },
-    {
-      "model": "pen-cup",
-      "x": 24.2,
-      "z": 26.22,
-      "rot": 180,
-      "walkable": false,
-      "station": "D10",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D10"
-    },
-    {
-      "model": "office-chair",
-      "x": 28.5,
-      "z": 25.5,
-      "rot": 0,
-      "walkable": true,
-      "seatId": "D11",
-      "station": "D11",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 28.5,
-      "z": 26.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "role": "station-desk",
-      "id": "desk-D11",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 28.5,
-      "z": 26.7,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D11"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 28.5,
-      "z": 26.86,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D11"
-    },
-    {
-      "model": "keyboard",
-      "x": 28.5,
-      "z": 26.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D11"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 28.97,
-      "z": 26.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D11"
-    },
-    {
-      "model": "pc-tower",
-      "x": 29.14,
-      "z": 26.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D11"
-    },
-    {
-      "model": "cable-tray",
-      "x": 28.5,
-      "z": 27.05,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D11"
-    },
-    {
-      "model": "mug",
-      "x": 27.81,
-      "z": 26.24,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D11"
-    },
-    {
-      "model": "notebook",
-      "x": 27.84,
-      "z": 27.2,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D11"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 29.17,
-      "z": 27.2,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D11"
-    },
-    {
-      "model": "pen-cup",
-      "x": 29.2,
-      "z": 26.22,
-      "rot": 180,
-      "walkable": false,
-      "station": "D11",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D11"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 33.5,
-      "z": 25.5,
-      "rot": 0,
-      "walkable": true,
-      "seatId": "D12",
-      "station": "D12",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 33.5,
-      "z": 26.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "role": "station-desk",
-      "id": "desk-D12",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 33.5,
-      "z": 26.7,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D12"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 33.5,
-      "z": 26.86,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D12"
-    },
-    {
-      "model": "keyboard",
-      "x": 33.5,
-      "z": 26.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D12"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 33.97,
-      "z": 26.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D12"
-    },
-    {
-      "model": "pc-tower",
-      "x": 34.14,
-      "z": 26.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D12"
-    },
-    {
-      "model": "cable-tray",
-      "x": 33.5,
-      "z": 27.05,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D12"
-    },
-    {
-      "model": "mug",
-      "x": 32.81,
-      "z": 26.24,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D12"
-    },
-    {
-      "model": "notebook",
-      "x": 32.84,
-      "z": 27.2,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D12"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 34.17,
-      "z": 27.2,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D12"
-    },
-    {
-      "model": "pen-cup",
-      "x": 34.2,
-      "z": 26.22,
-      "rot": 180,
-      "walkable": false,
-      "station": "D12",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D12"
-    },
-    {
-      "model": "office-chair",
-      "x": 18.5,
-      "z": 30.5,
-      "rot": 180,
-      "walkable": true,
-      "seatId": "D13",
-      "station": "D13",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 18.5,
-      "z": 29.25,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "role": "station-desk",
-      "id": "desk-D13",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 18.5,
-      "z": 29.3,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D13"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 18.5,
-      "z": 29.14,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D13"
-    },
-    {
-      "model": "keyboard",
-      "x": 18.5,
-      "z": 29.73,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D13"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 18.03,
-      "z": 29.73,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D13"
-    },
-    {
-      "model": "pc-tower",
-      "x": 17.86,
-      "z": 29.25,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D13"
-    },
-    {
-      "model": "cable-tray",
-      "x": 18.5,
-      "z": 28.95,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D13"
-    },
-    {
-      "model": "mug",
-      "x": 19.19,
-      "z": 29.76,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D13"
-    },
-    {
-      "model": "notebook",
-      "x": 19.16,
-      "z": 28.8,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D13"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 17.83,
-      "z": 28.8,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D13"
-    },
-    {
-      "model": "pen-cup",
-      "x": 17.8,
-      "z": 29.78,
-      "rot": 0,
-      "walkable": false,
-      "station": "D13",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D13"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 23.5,
-      "z": 30.5,
-      "rot": 180,
-      "walkable": true,
-      "seatId": "D14",
-      "station": "D14",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 23.5,
-      "z": 29.25,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "role": "station-desk",
-      "id": "desk-D14",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 23.5,
-      "z": 29.3,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D14"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 23.5,
-      "z": 29.14,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D14"
-    },
-    {
-      "model": "keyboard",
-      "x": 23.5,
-      "z": 29.73,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D14"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 23.03,
-      "z": 29.73,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D14"
-    },
-    {
-      "model": "pc-tower",
-      "x": 22.86,
-      "z": 29.25,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D14"
-    },
-    {
-      "model": "cable-tray",
-      "x": 23.5,
-      "z": 28.95,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D14"
-    },
-    {
-      "model": "mug",
-      "x": 24.19,
-      "z": 29.76,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D14"
-    },
-    {
-      "model": "notebook",
-      "x": 24.16,
-      "z": 28.8,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D14"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 22.83,
-      "z": 28.8,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D14"
-    },
-    {
-      "model": "pen-cup",
-      "x": 22.8,
-      "z": 29.78,
-      "rot": 0,
-      "walkable": false,
-      "station": "D14",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D14"
-    },
-    {
-      "model": "office-chair",
-      "x": 28.5,
-      "z": 30.5,
-      "rot": 180,
-      "walkable": true,
-      "seatId": "D15",
-      "station": "D15",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 28.5,
-      "z": 29.25,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "role": "station-desk",
-      "id": "desk-D15",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 28.5,
-      "z": 29.3,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D15"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 28.5,
-      "z": 29.14,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D15"
-    },
-    {
-      "model": "keyboard",
-      "x": 28.5,
-      "z": 29.73,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D15"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 28.03,
-      "z": 29.73,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D15"
-    },
-    {
-      "model": "pc-tower",
-      "x": 27.86,
-      "z": 29.25,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D15"
-    },
-    {
-      "model": "cable-tray",
-      "x": 28.5,
-      "z": 28.95,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D15"
-    },
-    {
-      "model": "mug",
-      "x": 29.19,
-      "z": 29.76,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D15"
-    },
-    {
-      "model": "notebook",
-      "x": 29.16,
-      "z": 28.8,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D15"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 27.83,
-      "z": 28.8,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D15"
-    },
-    {
-      "model": "pen-cup",
-      "x": 27.8,
-      "z": 29.78,
-      "rot": 0,
-      "walkable": false,
-      "station": "D15",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D15"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 33.5,
-      "z": 30.5,
-      "rot": 180,
-      "walkable": true,
-      "seatId": "D16",
-      "station": "D16",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 33.5,
-      "z": 29.25,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "role": "station-desk",
-      "id": "desk-D16",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 33.5,
-      "z": 29.3,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-D16"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 33.5,
-      "z": 29.14,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D16"
-    },
-    {
-      "model": "keyboard",
-      "x": 33.5,
-      "z": 29.73,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D16"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 33.03,
-      "z": 29.73,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-D16"
-    },
-    {
-      "model": "pc-tower",
-      "x": 32.86,
-      "z": 29.25,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-D16"
-    },
-    {
-      "model": "cable-tray",
-      "x": 33.5,
-      "z": 28.95,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-D16"
-    },
-    {
-      "model": "mug",
-      "x": 34.19,
-      "z": 29.76,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D16"
-    },
-    {
-      "model": "notebook",
-      "x": 34.16,
-      "z": 28.8,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D16"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 32.83,
-      "z": 28.8,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D16"
-    },
-    {
-      "model": "pen-cup",
-      "x": 32.8,
-      "z": 29.78,
-      "rot": 0,
-      "walkable": false,
-      "station": "D16",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-D16"
-    },
-    {
-      "model": "office-chair",
-      "x": 23.5,
-      "z": 14.5,
-      "rot": 90,
-      "walkable": true,
-      "seatId": "M1",
-      "station": "M1",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 24.75,
-      "z": 14.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "role": "station-desk",
-      "id": "desk-M1",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 24.7,
-      "z": 14.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-M1"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 24.86,
-      "z": 14.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-M1"
-    },
-    {
-      "model": "keyboard",
-      "x": 24.27,
-      "z": 14.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-M1"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 24.27,
-      "z": 14.03,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-M1"
-    },
-    {
-      "model": "pc-tower",
-      "x": 24.75,
-      "z": 13.86,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-M1"
-    },
-    {
-      "model": "cable-tray",
-      "x": 25.05,
-      "z": 14.5,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-M1"
-    },
-    {
-      "model": "mug",
-      "x": 24.24,
-      "z": 15.19,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-M1"
-    },
-    {
-      "model": "notebook",
-      "x": 25.2,
-      "z": 15.16,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-M1"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 25.2,
-      "z": 13.83,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-M1"
-    },
-    {
-      "model": "pen-cup",
-      "x": 24.22,
-      "z": 13.8,
-      "rot": 270,
-      "walkable": false,
-      "station": "M1",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-M1"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 31.5,
-      "z": 14.5,
-      "rot": 270,
-      "walkable": true,
-      "seatId": "M2",
-      "station": "M2",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk",
-      "x": 30.25,
-      "z": 14.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "role": "station-desk",
-      "id": "desk-M2",
-      "desktopY": 0.74,
-      "compact": false
-    },
-    {
-      "model": "monitor-dual",
-      "x": 30.3,
-      "z": 14.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-M2"
-    },
-    {
-      "model": "monitor-arm",
-      "x": 30.14,
-      "z": 14.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-M2"
-    },
-    {
-      "model": "keyboard",
-      "x": 30.73,
-      "z": 14.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-M2"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 30.73,
-      "z": 14.97,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-M2"
-    },
-    {
-      "model": "pc-tower",
-      "x": 30.25,
-      "z": 15.14,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-M2"
-    },
-    {
-      "model": "cable-tray",
-      "x": 29.95,
-      "z": 14.5,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.56,
-      "role": "station-underdesk",
-      "support": "desk-M2"
-    },
-    {
-      "model": "mug",
-      "x": 30.76,
-      "z": 13.81,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-M2"
-    },
-    {
-      "model": "notebook",
-      "x": 29.8,
-      "z": 13.84,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-M2"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 29.8,
-      "z": 15.17,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-M2"
-    },
-    {
-      "model": "pen-cup",
-      "x": 30.78,
-      "z": 15.2,
-      "rot": 90,
-      "walkable": false,
-      "station": "M2",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-M2"
-    },
-    {
-      "model": "office-chair",
-      "x": 51.5,
-      "z": 21.5,
-      "rot": 0,
-      "walkable": true,
-      "seatId": "MGR",
-      "station": "MGR",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "workstation-desk-compact",
-      "x": 51.5,
-      "z": 22.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "MGR",
-      "role": "station-desk",
-      "id": "desk-MGR",
-      "desktopY": 0.74,
-      "compact": true
-    },
-    {
-      "model": "monitor-compact",
-      "x": 51.5,
-      "z": 22.7,
-      "rot": 180,
-      "walkable": false,
-      "station": "MGR",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-MGR"
-    },
-    {
-      "model": "keyboard-compact",
-      "x": 51.5,
-      "z": 22.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "MGR",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-MGR"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 51.82,
-      "z": 22.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "MGR",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-MGR"
-    },
-    {
-      "model": "pc-tower",
-      "x": 51.74,
-      "z": 22.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "MGR",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-MGR"
-    },
-    {
-      "model": "mug",
-      "x": 51.28,
-      "z": 23.17,
-      "rot": 180,
-      "walkable": false,
-      "station": "MGR",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-MGR"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 51.75,
-      "z": 23.17,
-      "rot": 180,
-      "walkable": false,
-      "station": "MGR",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-MGR"
-    },
-    {
-      "model": "office-chair-lavender",
-      "x": 13.5,
-      "z": 4.5,
-      "rot": 0,
-      "walkable": true,
-      "seatId": "HR",
-      "station": "HR",
-      "exception": "seat-chair"
-    },
-    {
-      "model": "reception-desk",
-      "x": 13,
-      "z": 5.5,
-      "rot": 180,
-      "walkable": false,
-      "station": "HR",
-      "role": "station-desk",
-      "id": "desk-HR",
-      "desktopY": 0.74,
-      "compact": true
-    },
-    {
-      "model": "monitor-compact",
-      "x": 13.5,
-      "z": 5.7,
-      "rot": 180,
-      "walkable": false,
-      "station": "HR",
-      "y": 0.74,
-      "role": "station-monitor",
-      "support": "desk-HR"
-    },
-    {
-      "model": "keyboard",
-      "x": 13.5,
-      "z": 5.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "HR",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-HR"
-    },
-    {
-      "model": "mouse-compact",
-      "x": 13.82,
-      "z": 5.27,
-      "rot": 180,
-      "walkable": false,
-      "station": "HR",
-      "y": 0.74,
-      "role": "station-hardware",
-      "support": "desk-HR"
-    },
-    {
-      "model": "pc-tower",
-      "x": 12.88,
-      "z": 5.5,
-      "rot": 180,
-      "walkable": false,
-      "station": "HR",
-      "y": 0,
-      "role": "station-tower",
-      "support": "desk-HR"
-    },
-    {
-      "model": "mug",
-      "x": 12.78,
-      "z": 5.25,
-      "rot": 180,
-      "walkable": false,
-      "station": "HR",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-HR"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 12.75,
-      "z": 5.75,
-      "rot": 180,
-      "walkable": false,
-      "station": "HR",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-HR"
-    },
-    {
-      "model": "document-tray",
-      "x": 12.42,
-      "z": 5.5,
-      "rot": 180,
-      "walkable": false,
-      "station": "HR",
-      "y": 0.74,
-      "role": "desk-item",
-      "support": "desk-HR"
-    },
-    {
-      "model": "spine-left",
-      "x": 12,
-      "z": 9.5,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "desk-cactus",
-      "x": 11,
-      "z": 9.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 12,
-      "z": 9.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 13,
-      "z": 9.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "spine-left",
-      "x": 12,
-      "z": 13.5,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "desk-cactus",
-      "x": 11,
-      "z": 13.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 12,
-      "z": 13.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 13,
-      "z": 13.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "spine-left",
-      "x": 12,
-      "z": 17.5,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "desk-cactus",
-      "x": 11,
-      "z": 17.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 12,
-      "z": 17.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 13,
-      "z": 17.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "spine-left",
-      "x": 12,
-      "z": 21.5,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "desk-cactus",
-      "x": 11,
-      "z": 21.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 12,
-      "z": 21.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 13,
-      "z": 21.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "spine-middle",
-      "x": 27.5,
-      "z": 14.5,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "document-tray",
-      "x": 26,
-      "z": 14.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 27,
-      "z": 14.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "document-tray",
-      "x": 28,
-      "z": 14.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 29,
-      "z": 14.5,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "spine-bench",
-      "x": 18.5,
-      "z": 28,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "desk-cactus",
-      "x": 16.8,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 17.65,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 18.5,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 19.35,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 20.2,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "spine-bench",
-      "x": 23.5,
-      "z": 28,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "desk-cactus",
-      "x": 21.8,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 22.65,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 23.5,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 24.35,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 25.2,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "spine-bench",
-      "x": 28.5,
-      "z": 28,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "desk-cactus",
-      "x": 26.8,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 27.65,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 28.5,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 29.35,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 30.2,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "spine-bench",
-      "x": 33.5,
-      "z": 28,
-      "rot": 0,
-      "walkable": false
-    },
-    {
-      "model": "desk-cactus",
-      "x": 31.8,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 32.65,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "book-stack",
-      "x": 33.5,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 34.35,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
-    },
-    {
-      "model": "desk-cactus",
-      "x": 35.2,
-      "z": 28,
-      "rot": 0,
-      "walkable": false,
-      "y": 0.7,
-      "role": "spine-item"
+      "plate": "pantry table stool",
+      "scale": [
+        1,
+        1,
+        0.948
+      ]
     },
     {
       "model": "meeting-table",
@@ -14908,7 +11404,12 @@
       "z": 30.3,
       "rot": 90,
       "walkable": false,
-      "area": "manager-meeting"
+      "area": "manager-meeting",
+      "scale": [
+        1,
+        1,
+        0.863
+      ]
     },
     {
       "model": "meeting-chair-lavender",
@@ -14916,7 +11417,12 @@
       "z": 30.3,
       "rot": 270,
       "walkable": false,
-      "area": "manager-meeting"
+      "area": "manager-meeting",
+      "scale": [
+        1,
+        1,
+        0.863
+      ]
     },
     {
       "model": "meeting-chair-lavender",
@@ -14924,7 +11430,12 @@
       "z": 31.7,
       "rot": 90,
       "walkable": false,
-      "area": "manager-meeting"
+      "area": "manager-meeting",
+      "scale": [
+        1,
+        1,
+        0.863
+      ]
     },
     {
       "model": "meeting-chair-mint",
@@ -14932,7 +11443,2405 @@
       "z": 31.7,
       "rot": 270,
       "walkable": false,
+      "area": "manager-meeting",
+      "scale": [
+        1,
+        1,
+        0.863
+      ]
+    },
+    {
+      "model": "rug-meeting-corner",
+      "x": 49.5,
+      "z": 31,
+      "rot": 0,
+      "walkable": true,
       "area": "manager-meeting"
+    },
+    {
+      "model": "office-chair",
+      "x": 8.5,
+      "z": 9.5,
+      "rot": 90,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D1",
+      "station": "D1"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 10.81,
+      "z": 9.5,
+      "rot": 270,
+      "walkable": false,
+      "id": "desk-D1",
+      "station": "D1",
+      "role": "station-desk",
+      "desktopY": 1.26
+    },
+    {
+      "model": "monitor-dual",
+      "x": 10.6,
+      "z": 9.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D1",
+      "support": "desk-D1",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 10.78,
+      "z": 9.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D1",
+      "support": "desk-D1",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 9.9,
+      "z": 9.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D1",
+      "support": "desk-D1",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 9.9,
+      "z": 8.7,
+      "rot": 270,
+      "walkable": false,
+      "station": "D1",
+      "support": "desk-D1",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 10.5,
+      "z": 8.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D1",
+      "support": "desk-D1",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 9.9,
+      "z": 10.65,
+      "rot": 270,
+      "walkable": false,
+      "station": "D1",
+      "support": "desk-D1",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 11.68,
+      "z": 10.6,
+      "rot": 270,
+      "walkable": false,
+      "station": "D1",
+      "support": "desk-D1",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 11.68,
+      "z": 8.34,
+      "rot": 270,
+      "walkable": false,
+      "station": "D1",
+      "support": "desk-D1",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 15.5,
+      "z": 9.5,
+      "rot": 270,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D2",
+      "station": "D2"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 13.19,
+      "z": 9.5,
+      "rot": 90,
+      "walkable": false,
+      "id": "desk-D2",
+      "station": "D2",
+      "role": "station-desk",
+      "desktopY": 1.26
+    },
+    {
+      "model": "monitor-dual",
+      "x": 13.4,
+      "z": 9.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D2",
+      "support": "desk-D2",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 13.22,
+      "z": 9.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D2",
+      "support": "desk-D2",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 14.1,
+      "z": 9.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D2",
+      "support": "desk-D2",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 14.1,
+      "z": 10.3,
+      "rot": 90,
+      "walkable": false,
+      "station": "D2",
+      "support": "desk-D2",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 13.5,
+      "z": 10.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D2",
+      "support": "desk-D2",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 14.1,
+      "z": 8.35,
+      "rot": 90,
+      "walkable": false,
+      "station": "D2",
+      "support": "desk-D2",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 12.32,
+      "z": 8.4,
+      "rot": 90,
+      "walkable": false,
+      "station": "D2",
+      "support": "desk-D2",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 12.32,
+      "z": 10.66,
+      "rot": 90,
+      "walkable": false,
+      "station": "D2",
+      "support": "desk-D2",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 8.5,
+      "z": 13.5,
+      "rot": 90,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D3",
+      "station": "D3"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 10.81,
+      "z": 13.5,
+      "rot": 270,
+      "walkable": false,
+      "id": "desk-D3",
+      "station": "D3",
+      "role": "station-desk",
+      "desktopY": 1.26
+    },
+    {
+      "model": "monitor-dual",
+      "x": 10.6,
+      "z": 13.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D3",
+      "support": "desk-D3",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 10.78,
+      "z": 13.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D3",
+      "support": "desk-D3",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 9.9,
+      "z": 13.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D3",
+      "support": "desk-D3",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 9.9,
+      "z": 12.7,
+      "rot": 270,
+      "walkable": false,
+      "station": "D3",
+      "support": "desk-D3",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 10.5,
+      "z": 12.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D3",
+      "support": "desk-D3",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 9.9,
+      "z": 14.65,
+      "rot": 270,
+      "walkable": false,
+      "station": "D3",
+      "support": "desk-D3",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 11.68,
+      "z": 14.6,
+      "rot": 270,
+      "walkable": false,
+      "station": "D3",
+      "support": "desk-D3",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 11.68,
+      "z": 12.34,
+      "rot": 270,
+      "walkable": false,
+      "station": "D3",
+      "support": "desk-D3",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 15.5,
+      "z": 13.5,
+      "rot": 270,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D4",
+      "station": "D4"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 13.19,
+      "z": 13.5,
+      "rot": 90,
+      "walkable": false,
+      "id": "desk-D4",
+      "station": "D4",
+      "role": "station-desk",
+      "desktopY": 1.26
+    },
+    {
+      "model": "monitor-dual",
+      "x": 13.4,
+      "z": 13.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D4",
+      "support": "desk-D4",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 13.22,
+      "z": 13.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D4",
+      "support": "desk-D4",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 14.1,
+      "z": 13.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D4",
+      "support": "desk-D4",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 14.1,
+      "z": 14.3,
+      "rot": 90,
+      "walkable": false,
+      "station": "D4",
+      "support": "desk-D4",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 13.5,
+      "z": 14.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D4",
+      "support": "desk-D4",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 14.1,
+      "z": 12.35,
+      "rot": 90,
+      "walkable": false,
+      "station": "D4",
+      "support": "desk-D4",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 12.32,
+      "z": 12.4,
+      "rot": 90,
+      "walkable": false,
+      "station": "D4",
+      "support": "desk-D4",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 12.32,
+      "z": 14.66,
+      "rot": 90,
+      "walkable": false,
+      "station": "D4",
+      "support": "desk-D4",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 8.5,
+      "z": 17.5,
+      "rot": 90,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D5",
+      "station": "D5"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 10.81,
+      "z": 17.5,
+      "rot": 270,
+      "walkable": false,
+      "id": "desk-D5",
+      "station": "D5",
+      "role": "station-desk",
+      "desktopY": 1.26
+    },
+    {
+      "model": "monitor-dual",
+      "x": 10.6,
+      "z": 17.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D5",
+      "support": "desk-D5",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 10.78,
+      "z": 17.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D5",
+      "support": "desk-D5",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 9.9,
+      "z": 17.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D5",
+      "support": "desk-D5",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 9.9,
+      "z": 16.7,
+      "rot": 270,
+      "walkable": false,
+      "station": "D5",
+      "support": "desk-D5",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 10.5,
+      "z": 16.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D5",
+      "support": "desk-D5",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 9.9,
+      "z": 18.65,
+      "rot": 270,
+      "walkable": false,
+      "station": "D5",
+      "support": "desk-D5",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 11.68,
+      "z": 18.6,
+      "rot": 270,
+      "walkable": false,
+      "station": "D5",
+      "support": "desk-D5",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 11.68,
+      "z": 16.34,
+      "rot": 270,
+      "walkable": false,
+      "station": "D5",
+      "support": "desk-D5",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 15.5,
+      "z": 17.5,
+      "rot": 270,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D6",
+      "station": "D6"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 13.19,
+      "z": 17.5,
+      "rot": 90,
+      "walkable": false,
+      "id": "desk-D6",
+      "station": "D6",
+      "role": "station-desk",
+      "desktopY": 1.26
+    },
+    {
+      "model": "monitor-dual",
+      "x": 13.4,
+      "z": 17.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D6",
+      "support": "desk-D6",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 13.22,
+      "z": 17.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D6",
+      "support": "desk-D6",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 14.1,
+      "z": 17.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D6",
+      "support": "desk-D6",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 14.1,
+      "z": 18.3,
+      "rot": 90,
+      "walkable": false,
+      "station": "D6",
+      "support": "desk-D6",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 13.5,
+      "z": 18.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D6",
+      "support": "desk-D6",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 14.1,
+      "z": 16.35,
+      "rot": 90,
+      "walkable": false,
+      "station": "D6",
+      "support": "desk-D6",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 12.32,
+      "z": 16.4,
+      "rot": 90,
+      "walkable": false,
+      "station": "D6",
+      "support": "desk-D6",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 12.32,
+      "z": 18.66,
+      "rot": 90,
+      "walkable": false,
+      "station": "D6",
+      "support": "desk-D6",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 8.5,
+      "z": 21.5,
+      "rot": 90,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D7",
+      "station": "D7"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 10.81,
+      "z": 21.5,
+      "rot": 270,
+      "walkable": false,
+      "id": "desk-D7",
+      "station": "D7",
+      "role": "station-desk",
+      "desktopY": 1.26
+    },
+    {
+      "model": "monitor-dual",
+      "x": 10.6,
+      "z": 21.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D7",
+      "support": "desk-D7",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 10.78,
+      "z": 21.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D7",
+      "support": "desk-D7",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 9.9,
+      "z": 21.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D7",
+      "support": "desk-D7",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 9.9,
+      "z": 20.7,
+      "rot": 270,
+      "walkable": false,
+      "station": "D7",
+      "support": "desk-D7",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 10.5,
+      "z": 20.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "D7",
+      "support": "desk-D7",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 9.9,
+      "z": 22.65,
+      "rot": 270,
+      "walkable": false,
+      "station": "D7",
+      "support": "desk-D7",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 11.68,
+      "z": 22.6,
+      "rot": 270,
+      "walkable": false,
+      "station": "D7",
+      "support": "desk-D7",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 11.68,
+      "z": 20.34,
+      "rot": 270,
+      "walkable": false,
+      "station": "D7",
+      "support": "desk-D7",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 15.5,
+      "z": 21.5,
+      "rot": 270,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D8",
+      "station": "D8"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 13.19,
+      "z": 21.5,
+      "rot": 90,
+      "walkable": false,
+      "id": "desk-D8",
+      "station": "D8",
+      "role": "station-desk",
+      "desktopY": 1.26
+    },
+    {
+      "model": "monitor-dual",
+      "x": 13.4,
+      "z": 21.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D8",
+      "support": "desk-D8",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 13.22,
+      "z": 21.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D8",
+      "support": "desk-D8",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 14.1,
+      "z": 21.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D8",
+      "support": "desk-D8",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 14.1,
+      "z": 22.3,
+      "rot": 90,
+      "walkable": false,
+      "station": "D8",
+      "support": "desk-D8",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 13.5,
+      "z": 22.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "D8",
+      "support": "desk-D8",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 14.1,
+      "z": 20.35,
+      "rot": 90,
+      "walkable": false,
+      "station": "D8",
+      "support": "desk-D8",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 12.32,
+      "z": 20.4,
+      "rot": 90,
+      "walkable": false,
+      "station": "D8",
+      "support": "desk-D8",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 12.32,
+      "z": 22.66,
+      "rot": 90,
+      "walkable": false,
+      "station": "D8",
+      "support": "desk-D8",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 18.5,
+      "z": 25.5,
+      "rot": 0,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D9",
+      "station": "D9"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 18.5,
+      "z": 27.1,
+      "rot": 180,
+      "walkable": false,
+      "id": "desk-D9",
+      "station": "D9",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.7563025604053036
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 18.5,
+      "z": 27.6,
+      "rot": 180,
+      "walkable": false,
+      "station": "D9",
+      "support": "desk-D9",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 18.5,
+      "z": 27.78,
+      "rot": 180,
+      "walkable": false,
+      "station": "D9",
+      "support": "desk-D9",
+      "role": "station-hardware",
+      "y": 1.26,
+      "scale": [
+        1,
+        1,
+        0.9915
+      ]
+    },
+    {
+      "model": "keyboard",
+      "x": 18.5,
+      "z": 26.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "D9",
+      "support": "desk-D9",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 19.3,
+      "z": 26.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "D9",
+      "support": "desk-D9",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 19.5,
+      "z": 27.5,
+      "rot": 180,
+      "walkable": false,
+      "station": "D9",
+      "support": "desk-D9",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 17.35,
+      "z": 26.85,
+      "rot": 180,
+      "walkable": false,
+      "station": "D9",
+      "support": "desk-D9",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 17.4,
+      "z": 27.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "D9",
+      "support": "desk-D9",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 19.66,
+      "z": 27.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "D9",
+      "support": "desk-D9",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 23.5,
+      "z": 25.5,
+      "rot": 0,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D10",
+      "station": "D10"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 23.5,
+      "z": 27.1,
+      "rot": 180,
+      "walkable": false,
+      "id": "desk-D10",
+      "station": "D10",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.7563025604053036
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 23.5,
+      "z": 27.6,
+      "rot": 180,
+      "walkable": false,
+      "station": "D10",
+      "support": "desk-D10",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 23.5,
+      "z": 27.78,
+      "rot": 180,
+      "walkable": false,
+      "station": "D10",
+      "support": "desk-D10",
+      "role": "station-hardware",
+      "y": 1.26,
+      "scale": [
+        1,
+        1,
+        0.9915
+      ]
+    },
+    {
+      "model": "keyboard",
+      "x": 23.5,
+      "z": 26.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "D10",
+      "support": "desk-D10",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 24.3,
+      "z": 26.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "D10",
+      "support": "desk-D10",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 24.5,
+      "z": 27.5,
+      "rot": 180,
+      "walkable": false,
+      "station": "D10",
+      "support": "desk-D10",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 22.35,
+      "z": 26.85,
+      "rot": 180,
+      "walkable": false,
+      "station": "D10",
+      "support": "desk-D10",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 22.4,
+      "z": 27.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "D10",
+      "support": "desk-D10",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 24.66,
+      "z": 27.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "D10",
+      "support": "desk-D10",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 28.5,
+      "z": 25.5,
+      "rot": 0,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D11",
+      "station": "D11"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 28.5,
+      "z": 27.1,
+      "rot": 180,
+      "walkable": false,
+      "id": "desk-D11",
+      "station": "D11",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.7563025604053036
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 28.5,
+      "z": 27.6,
+      "rot": 180,
+      "walkable": false,
+      "station": "D11",
+      "support": "desk-D11",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 28.5,
+      "z": 27.78,
+      "rot": 180,
+      "walkable": false,
+      "station": "D11",
+      "support": "desk-D11",
+      "role": "station-hardware",
+      "y": 1.26,
+      "scale": [
+        1,
+        1,
+        0.9915
+      ]
+    },
+    {
+      "model": "keyboard",
+      "x": 28.5,
+      "z": 26.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "D11",
+      "support": "desk-D11",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 29.3,
+      "z": 26.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "D11",
+      "support": "desk-D11",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 29.5,
+      "z": 27.5,
+      "rot": 180,
+      "walkable": false,
+      "station": "D11",
+      "support": "desk-D11",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 27.35,
+      "z": 26.85,
+      "rot": 180,
+      "walkable": false,
+      "station": "D11",
+      "support": "desk-D11",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 27.4,
+      "z": 27.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "D11",
+      "support": "desk-D11",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 29.66,
+      "z": 27.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "D11",
+      "support": "desk-D11",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 33.5,
+      "z": 25.5,
+      "rot": 0,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D12",
+      "station": "D12"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 33.5,
+      "z": 27.1,
+      "rot": 180,
+      "walkable": false,
+      "id": "desk-D12",
+      "station": "D12",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.7563025604053036
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 33.5,
+      "z": 27.6,
+      "rot": 180,
+      "walkable": false,
+      "station": "D12",
+      "support": "desk-D12",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 33.5,
+      "z": 27.78,
+      "rot": 180,
+      "walkable": false,
+      "station": "D12",
+      "support": "desk-D12",
+      "role": "station-hardware",
+      "y": 1.26,
+      "scale": [
+        1,
+        1,
+        0.9915
+      ]
+    },
+    {
+      "model": "keyboard",
+      "x": 33.5,
+      "z": 26.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "D12",
+      "support": "desk-D12",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 34.3,
+      "z": 26.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "D12",
+      "support": "desk-D12",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 34.5,
+      "z": 27.5,
+      "rot": 180,
+      "walkable": false,
+      "station": "D12",
+      "support": "desk-D12",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 32.35,
+      "z": 26.85,
+      "rot": 180,
+      "walkable": false,
+      "station": "D12",
+      "support": "desk-D12",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 32.4,
+      "z": 27.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "D12",
+      "support": "desk-D12",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 34.66,
+      "z": 27.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "D12",
+      "support": "desk-D12",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 18.5,
+      "z": 30.5,
+      "rot": 180,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D13",
+      "station": "D13"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 18.5,
+      "z": 28.9,
+      "rot": 0,
+      "walkable": false,
+      "id": "desk-D13",
+      "station": "D13",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.7563025604053036
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 18.5,
+      "z": 28.4,
+      "rot": 0,
+      "walkable": false,
+      "station": "D13",
+      "support": "desk-D13",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 18.5,
+      "z": 28.22,
+      "rot": 0,
+      "walkable": false,
+      "station": "D13",
+      "support": "desk-D13",
+      "role": "station-hardware",
+      "y": 1.26,
+      "scale": [
+        1,
+        1,
+        0.9915
+      ]
+    },
+    {
+      "model": "keyboard",
+      "x": 18.5,
+      "z": 29.1,
+      "rot": 0,
+      "walkable": false,
+      "station": "D13",
+      "support": "desk-D13",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 17.7,
+      "z": 29.1,
+      "rot": 0,
+      "walkable": false,
+      "station": "D13",
+      "support": "desk-D13",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 17.5,
+      "z": 28.5,
+      "rot": 0,
+      "walkable": false,
+      "station": "D13",
+      "support": "desk-D13",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 19.65,
+      "z": 29.15,
+      "rot": 0,
+      "walkable": false,
+      "station": "D13",
+      "support": "desk-D13",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 19.6,
+      "z": 28.32,
+      "rot": 0,
+      "walkable": false,
+      "station": "D13",
+      "support": "desk-D13",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 17.34,
+      "z": 28.32,
+      "rot": 0,
+      "walkable": false,
+      "station": "D13",
+      "support": "desk-D13",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 23.5,
+      "z": 30.5,
+      "rot": 180,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D14",
+      "station": "D14"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 23.5,
+      "z": 28.9,
+      "rot": 0,
+      "walkable": false,
+      "id": "desk-D14",
+      "station": "D14",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.7563025604053036
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 23.5,
+      "z": 28.4,
+      "rot": 0,
+      "walkable": false,
+      "station": "D14",
+      "support": "desk-D14",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 23.5,
+      "z": 28.22,
+      "rot": 0,
+      "walkable": false,
+      "station": "D14",
+      "support": "desk-D14",
+      "role": "station-hardware",
+      "y": 1.26,
+      "scale": [
+        1,
+        1,
+        0.9915
+      ]
+    },
+    {
+      "model": "keyboard",
+      "x": 23.5,
+      "z": 29.1,
+      "rot": 0,
+      "walkable": false,
+      "station": "D14",
+      "support": "desk-D14",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 22.7,
+      "z": 29.1,
+      "rot": 0,
+      "walkable": false,
+      "station": "D14",
+      "support": "desk-D14",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 22.5,
+      "z": 28.5,
+      "rot": 0,
+      "walkable": false,
+      "station": "D14",
+      "support": "desk-D14",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 24.65,
+      "z": 29.15,
+      "rot": 0,
+      "walkable": false,
+      "station": "D14",
+      "support": "desk-D14",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 24.6,
+      "z": 28.32,
+      "rot": 0,
+      "walkable": false,
+      "station": "D14",
+      "support": "desk-D14",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 22.34,
+      "z": 28.32,
+      "rot": 0,
+      "walkable": false,
+      "station": "D14",
+      "support": "desk-D14",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 28.5,
+      "z": 30.5,
+      "rot": 180,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D15",
+      "station": "D15"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 28.5,
+      "z": 28.9,
+      "rot": 0,
+      "walkable": false,
+      "id": "desk-D15",
+      "station": "D15",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.7563025604053036
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 28.5,
+      "z": 28.4,
+      "rot": 0,
+      "walkable": false,
+      "station": "D15",
+      "support": "desk-D15",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 28.5,
+      "z": 28.22,
+      "rot": 0,
+      "walkable": false,
+      "station": "D15",
+      "support": "desk-D15",
+      "role": "station-hardware",
+      "y": 1.26,
+      "scale": [
+        1,
+        1,
+        0.9915
+      ]
+    },
+    {
+      "model": "keyboard",
+      "x": 28.5,
+      "z": 29.1,
+      "rot": 0,
+      "walkable": false,
+      "station": "D15",
+      "support": "desk-D15",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 27.7,
+      "z": 29.1,
+      "rot": 0,
+      "walkable": false,
+      "station": "D15",
+      "support": "desk-D15",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 27.5,
+      "z": 28.5,
+      "rot": 0,
+      "walkable": false,
+      "station": "D15",
+      "support": "desk-D15",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 29.65,
+      "z": 29.15,
+      "rot": 0,
+      "walkable": false,
+      "station": "D15",
+      "support": "desk-D15",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 29.6,
+      "z": 28.32,
+      "rot": 0,
+      "walkable": false,
+      "station": "D15",
+      "support": "desk-D15",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 27.34,
+      "z": 28.32,
+      "rot": 0,
+      "walkable": false,
+      "station": "D15",
+      "support": "desk-D15",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 33.5,
+      "z": 30.5,
+      "rot": 180,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "D16",
+      "station": "D16"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 33.5,
+      "z": 28.9,
+      "rot": 0,
+      "walkable": false,
+      "id": "desk-D16",
+      "station": "D16",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.7563025604053036
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 33.5,
+      "z": 28.4,
+      "rot": 0,
+      "walkable": false,
+      "station": "D16",
+      "support": "desk-D16",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 33.5,
+      "z": 28.22,
+      "rot": 0,
+      "walkable": false,
+      "station": "D16",
+      "support": "desk-D16",
+      "role": "station-hardware",
+      "y": 1.26,
+      "scale": [
+        1,
+        1,
+        0.9915
+      ]
+    },
+    {
+      "model": "keyboard",
+      "x": 33.5,
+      "z": 29.1,
+      "rot": 0,
+      "walkable": false,
+      "station": "D16",
+      "support": "desk-D16",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 32.7,
+      "z": 29.1,
+      "rot": 0,
+      "walkable": false,
+      "station": "D16",
+      "support": "desk-D16",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 32.5,
+      "z": 28.5,
+      "rot": 0,
+      "walkable": false,
+      "station": "D16",
+      "support": "desk-D16",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 34.65,
+      "z": 29.15,
+      "rot": 0,
+      "walkable": false,
+      "station": "D16",
+      "support": "desk-D16",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 34.6,
+      "z": 28.32,
+      "rot": 0,
+      "walkable": false,
+      "station": "D16",
+      "support": "desk-D16",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 32.34,
+      "z": 28.32,
+      "rot": 0,
+      "walkable": false,
+      "station": "D16",
+      "support": "desk-D16",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 23.5,
+      "z": 14.5,
+      "rot": 90,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "M1",
+      "station": "M1"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 26.31,
+      "z": 14.5,
+      "rot": 270,
+      "walkable": false,
+      "id": "desk-M1",
+      "station": "M1",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        0.98,
+        1,
+        1
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 25.6,
+      "z": 14.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "M1",
+      "support": "desk-M1",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 25.78,
+      "z": 14.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "M1",
+      "support": "desk-M1",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 25.35,
+      "z": 14.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "M1",
+      "support": "desk-M1",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 25.35,
+      "z": 13.7,
+      "rot": 270,
+      "walkable": false,
+      "station": "M1",
+      "support": "desk-M1",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 25.62,
+      "z": 13.5,
+      "rot": 270,
+      "walkable": false,
+      "station": "M1",
+      "support": "desk-M1",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 25.4,
+      "z": 15.65,
+      "rot": 270,
+      "walkable": false,
+      "station": "M1",
+      "support": "desk-M1",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 27.18,
+      "z": 15.6,
+      "rot": 270,
+      "walkable": false,
+      "station": "M1",
+      "support": "desk-M1",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 27.18,
+      "z": 13.34,
+      "rot": 270,
+      "walkable": false,
+      "station": "M1",
+      "support": "desk-M1",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 31.5,
+      "z": 14.5,
+      "rot": 270,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "M2",
+      "station": "M2"
+    },
+    {
+      "model": "workstation-desk",
+      "x": 28.69,
+      "z": 14.5,
+      "rot": 90,
+      "walkable": false,
+      "id": "desk-M2",
+      "station": "M2",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        0.98,
+        1,
+        1
+      ]
+    },
+    {
+      "model": "monitor-dual",
+      "x": 29.4,
+      "z": 14.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "M2",
+      "support": "desk-M2",
+      "role": "station-monitor",
+      "y": 1.26
+    },
+    {
+      "model": "monitor-arm",
+      "x": 29.22,
+      "z": 14.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "M2",
+      "support": "desk-M2",
+      "role": "station-hardware",
+      "y": 1.26
+    },
+    {
+      "model": "keyboard",
+      "x": 29.65,
+      "z": 14.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "M2",
+      "support": "desk-M2",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 29.65,
+      "z": 15.3,
+      "rot": 90,
+      "walkable": false,
+      "station": "M2",
+      "support": "desk-M2",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 29.38,
+      "z": 15.5,
+      "rot": 90,
+      "walkable": false,
+      "station": "M2",
+      "support": "desk-M2",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 29.6,
+      "z": 13.35,
+      "rot": 90,
+      "walkable": false,
+      "station": "M2",
+      "support": "desk-M2",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "notebook",
+      "x": 27.82,
+      "z": 13.4,
+      "rot": 90,
+      "walkable": false,
+      "station": "M2",
+      "support": "desk-M2",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 27.82,
+      "z": 15.66,
+      "rot": 90,
+      "walkable": false,
+      "station": "M2",
+      "support": "desk-M2",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair",
+      "x": 51.5,
+      "z": 21.5,
+      "rot": 0,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "MGR",
+      "station": "MGR"
+    },
+    {
+      "model": "workstation-desk-compact",
+      "x": 51.5,
+      "z": 23.39,
+      "rot": 180,
+      "walkable": false,
+      "id": "desk-MGR",
+      "station": "MGR",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        0.639,
+        1,
+        1
+      ]
+    },
+    {
+      "model": "monitor-compact",
+      "x": 51.5,
+      "z": 23.6,
+      "rot": 180,
+      "walkable": false,
+      "station": "MGR",
+      "support": "desk-MGR",
+      "role": "station-monitor",
+      "y": 1.26,
+      "scale": [
+        0.8398,
+        1,
+        1
+      ]
+    },
+    {
+      "model": "keyboard-compact",
+      "x": 51.46,
+      "z": 22.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "MGR",
+      "support": "desk-MGR",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 51.9,
+      "z": 22.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "MGR",
+      "support": "desk-MGR",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 51.73,
+      "z": 23.5,
+      "rot": 180,
+      "walkable": false,
+      "station": "MGR",
+      "support": "desk-MGR",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 51.28,
+      "z": 24.26,
+      "rot": 180,
+      "walkable": false,
+      "station": "MGR",
+      "support": "desk-MGR",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "office-chair-lavender",
+      "x": 13.5,
+      "z": 4.5,
+      "rot": 0,
+      "walkable": true,
+      "exception": "seat-chair",
+      "seatId": "HR",
+      "station": "HR"
+    },
+    {
+      "model": "reception-desk",
+      "x": 12.47,
+      "z": 5.5,
+      "rot": 180,
+      "walkable": false,
+      "id": "desk-HR",
+      "station": "HR",
+      "role": "station-desk",
+      "desktopY": 1.26,
+      "scale": [
+        1,
+        1,
+        0.6529411886802596
+      ]
+    },
+    {
+      "model": "monitor-compact",
+      "x": 13.5,
+      "z": 5.9,
+      "rot": 180,
+      "walkable": false,
+      "station": "HR",
+      "support": "desk-HR",
+      "role": "station-monitor",
+      "y": 1.26,
+      "scale": [
+        0.8403,
+        1,
+        0.5852
+      ]
+    },
+    {
+      "model": "keyboard-compact",
+      "x": 13.46,
+      "z": 5.45,
+      "rot": 180,
+      "walkable": false,
+      "station": "HR",
+      "support": "desk-HR",
+      "role": "station-keyboard",
+      "y": 1.26
+    },
+    {
+      "model": "mouse-compact",
+      "x": 13.9,
+      "z": 5.45,
+      "rot": 180,
+      "walkable": false,
+      "station": "HR",
+      "support": "desk-HR",
+      "role": "station-mouse",
+      "y": 1.26
+    },
+    {
+      "model": "pc-tower",
+      "x": 12.55,
+      "z": 5.5,
+      "rot": 180,
+      "walkable": false,
+      "station": "HR",
+      "support": "desk-HR",
+      "role": "station-tower",
+      "y": 0
+    },
+    {
+      "model": "mug",
+      "x": 12.5,
+      "z": 5.4,
+      "rot": 180,
+      "walkable": false,
+      "station": "HR",
+      "support": "desk-HR",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "desk-cactus",
+      "x": 12.3,
+      "z": 5.68,
+      "rot": 180,
+      "walkable": false,
+      "station": "HR",
+      "support": "desk-HR",
+      "role": "desk-item",
+      "y": 1.26
+    },
+    {
+      "model": "sink",
+      "x": 44,
+      "z": 5,
+      "rot": 0,
+      "walkable": false,
+      "y": 1.666
+    },
+    {
+      "model": "coffee-machine",
+      "x": 46,
+      "z": 5,
+      "rot": 0,
+      "walkable": false,
+      "y": 1.666
+    },
+    {
+      "model": "jar",
+      "x": 48,
+      "z": 5,
+      "rot": 0,
+      "walkable": false,
+      "y": 1.666
+    },
+    {
+      "model": "microwave",
+      "x": 43.33,
+      "z": 4.95,
+      "rot": 0,
+      "walkable": false,
+      "y": 1.666,
+      "role": "pantry-item",
+      "scale": [
+        0.588,
+        1,
+        0.588
+      ]
+    },
+    {
+      "model": "kettle",
+      "x": 44.61,
+      "z": 4.95,
+      "rot": 0,
+      "walkable": false,
+      "y": 1.666,
+      "role": "pantry-item"
+    },
+    {
+      "model": "toaster",
+      "x": 45.39,
+      "z": 4.95,
+      "rot": 0,
+      "walkable": false,
+      "y": 1.666,
+      "role": "pantry-item"
+    },
+    {
+      "model": "paper-towels",
+      "x": 48.61,
+      "z": 4.95,
+      "rot": 0,
+      "walkable": false,
+      "y": 1.666,
+      "role": "pantry-item"
+    },
+    {
+      "model": "book-stack",
+      "x": 53,
+      "z": 9.25,
+      "rot": 90,
+      "walkable": false,
+      "curation": "e",
+      "y": 1.666,
+      "role": "plate-counter-item"
+    },
+    {
+      "model": "desk-plant",
+      "x": 53,
+      "z": 10.5,
+      "rot": 90,
+      "walkable": false,
+      "curation": "e",
+      "y": 1.666,
+      "role": "plate-counter-item",
+      "scale": [
+        0.599,
+        1,
+        0.599
+      ]
+    },
+    {
+      "model": "jar",
+      "x": 53,
+      "z": 11.9,
+      "rot": 90,
+      "walkable": false,
+      "curation": "e",
+      "y": 1.666,
+      "role": "plate-counter-item"
+    },
+    {
+      "model": "book-stack",
+      "x": 53,
+      "z": 12.5,
+      "rot": 90,
+      "walkable": false,
+      "curation": "e",
+      "y": 1.666,
+      "role": "plate-counter-item"
+    },
+    {
+      "model": "desk-plant",
+      "x": 45.5,
+      "z": 10.5,
+      "rot": 0,
+      "walkable": false,
+      "curation": "e",
+      "y": 1.2665,
+      "role": "plate-table-item"
+    },
+    {
+      "model": "desk-plant",
+      "x": 46.5,
+      "z": 22.5,
+      "rot": 0,
+      "walkable": false,
+      "curation": "e",
+      "y": 0.8245,
+      "role": "plate-table-item"
+    },
+    {
+      "model": "desk-plant",
+      "x": 42,
+      "z": 22.95,
+      "rot": 0,
+      "walkable": false,
+      "curation": "e",
+      "y": 3.23,
+      "role": "cabinet-item"
+    },
+    {
+      "model": "book-stack",
+      "x": 42,
+      "z": 24,
+      "rot": 90,
+      "walkable": false,
+      "curation": "e",
+      "y": 3.23,
+      "role": "cabinet-item"
     },
     {
       "model": "notebook",
@@ -14940,7 +13849,7 @@
       "z": 30.45,
       "rot": 0,
       "walkable": false,
-      "y": 0.74,
+      "y": 1.26,
       "role": "meeting-item",
       "support": "meeting-table",
       "area": "manager-meeting"
@@ -14951,7 +13860,7 @@
       "z": 31,
       "rot": 0,
       "walkable": false,
-      "y": 0.74,
+      "y": 1.26,
       "role": "meeting-item",
       "support": "meeting-table",
       "area": "manager-meeting"
@@ -14962,18 +13871,239 @@
       "z": 31.6,
       "rot": 0,
       "walkable": false,
-      "y": 0.74,
+      "y": 1.26,
       "role": "meeting-item",
       "support": "meeting-table",
       "area": "manager-meeting"
     },
     {
-      "model": "rug-meeting-corner",
-      "x": 49.5,
-      "z": 31,
+      "model": "desk-cactus",
+      "x": 7,
+      "z": 4.5,
       "rot": 0,
-      "walkable": true,
-      "area": "manager-meeting"
+      "walkable": false,
+      "y": 2.0399999618530273,
+      "role": "plate-cabinet-plant"
+    },
+    {
+      "model": "picture-frame",
+      "x": 5.5,
+      "z": 3.800000011920929,
+      "rot": 0,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "north",
+      "y": 2.85,
+      "wallId": "north-wall-straight-5.5-3.5"
+    },
+    {
+      "model": "wall-clock",
+      "x": 11.5,
+      "z": 3.800000011920929,
+      "rot": 0,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "north",
+      "y": 2.85,
+      "wallId": "north-wall-straight-11.5-3.5"
+    },
+    {
+      "model": "wall-shelf",
+      "x": 24.5,
+      "z": 3.800000011920929,
+      "rot": 0,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "north",
+      "y": 2.85,
+      "wallId": "north-wall-straight-24.5-3.5"
+    },
+    {
+      "model": "picture-frame",
+      "x": 30.5,
+      "z": 3.800000011920929,
+      "rot": 0,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "north",
+      "y": 2.85,
+      "wallId": "north-wall-straight-30.5-3.5"
+    },
+    {
+      "model": "wall-clock",
+      "x": 36.5,
+      "z": 3.800000011920929,
+      "rot": 0,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "north",
+      "y": 2.85,
+      "wallId": "north-wall-straight-36.5-3.5"
+    },
+    {
+      "model": "wall-shelf",
+      "x": 42.5,
+      "z": 3.800000011920929,
+      "rot": 0,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "north",
+      "y": 2.85,
+      "wallId": "north-wall-straight-42.5-3.5"
+    },
+    {
+      "model": "picture-frame",
+      "x": 48.5,
+      "z": 3.800000011920929,
+      "rot": 0,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "north",
+      "y": 2.85,
+      "wallId": "north-wall-straight-48.5-3.5"
+    },
+    {
+      "model": "wall-clock",
+      "x": 5.5,
+      "z": 34.19999998807907,
+      "rot": 180,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "south",
+      "y": 2.85,
+      "wallId": "south-wall-straight-5.5-34.5"
+    },
+    {
+      "model": "wall-shelf",
+      "x": 11.5,
+      "z": 34.19999998807907,
+      "rot": 180,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "south",
+      "y": 2.85,
+      "wallId": "south-wall-straight-11.5-34.5"
+    },
+    {
+      "model": "picture-frame",
+      "x": 17.5,
+      "z": 34.19999998807907,
+      "rot": 180,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "south",
+      "y": 2.85,
+      "wallId": "south-wall-straight-17.5-34.5"
+    },
+    {
+      "model": "wall-clock",
+      "x": 23.5,
+      "z": 34.19999998807907,
+      "rot": 180,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "south",
+      "y": 2.85,
+      "wallId": "south-wall-straight-23.5-34.5"
+    },
+    {
+      "model": "wall-shelf",
+      "x": 29.5,
+      "z": 34.19999998807907,
+      "rot": 180,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "south",
+      "y": 2.85,
+      "wallId": "south-wall-straight-29.5-34.5"
+    },
+    {
+      "model": "picture-frame",
+      "x": 35.5,
+      "z": 34.19999998807907,
+      "rot": 180,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "south",
+      "y": 2.85,
+      "wallId": "south-wall-straight-35.5-34.5"
+    },
+    {
+      "model": "wall-clock",
+      "x": 41.5,
+      "z": 34.19999998807907,
+      "rot": 180,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "south",
+      "y": 2.85,
+      "wallId": "south-wall-straight-41.5-34.5"
+    },
+    {
+      "model": "wall-shelf",
+      "x": 47.5,
+      "z": 34.19999998807907,
+      "rot": 180,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "south",
+      "y": 2.85,
+      "wallId": "south-wall-straight-47.5-34.5"
+    },
+    {
+      "model": "wall-shelf",
+      "x": 54.19999998807907,
+      "z": 7.5,
+      "rot": 270,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "east",
+      "y": 2.85,
+      "wallId": "east-wall-straight-54.5-7.5"
+    },
+    {
+      "model": "picture-frame",
+      "x": 54.19999998807907,
+      "z": 13.5,
+      "rot": 270,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "east",
+      "y": 2.85,
+      "wallId": "east-wall-straight-54.5-13.5"
+    },
+    {
+      "model": "wall-clock",
+      "x": 54.19999998807907,
+      "z": 19.5,
+      "rot": 270,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "east",
+      "y": 2.85,
+      "wallId": "east-wall-straight-54.5-19.5"
+    },
+    {
+      "model": "wall-shelf",
+      "x": 54.19999998807907,
+      "z": 25.5,
+      "rot": 270,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "east",
+      "y": 2.85,
+      "wallId": "east-wall-straight-54.5-25.5"
+    },
+    {
+      "model": "picture-frame",
+      "x": 54.19999998807907,
+      "z": 31.5,
+      "rot": 270,
+      "walkable": false,
+      "mount": "wall",
+      "facing": "east",
+      "y": 2.85,
+      "wallId": "east-wall-straight-54.5-31.5"
     }
   ],
   "walls": [
@@ -16905,7 +16035,46 @@
       ]
     },
     "foldingFurniture": "Built but unplaced; see REQUESTS-3D.md",
-    "workstations": "Monitors at 1.2 tiles on each seat axis. Deep blocked padding is a low shared spine."
+    "workstations": "Monitors at 1.2 tiles on each seat axis. Deep blocked padding is a low shared spine.",
+    "partG2": "Kenney default; nominal ×1.7, seat 0.85 / desk 1.26. Facing desktops meet without a spine; HR monitor exception is 1.4 tiles. Characters read-only."
   },
-  "revision": "f"
+  "revision": "g2",
+  "facingPairs": [
+    [
+      "D1",
+      "D2"
+    ],
+    [
+      "D3",
+      "D4"
+    ],
+    [
+      "D5",
+      "D6"
+    ],
+    [
+      "D7",
+      "D8"
+    ],
+    [
+      "D9",
+      "D13"
+    ],
+    [
+      "D10",
+      "D14"
+    ],
+    [
+      "D11",
+      "D15"
+    ],
+    [
+      "D12",
+      "D16"
+    ],
+    [
+      "M1",
+      "M2"
+    ]
+  ]
 }

@@ -1,0 +1,78 @@
+{
+  "kenney": {
+    "objects": 1845,
+    "walls": 202,
+    "seatChairs": 20,
+    "wallDecor": 20,
+    "allowedEmpty": 80,
+    "staticTriangles": 107997,
+    "pairGaps": [
+      {
+        "pair": [
+          "D1",
+          "D2"
+        ],
+        "gap": 1.2397766013805267e-7
+      },
+      {
+        "pair": [
+          "D3",
+          "D4"
+        ],
+        "gap": 1.2397766013805267e-7
+      },
+      {
+        "pair": [
+          "D5",
+          "D6"
+        ],
+        "gap": 1.2397766013805267e-7
+      },
+      {
+        "pair": [
+          "D7",
+          "D8"
+        ],
+        "gap": 1.2397766013805267e-7
+      },
+      {
+        "pair": [
+          "D9",
+          "D13"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D10",
+          "D14"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D11",
+          "D15"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D12",
+          "D16"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "M1",
+          "M2"
+        ],
+        "gap": 1.2397766369076635e-7
+      }
+    ],
+    "characterTriangles": 43896,
+    "sceneTriangles": 151893,
+    "models": 85
+  }
+}

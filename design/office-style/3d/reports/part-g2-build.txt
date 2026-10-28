@@ -1,0 +1,141 @@
+$ bun src/build.ts
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... Primitive (1), TextureInfo (5), Material (1)
+prune: Removed types... Primitive (15), TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+prune: Removed types... Primitive (6), TextureInfo (5), Material (1)
+prune: Removed types... Primitive (2), TextureInfo (5), Material (1)
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Missing optional extension, "KHR_materials_unlit".
+prune: Removed types... TextureInfo (5), Material (1)
+Built G2 ×1.7: Kenney default; 57 props, 12 kit; 36 converted ids. Characters read-only.

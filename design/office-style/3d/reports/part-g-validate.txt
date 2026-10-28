@@ -1,0 +1,8 @@
+PASS baseline: 138 GLBs, all triangle budgets, embedded shared palette, axes/origin; 20/20 seat chairs at 0.7; 20 desktops at 1.04; monitors 1.4–1.9 tiles on own axes; <=3 desk items; 20 sparse nonrepeating wall decorations; 196277/500000 scene triangles.
+PASS kaykit: 138 GLBs, all triangle budgets, embedded shared palette, axes/origin; 20/20 seat chairs at 0.7; 20 desktops at 1.04; monitors 1.4–1.9 tiles on own axes; <=3 desk items; 20 sparse nonrepeating wall decorations; 189515/500000 scene triangles.
+PASS kenney: 138 GLBs, all triangle budgets, embedded shared palette, axes/origin; 20/20 seat chairs at 0.7; 20 desktops at 1.04; monitors 1.4–1.9 tiles on own axes; <=3 desk items; 20 sparse nonrepeating wall decorations; 158439/500000 scene triangles.
+PASS negative checks: moved chairs, distant/off-axis/reversed monitors, excess clutter, wrong desk support, walkable obstacles and low wall decor are rejected.
+PASS characters: read-only contract checks only — 16 ids, node tree, 8 clip names, standing height 1.95–2.2 and width <=1.3.
+PASS rooms: perimeter 4.2, frosted room 3.6, original wall/window footprints, unchanged flat floor/rug/mat/sun-patch sizes.
+PASS frozen shared map: background.png, foreground.png, collision.png, collision@16x.png and seats.json byte-identical to finished Part F.
+PASS models3d.json synchronized; both variants share own characters/kit, have identical placements, and carry confirmed bundled CC0 licenses.
