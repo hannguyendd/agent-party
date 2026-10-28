@@ -484,7 +484,7 @@ def latest_build(downloads: Path | None) -> str:
 
 
 def create_world_app(data_path: Path | None = None, downloads: Path | None = None, org: str = "",
-                     hub_data: Path | None = None, hub_port: int = 7400) -> FastAPI:
+                     hub_data: Path | None = None, hub_port: int = 7400, agentmesh_one: str | None = None) -> FastAPI:
     hub = WorldHub(WorldState(data_path, org.strip()[:60]))
     app = FastAPI(title="agentfleet world")
     app.state.hub = hub
@@ -493,7 +493,7 @@ def create_world_app(data_path: Path | None = None, downloads: Path | None = Non
     from agentfleet_node.admin import AdminConfig, router as admin_router
 
     admin_dir = data_path.parent if data_path else Path("./data")
-    app.state.admin = AdminConfig(admin_dir, hub_data, hub_port, downloads)
+    app.state.admin = AdminConfig(admin_dir, hub_data, hub_port, downloads, agentmesh_one)
     app.include_router(admin_router(app.state.admin, hub, latest_wheel, latest_build))
 
     # Staff machines install from here: `curl -fsSL http://<server>:7500/install | bash`. The script and the

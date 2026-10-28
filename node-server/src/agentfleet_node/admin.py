@@ -12,6 +12,7 @@ the rest of v1.
 import hashlib
 import hmac
 import json
+import os
 import secrets
 import shutil
 import subprocess
@@ -43,9 +44,11 @@ class InviteIn(BaseModel):
 
 
 class AdminConfig:
-    def __init__(self, data_dir: Path, hub_data: Path | None, hub_port: int, downloads: Path | None):
+    def __init__(self, data_dir: Path, hub_data: Path | None, hub_port: int, downloads: Path | None,
+                 agentmesh_one: str | None = None):
         self.data_dir = data_dir
-        self.hub_data = hub_data
+        self.hub_data = hub_data.expanduser().resolve() if hub_data else None
+        self.agentmesh_one = agentmesh_one  # explicit path; else looked up on PATH
         self.hub_port = hub_port
         self.downloads = downloads
         data_dir.mkdir(parents=True, exist_ok=True)
@@ -55,6 +58,25 @@ class AdminConfig:
             key_file.chmod(0o600)
         self.key = key_file.read_text().strip()
         self.invites_file = data_dir / "invites.json"
+
+    def exe(self) -> str | None:
+        if self.agentmesh_one:
+            return self.agentmesh_one if Path(self.agentmesh_one).is_file() else None
+        return shutil.which("agentmesh-one")
+
+    def invite_problem(self) -> str | None:
+        """Why invites can't be made here, precisely enough to fix it; None when they can."""
+        if not self.exe():
+            where = self.agentmesh_one or "PATH"
+            return (f"agentmesh-one was not found ({where}). The office server looks it up in its own PATH: "
+                    f"{os.environ.get('PATH', '')}. Start it from a shell where `agentmesh-one` works, or pass "
+                    "--agentmesh-one /full/path (make server AGENTMESH_ONE=/full/path).")
+        if self.hub_data is None or not self.hub_data.is_dir():
+            return (f"the hub's data folder {self.hub_data} does not exist. Point the office server at the folder the "
+                    "hub uses (--hub-data, make server HUB_DATA=/path; hub/start-hub.sh uses hub/data by default).")
+        if not (self.hub_data / "admin-token").exists():
+            return f"{self.hub_data} has no admin-token: is it really the hub's data folder, and has the hub started once?"
+        return None
 
     def cookie_value(self) -> str:
         return hmac.new(self.key.encode(), b"admin", hashlib.sha256).hexdigest()
@@ -73,11 +95,10 @@ class AdminConfig:
 
 def mint_token(cfg: AdminConfig, device: str) -> str:
     """One single-use join token from the hub (same call as hub/mint-token.sh)."""
-    exe = shutil.which("agentmesh-one")
-    if not exe:
-        raise HTTPException(503, "agentmesh-one is not installed on this server, so no token can be made here")
-    if cfg.hub_data is None or not cfg.hub_data.is_dir():
-        raise HTTPException(503, f"the hub's data folder was not found ({cfg.hub_data}); is the hub running here?")
+    problem = cfg.invite_problem()
+    if problem:
+        raise HTTPException(503, problem)
+    exe = cfg.exe()
     try:
         out = subprocess.run(
             [exe, "token", "create", "--server", f"http://127.0.0.1:{cfg.hub_port}", "--data-dir", str(cfg.hub_data),
@@ -130,7 +151,8 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
             "build": latest_build(cfg.downloads),
             "package": latest_wheel(cfg.downloads),
             "platforms": [{"name": n, "file": f, "ready": f in files} for n, f in PLATFORMS.items()],
-            "can_invite": bool(shutil.which("agentmesh-one")) and bool(cfg.hub_data and cfg.hub_data.is_dir()),
+            "can_invite": cfg.invite_problem() is None,
+            "invite_problem": cfg.invite_problem(),
             "owners": s.owners_view(),
             "agents": [{"agent_id": a.agent_id, "owner": a.owner, "name": a.name} for a in s.agents.values()],
             "desks": s.desks,

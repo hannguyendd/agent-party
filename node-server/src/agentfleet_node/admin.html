@@ -116,7 +116,7 @@ async function load() {
   const title = o.org ? `${o.org} Office` : 'Office'
   document.title = `${title} admin`; $('title').textContent = `${title} admin`; $('sub').textContent = `server ${o.server}`
   $('inviteBtn').disabled = !o.can_invite
-  if (!o.can_invite) $('inviteErr').textContent = 'Invites need the hub on this machine (agentmesh-one and hub/data). Start it with make server.'
+  $('inviteErr').textContent = o.can_invite ? '' : `Can't create invites yet: ${o.invite_problem}`
   const deskOf = Object.fromEntries(Object.entries(o.desks).map(([d, owner]) => [owner, d]))
   const people = Object.entries(o.owners).filter(([name]) => !name.startsWith('zz'))
   $('presentCount').textContent = `${people.filter(([, s]) => s.present).length} here now · ${people.filter(([, s]) => s.connected).length} online`

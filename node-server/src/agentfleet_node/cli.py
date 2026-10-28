@@ -30,6 +30,7 @@ def main() -> None:
     world.add_argument("--org", default="", help='organization name: dashboards show "<org> Office"')
     world.add_argument("--hub-data", default="../hub/data", help="the hub's data folder (admin page mints join tokens with it)")
     world.add_argument("--hub-port", type=int, default=7400)
+    world.add_argument("--agentmesh-one", default=None, help="path to agentmesh-one if it is not on PATH")
     world.add_argument("--downloads", default="../dist/downloads",
                        help="folder served at /downloads for the staff installer (make bundle fills it)")
     args = parser.parse_args()
@@ -61,8 +62,10 @@ def main() -> None:
 
         from agentfleet_node.world import create_world_app
 
-        app = create_world_app(Path(args.data), Path(args.downloads), args.org, Path(args.hub_data), args.hub_port)
+        app = create_world_app(Path(args.data), Path(args.downloads), args.org, Path(args.hub_data), args.hub_port, args.agentmesh_one)
         print(f"Admin page: http://<this machine>:{args.port}/admin   (admin key: {app.state.admin.key})", flush=True)
+        if problem := app.state.admin.invite_problem():
+            print(f"Admin page can't create invites yet: {problem}", flush=True)
         uvicorn.run(app, host=args.host, port=args.port)
     elif args.cmd == "mesh-config":
         from agentfleet_node.db import Database, make_engine

@@ -17,6 +17,8 @@ HUB_URL  ?= http://$(if $(HUB_HOST),$(HUB_HOST),127.0.0.1):$(HUB_PORT)
 DEVICE   ?=
 WORLD_PORT ?= 7500
 ORG ?=
+HUB_DATA ?= ../hub/data
+AGENTMESH_ONE ?=
 
 .DEFAULT_GOAL := help
 .PHONY: help setup up server bundle install install-node install-dashboard test build serve dev dev-server dev-dashboard \
@@ -123,7 +125,7 @@ hub-token: ## Mint a single-use join token for a device (DEVICE="han laptop")
 	cd $(HUB_DIR) && HUB_PORT=$(HUB_PORT) ./mint-token.sh "$(DEVICE)"
 
 world: ## Run the Office world server (one per team, on the hub machine; port WORLD_PORT, default 7500)
-	cd $(NODE_DIR) && uv run agentfleet-node world --port $(WORLD_PORT) --downloads ../dist/downloads --org "$(ORG)" --hub-data ../hub/data --hub-port $(HUB_PORT)
+	cd $(NODE_DIR) && uv run agentfleet-node world --port $(WORLD_PORT) --downloads ../dist/downloads --org "$(ORG)" --hub-data "$(HUB_DATA)" --hub-port $(HUB_PORT) $(if $(AGENTMESH_ONE),--agentmesh-one "$(AGENTMESH_ONE)",)
 
 codegraph: ## Refresh the codegraph index (.codegraph/, local only)
 	codegraph sync .

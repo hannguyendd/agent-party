@@ -22,6 +22,7 @@ def admin_app(tmp_path, hub_data=True):
     hub = tmp_path / "hub-data"
     if hub_data:
         hub.mkdir()
+        (hub / "admin-token").write_text("t")
     return create_world_app(tmp_path / "world" / "world.json", tmp_path / "downloads", "Taggle", hub, 7400)
 
 
@@ -56,3 +57,17 @@ def test_invites_explain_why_they_cannot_be_made(tmp_path, monkeypatch):
     c.post("/admin/api/login", json={"key": key})
     r = c.post("/admin/api/invites", json={"device": "x"})
     assert r.status_code == 503 and "agentmesh-one" in r.json()["detail"]
+
+
+def test_invite_problems_are_specific(tmp_path, monkeypatch):
+    fake_agentmesh_one(tmp_path, monkeypatch)
+    app = create_world_app(tmp_path / "w" / "world.json", None, "", tmp_path / "missing-hub", 7400)
+    assert "does not exist" in app.state.admin.invite_problem()
+    app = create_world_app(tmp_path / "w2" / "world.json", None, "", tmp_path / "bin", 7400)
+    assert "no admin-token" in app.state.admin.invite_problem()
+    exe = tmp_path / "bin" / "agentmesh-one"
+    app = create_world_app(tmp_path / "w3" / "world.json", None, "", tmp_path, 7400, agentmesh_one=str(tmp_path / "nope"))
+    assert "was not found" in app.state.admin.invite_problem()
+    (tmp_path / "admin-token").write_text("t")
+    app = create_world_app(tmp_path / "w4" / "world.json", None, "", tmp_path, 7400, agentmesh_one=str(exe))
+    assert app.state.admin.invite_problem() is None
