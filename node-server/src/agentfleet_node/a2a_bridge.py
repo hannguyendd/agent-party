@@ -303,8 +303,12 @@ class OutboundClient:
             reply, state = get_message_text(last.message), "completed"
 
         self.store.add_message(conv.id, "peer", reply, sender=to_agent, state=state)
+        if state == "rejected":
+            # Declined by the peer or its owner (e.g. an Assignment): a normal outcome, not an error.
+            self.store.add_message(conv.id, "system", f"Declined: {reply.strip() or 'no reason given'}", kind="status")
         self.store.update_conversation(
-            conv.id, status=ConversationStatus.ERROR if state in ("failed", "rejected") else ConversationStatus.IDLE
+            conv.id,
+            status=ConversationStatus.ERROR if state == "failed" else ConversationStatus.DONE if state == "rejected" else ConversationStatus.IDLE,
         )
         self.store.audit("outbound_reply", agent_id=from_agent, peer_agent_id=to_agent, context_id=context_id, task_id=out_task, state=state)
         return OutboundResult(reply=reply.strip(), state=state, context_id=context_id, task_id=out_task, conversation_id=conv.id, files=names)

@@ -3,9 +3,11 @@ import type Phaser from 'phaser'
 import { api, type OfficeAgent, type OfficeTarget } from '../api'
 import type { LiveState } from '../useLiveState'
 import type { View } from '../App'
-import { errMsg } from '../components/ui'
+import { StatusBadge, errMsg } from '../components/ui'
 import { SKINS, ownerCss } from './skins'
 import type { OfficeScene, PeerClick, SceneCallbacks, SceneData } from './OfficeScene'
+import { Icon } from './Icon'
+import { ConversationPanel } from './ConversationPanel'
 import { PeerMenu } from './PeerMenu'
 import { ApprovalCard } from '../components/ApprovalCard'
 import { enableNotifications, notificationsSupported } from '../useNotifications'
@@ -63,7 +65,10 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
   return <div ref={host} className="office-canvas" tabIndex={0} role="region" aria-label="Office. Select your agent, then use WASD or arrow keys, or click the floor to walk. H returns to desk, F follows, Escape deselects." />
 }
 
-export default function OfficeView({ state, go, clearError }: { state: LiveState; go: (v: View) => void; clearError: () => void }) {
+export default function OfficeView({ state, go, clearError, openConv, setOpenConv }: {
+  state: LiveState; go: (v: View) => void; clearError: () => void
+  openConv: string | null; setOpenConv: (id: string | null) => void
+}) {
   const office = state.office
   const [preview, setPreview] = useState(false)
   const isPreview = preview || !office?.enabled
@@ -90,6 +95,13 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
   const canAct = isPreview || !!office?.connected
   const mine = agents.filter(a => a.owner === me)
   const picked = agents.find(a => a.agent_id === selected[0])
+  // Newest conversation per agent of mine (active ones first), for "open chat".
+  const latestConv = (agentId: string) => {
+    const rows = Object.values(state.conversations).filter(c => c.agent_id === agentId)
+    const live = (c: { status: string }) => ['running', 'awaiting_approval', 'awaiting_owner'].includes(c.status)
+    return rows.sort((a, b) => Number(live(b)) - Number(live(a)) || b.updated_at.localeCompare(a.updated_at))[0]
+  }
+  const conv = openConv ? state.conversations[openConv] : undefined
   const ownDesk = Object.entries(desks).find(([, owner]) => owner === me)?.[0]
   const sceneData: SceneData = useMemo(() => ({
     me, agents, desks, owners: isPreview ? { preview: { connected: true, present: true } } : office?.owners ?? {},
@@ -116,7 +128,7 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
       else void perform(async () => { await api.claimDesk(id); setPickingDesk(false) })
     },
     onDeskTaken: (id, owner) => setNotice(`${id} is ${owner}'s desk. Pick one outlined in green.`),
-    onOpenAgent: id => { if (!isPreview) go({ kind: 'agent-edit', id }) },
+    onOpenAgent: id => { const c = isPreview ? undefined : latestConv(id); if (c) setOpenConv(c.id) },
   }
   useEffect(() => {
     if (!isPreview) return
@@ -137,13 +149,13 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
 
   return <section className="office-view">
     <nav className="office-appbar" aria-label="Navigation">
-      <div className="office-logo"><b>◆</b>Agent Mesh</div>
+      <div className="office-logo"><img src="office/ui/logo.png" srcSet="office/ui/logo.png 1x, office/ui/logo@2x.png 2x" width="28" height="28" alt="" />Agent Mesh</div>
       <div className="office-nav">
-        <button className="is-active" aria-current="page">Office</button>
-        <button onClick={() => go({ kind: 'home' })}>Conversations</button>
-        <button onClick={() => go({ kind: 'approvals' })}>Approvals{pendingCount > 0 && <span className="o-count">{pendingCount}</span>}</button>
-        <button onClick={() => go({ kind: 'directory' })}>Mesh directory</button>
-        <button onClick={() => go({ kind: 'agent-edit' })}>+ Agent</button>
+        <button className="is-active" aria-current="page"><Icon name="office" />Office</button>
+        <button onClick={() => go({ kind: 'home' })}><Icon name="agents" />Conversations</button>
+        <button onClick={() => go({ kind: 'approvals' })}><Icon name={pendingCount > 0 ? 'approvals-pending' : 'approvals'} />Approvals{pendingCount > 0 && <span className="o-count">{pendingCount}</span>}</button>
+        <button onClick={() => go({ kind: 'directory' })}><Icon name="directory" />Mesh directory</button>
+        <button onClick={() => go({ kind: 'agent-edit' })}><Icon name="settings" />+ Agent</button>
       </div>
       <div className="office-status">
         {state.node && <span>{state.node.owner}</span>}
@@ -163,13 +175,13 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
       <div className="office-tools">
         {office?.enabled && <button className="btn" onClick={() => setPreview(!preview)}>{preview ? '← Back to live' : 'Preview'}</button>}
         <button className="btn" disabled={!canAct || busy} aria-pressed={pickingDesk} onClick={() => setPickingDesk(!pickingDesk)}>{pickingDesk ? 'Cancel' : ownDesk ? `Desk ${ownDesk} · Change` : 'Choose a desk'}</button>
-        {notifyPerm !== 'granted' && notificationsSupported() && <button className="btn" title="Get pinged when someone assigns you work while this tab is in the background" onClick={() => void enableNotifications().then(setNotifyPerm)}>🔔 Notifications</button>}
-        <button className="btn" disabled={!ready} onClick={() => sceneRef.current?.fitCamera()}>Fit office</button>
+        {notifyPerm !== 'granted' && notificationsSupported() && <button className="btn" title="Get pinged when someone assigns you work while this tab is in the background" onClick={() => void enableNotifications().then(setNotifyPerm)}><Icon name="notifications-on" />Notifications</button>}
+        <button className="btn" disabled={!ready} onClick={() => sceneRef.current?.fitCamera()}><Icon name="fit" />Fit office</button>
       </div>
     </div>
 
     {!isPreview && !office?.connected && <div className="office-notice" role="status">Reconnecting to the office. You can look around; moving resumes once it's back.</div>}
-    {(error || state.officeError) && <div className="office-notice office-error" role="alert">{error || state.officeError}<button onClick={() => { setError(null); clearError() }} aria-label="Dismiss">✕</button></div>}
+    {(error || state.officeError) && <div className="office-notice office-error" role="alert">{error || state.officeError}<button onClick={() => { setError(null); clearError() }} aria-label="Dismiss"><Icon name="close" /></button></div>}
     {notice && <div className="office-notice" role="status">{notice}</div>}
     {pickingDesk && <div className="office-notice" role="status">Click a desk outlined in green, or pick one from the list on the right.</div>}
 
@@ -187,9 +199,9 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
           </div>
         )}
         <div className="office-zoom" aria-label="Zoom">
-          <button className="o-btn" aria-label="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}>−</button>
-          <button className="o-btn" aria-label="Fit office" onClick={() => sceneRef.current?.fitCamera()}>⌂</button>
-          <button className="o-btn" aria-label="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}>+</button>
+          <button className="o-btn" aria-label="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}><Icon name="zoom-out" /></button>
+          <button className="o-btn" aria-label="Fit office" onClick={() => sceneRef.current?.fitCamera()}><Icon name="fit" /></button>
+          <button className="o-btn" aria-label="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}><Icon name="zoom-in" /></button>
         </div>
         {peer && agents.some(a => a.agent_id === peer.agentId) && (
           <PeerMenu
@@ -200,7 +212,7 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
             conversations={isPreview ? [] : Object.values(state.conversations).filter(c => c.peer_agent_id === peer.agentId)}
             onClose={() => { if (peer.auto) sceneRef.current?.dismissNearby(); setPeer(null) }}
             onWalk={() => { sceneRef.current?.walkSelectedTo(peer.agentId); setPeer(null) }}
-            onOpen={id => go({ kind: 'conversation', id })}
+            onOpen={id => { setPeer(null); setOpenConv(id) }}
             onSent={msg => { setPeer(null); setError(null); setNotice(msg) }}
             onError={setError}
             preview={isPreview}
@@ -210,6 +222,18 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
       </div>
 
       <aside className="office-roster">
+        {conv ? (
+          <ConversationPanel
+            key={conv.id}
+            conv={conv}
+            messages={state.messages[conv.id]}
+            partial={state.partial[conv.id]}
+            approvals={Object.values(state.approvals).filter(a => a.conversation_id === conv.id)}
+            onBack={() => setOpenConv(null)}
+            onOpen={setOpenConv}
+            onExpand={() => go({ kind: 'conversation', id: conv.id })}
+          />
+        ) : <>
         <div className="o-frame office-card">
           <h2>Your agents <span>{mine.length}</span></h2>
           {!mine.length && <p className="office-empty">Your online agents show up here. <button className="btn" onClick={() => go({ kind: 'agent-edit' })}>+ New agent</button></p>}
@@ -218,6 +242,12 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
             <span><strong>{a.name}</strong><small>{statusText(a)}</small></span>
             <i style={{ backgroundColor: ownerCss(a.owner) }} />
           </button>)}</div>
+          {!isPreview && mine.some(a => latestConv(a.agent_id)) && <div className="office-chats">
+            {mine.map(a => { const c = latestConv(a.agent_id); return c && (
+              <button key={a.agent_id} className="office-chat" onClick={() => setOpenConv(c.id)} title="Open conversation">
+                <Icon name="inject" /><span><strong>{a.name}</strong><small>{c.peer_agent_id ? `with ${c.peer_agent_id}` : c.title || 'local session'}</small></span><StatusBadge status={c.status} />
+              </button>) })}
+          </div>}
         </div>
 
         {picked && <div className="o-frame office-card office-agent-actions"><h3>{picked.name}</h3>
@@ -225,10 +255,10 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
             if (isPreview) setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin: e.target.value } : a))
             else void perform(() => api.setSkin(picked.agent_id, e.target.value))
           }}>{SKINS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}</select>
-          <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.sendSelectedHome()}>Back to desk</button>
+          <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.sendSelectedHome()}><Icon name="desk" />Back to desk</button>
           <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.moveSelectedTo({ x: 43, y: 10 })}>Go to pantry</button>
           <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.moveSelectedTo({ x: 41, y: 20 })}>Go to meeting room</button>
-          {!isPreview && <button className="btn" onClick={() => go({ kind: 'agent-edit', id: picked.agent_id })}>Agent settings</button>}
+          {!isPreview && <button className="btn" onClick={() => go({ kind: 'agent-edit', id: picked.agent_id })}><Icon name="settings" />Agent settings</button>}
         </div>}
 
         {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2'].filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}
@@ -239,6 +269,7 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
           <p><kbd>Shift</kbd> multi-select · <kbd>H</kbd> back to desk · <kbd>F</kbd> follow · <kbd>Esc</kbd> deselect</p>
           <p>Scroll to zoom · right-drag to pan</p>
         </div>
+        </>}
       </aside>
     </div>
     <footer className="office-footer"><span className={`office-connection ${isPreview || office?.connected ? 'is-online' : ''}`}>{isPreview ? 'Local preview' : office?.connected ? 'Office connected' : 'Reconnecting'}</span><span>18 desks · pantry · meeting room</span></footer>

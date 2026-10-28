@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { api, type Conversation, type OfficeAgent } from '../api'
 import { errMsg } from '../components/ui'
 import type { PeerClick } from './OfficeScene'
+import { Icon } from './Icon'
 import { ownerCss } from './skins'
 
 export function PeerMenu(props: {
@@ -76,9 +77,7 @@ export function PeerMenu(props: {
             {peer.owner}'s agent · {props.present ? 'owner here' : 'owner away'}
           </div>
         </div>
-        <button className="o-peer-sub" aria-label="Close" onClick={props.onClose}>
-          ✕
-        </button>
+        <button className="o-peer-sub" aria-label="Close" onClick={props.onClose}><Icon name="close" /></button>
       </div>
 
       {mode !== 'menu' ? (
@@ -101,9 +100,7 @@ export function PeerMenu(props: {
             </div>
           )}
           <div className="flex gap-1">
-            <button className="btn-primary" disabled={busy || !text.trim()} onClick={send}>
-              Send
-            </button>
+            <button className="btn-primary" disabled={busy || !text.trim()} onClick={send}><Icon name="send" /> Send</button>
             <button className="btn" onClick={() => setMode('menu')}>
               Back
             </button>
@@ -114,25 +111,25 @@ export function PeerMenu(props: {
           {asker ? (
             <>
               <button className="btn justify-start" onClick={() => setMode('inquiry')}>
-                🔎 Ask
+                <Icon name="inquiry" /> Ask
               </button>
               <button className="btn justify-start" onClick={() => setMode('assignment')}>
-                🛠 Assign work {!props.present && <span className="o-peer-sub">(owner away)</span>}
+                <Icon name="assignment" /> Assign work {!props.present && <span className="o-peer-sub">(owner away)</span>}
               </button>
             </>
           ) : (
             <>
               <button className="btn justify-start" disabled title="Walk one of your agents over first">
-                🔎 Ask / 🛠 Assign <span className="o-peer-sub">(walk closer)</span>
+                <Icon name="inquiry" /> Ask / Assign <span className="o-peer-sub">(walk closer)</span>
               </button>
               <button className="btn justify-start" disabled={!props.selectedMine.length} onClick={props.onWalk}>
-                🚶 Walk over {props.selectedMine.length ? `(${props.selectedMine.length} selected)` : '(select your agent first)'}
+                <Icon name="back" className="o-flip" /> Walk over {props.selectedMine.length ? `(${props.selectedMine.length} selected)` : '(select your agent first)'}
               </button>
             </>
           )}
           {latest && (
             <button className="btn justify-start" onClick={() => props.onOpen(latest.id)}>
-              💬 Open conversation
+              <Icon name="inject" /> Open conversation
             </button>
           )}
         </div>

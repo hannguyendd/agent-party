@@ -295,6 +295,7 @@
   background: var(--o-line); color: #fdf3e6; border-bottom: 2px solid var(--o-shadow);
 }
 .office-logo { display: flex; align-items: center; gap: 8px; font-family: var(--o-pixel); font-size: 24px; line-height: 1; }
+.office-logo img { image-rendering: pixelated; }
 .office-logo b {
   display: grid; place-items: center; width: 26px; height: 26px; font-size: 15px;
   background: var(--o-mint); color: #1f3b2f; border: 2px solid var(--o-shadow); border-radius: 5px;
@@ -315,3 +316,39 @@
 .office-status i { width: 8px; height: 8px; border-radius: 2px; background: var(--o-coral); border: 1px solid var(--o-shadow); }
 .office-status i.is-on { background: #70a65b; }
 .office-status button { color: inherit; text-decoration: underline dotted; cursor: pointer; }
+
+.office-view .o-icon { image-rendering: pixelated; flex-shrink: 0; display: inline-block; vertical-align: -2px; }
+.office-view .o-flip { transform: scaleX(-1); }
+.office-zoom button { display: inline-flex; align-items: center; justify-content: center; }
+.office-zoom .o-icon { width: 20px; height: 20px; }
+
+/* conversation panel in the side column */
+.office-conv { display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden; }
+.office-conv-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 2px solid var(--o-line); background: var(--o-panel-2); }
+.office-conv-who { flex: 1; min-width: 0; line-height: 1.15; }
+.office-conv-who strong { display: block; font-family: var(--o-pixel); font-size: 22px; font-weight: 400; }
+.office-conv-who span { display: block; font-size: 11px; color: var(--o-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.office-conv-who em { font-style: normal; color: var(--o-mint-ink); font-weight: 700; }
+.office-conv-tools { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border-bottom: 1px dashed var(--o-soft-line); }
+.office-conv-tools .btn { font-size: 17px; padding: 4px 8px; }
+.office-conv-approvals { display: flex; flex-direction: column; gap: 8px; padding: 8px 12px; max-height: 40%; overflow-y: auto; border-bottom: 1px dashed var(--o-soft-line); }
+.office-conv-messages { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--o-bg); }
+.office-conv-messages > * { flex: 1; min-height: 0; }
+.office-conv-composer { padding: 8px 12px 10px; border-top: 2px solid var(--o-line); background: var(--o-panel); }
+.office-conv-waiting { margin-bottom: 6px; padding: 4px 8px; font-size: 12px; border-radius: 4px; background: var(--o-lav); }
+.office-conv-error { margin-bottom: 6px; font-size: 12px; color: var(--o-coral); }
+.office-conv-input { display: flex; gap: 8px; align-items: flex-end; }
+.office-conv-input textarea { flex: 1; resize: vertical; min-height: 40px; font-family: var(--o-body); font-size: 13px; }
+.office-conv-input .btn-primary { height: 40px; padding: 0 12px; }
+.office-view .o-icon-btn {
+  display: inline-grid; place-items: center; width: 30px; height: 30px; flex-shrink: 0; cursor: pointer;
+  background: var(--o-panel); border: 2px solid var(--o-line); border-radius: 6px; box-shadow: 0 2px 0 var(--o-shadow);
+}
+.office-view .o-icon-btn:active { transform: translateY(2px); box-shadow: none; }
+.office-chats { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--o-soft-line); display: flex; flex-direction: column; gap: 4px; }
+.office-chat { display: flex; align-items: center; gap: 8px; padding: 5px 6px; text-align: left; border-radius: 6px; cursor: pointer; }
+.office-chat:hover { background: var(--o-panel-2); }
+.office-chat > span { flex: 1; min-width: 0; line-height: 1.2; }
+.office-chat > :last-child { flex: none; }
+.office-chat strong { display: block; font-size: 12px; font-weight: 800; }
+.office-chat small { display: block; font-size: 11px; color: var(--o-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -1,0 +1,612 @@
+[
+  {
+    "name": "office",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "955176d05b3497e510135ea38d5662ece747f5bc254397702426791233b40e64"
+  },
+  {
+    "name": "office@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "48007f11d7776bafe34da964a28c6b125e4b8df2b79a4b9600f95410dad8ad90"
+  },
+  {
+    "name": "agents",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "80108f9086d8b225138c9454f4103cf1825dd1ddbea239055a7f89ac14a3e677"
+  },
+  {
+    "name": "agents@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "c14c2d1ef9894d322c277b455e9b9a7c76506284f4e7261fcd6636c916f92234"
+  },
+  {
+    "name": "approvals",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "da52a558b74bbc37cb782d2b2062e759b7be73aabd6dde06bca8c4c12ebc9ec4"
+  },
+  {
+    "name": "approvals@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "d57b2a95fa507033263db368d81dd966f2ebe603f1839aefcd00771a455382aa"
+  },
+  {
+    "name": "approvals-pending",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "3e57db29570e9c4734398f0eeaccd45f9dd94499e7344af31d944e8024fcab2d"
+  },
+  {
+    "name": "approvals-pending@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "b575299bfe830fb42afe5c12fa83b424a21c5231b62accd3d0df8b9f1734d90c"
+  },
+  {
+    "name": "directory",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "150ce102db73e76e9dd79d88b946ae808fd6581ba7e2460022df3979c52dd796"
+  },
+  {
+    "name": "directory@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "0cfe07aabb60863c1208a410b21b550bbff10083b314cac97ebf16c0aa89c30d"
+  },
+  {
+    "name": "settings",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "02112be13a066e86fb70b66b830d010b87fad94017f77dc6062ffd2d43304590"
+  },
+  {
+    "name": "settings@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "8b7f8498b3ce564a2bb85ccdcabbfbeb377335725c95fc3ae9cc8934982355a3"
+  },
+  {
+    "name": "zoom-in",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "a60db21b2c4a87ff5ca1d5fbc01d92b3856c1c6ab47ca437f3dcbcb1b628de4d"
+  },
+  {
+    "name": "zoom-in@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "11670a3134aacd33b4fb7107365420ba5d8b631248d750779be4ac6a224adba9"
+  },
+  {
+    "name": "zoom-out",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "2d40a23afea1b351fa9a78a97d0f6cb5319dad30961e2de9b3fe0b1ba74a3ac0"
+  },
+  {
+    "name": "zoom-out@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "46f5163104d0f41c0f08f591e20b3a8d56beab41c3669e32a6fb338593888469"
+  },
+  {
+    "name": "fit",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "b728a0a443a0d9aa30a3df8bb1964766629e31d90285ef02ef5aac167d09191f"
+  },
+  {
+    "name": "fit@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "e09af6066ca92ce0ab04153b67727ea577d4ed5b27d0c9fb50c48694a189e8a0"
+  },
+  {
+    "name": "close",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "51b84846790c388e25d1b96574f342c71bac440d12fd3f687005b2b54b5077d0"
+  },
+  {
+    "name": "close@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "3319ab36010faca3abcdcb773671711f1e689281ac93c21d9c8d60f9f5291dd3"
+  },
+  {
+    "name": "send",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "255b454d965f5124fa9ece008d89618bc134f501f0ddbe9e981369756956c72c"
+  },
+  {
+    "name": "send@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "6e69fbdedbd26ddb9f00a233ed8dbe495f1376a5b7479f933063db72a9d39542"
+  },
+  {
+    "name": "stop",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "af2f0794aa6c9f686cfbb9992ccd7a983e10f67ce7490cb6b19eee53320acff1"
+  },
+  {
+    "name": "stop@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "c7c063ea8bab738cc8e9ca86cbe4942dca26c68dca60a01e8fb0797a4679ad68"
+  },
+  {
+    "name": "takeover",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "9605dcdee43d8406e5312a57ed0fa45f96c76320147f203672eb1dfd9fce264b"
+  },
+  {
+    "name": "takeover@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "053d60b4682e529e35c256a892b1ca1e570b0b4a58352d24a82b00f705e90801"
+  },
+  {
+    "name": "handback",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "35fe315e250075161c6aa70a446a45d81022023fa6d2a27022db084caaa250ba"
+  },
+  {
+    "name": "handback@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "ed2f382556100ba4470e9ec8b608270c1648c404626a04676bedf603e29a2125"
+  },
+  {
+    "name": "fork",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "d07fcbc7dbff1f3a8bb472c2491fd511562ff9c7fbef91f882d2289c3fbf1b5f"
+  },
+  {
+    "name": "fork@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "518bfa42882c6963b493e2a70366ec43bb52cd15a3f320bed907bedc4dd9a0ee"
+  },
+  {
+    "name": "inject",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "c5c89bb79dc26298f6cd1e946247ac8a1e05aa11f97be1d75210e57dbdf278dc"
+  },
+  {
+    "name": "inject@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "ec5f9b170ac71a35c5149eb060160d88d36bdd0213dcc82dcde290231182be6d"
+  },
+  {
+    "name": "inquiry",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "f93a186a625ca3a10fe565a27625244137caf6919729d68d330fb36f9471df7a"
+  },
+  {
+    "name": "inquiry@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "0b339c484b29d4c36d97aeea37198d3167128f1c42560ce11d822465872eb5c8"
+  },
+  {
+    "name": "assignment",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "eb82ceee7aefad5c0cb269fd2c6d9961d8564e68af257ffc2f18e3e368ef0ea5"
+  },
+  {
+    "name": "assignment@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "f0b8c3a47fcdf4c66ed7962fc82c66780ffef8eab05b1d18b5a98745feaef837"
+  },
+  {
+    "name": "party",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "5f5eb098ad84226eee3aa28b242bac45961004733f39faeacc6b33e19a8e18a3"
+  },
+  {
+    "name": "party@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "6c194f08dcd2c7a9c4a6cfe374acb9ffb5edf8b737bd8d8e526f08f7bf4b3d23"
+  },
+  {
+    "name": "recap",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "d4b11f076f08dc9c90960d14a88ef065746563b490d4f6a14f79ce0f6e7bc527"
+  },
+  {
+    "name": "recap@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "60de7e0ba00cdc83a857b1f5a587d2e11d02fcdf7d2525debdcfc08d9d30710f"
+  },
+  {
+    "name": "host",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "e85e130519ca26c57b2697de7d8f15f2dadf33d8e4e667bd167d96f8404186c5"
+  },
+  {
+    "name": "host@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "80e7ae6657b0ebc4786cb6681ac1b7ffa4131e9e5487d61d8248bc5de9d2c6b9"
+  },
+  {
+    "name": "desk",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "ff9cc323dda082af81da5edccf6fa17b916b11013c4d198207394db80b718070"
+  },
+  {
+    "name": "desk@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "d14d7fbdefd6f02c8b64763e40cbab93ec3bab39c481bc84b4dad11790332e92"
+  },
+  {
+    "name": "back",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "dffa6c7cbb92bdf86f61db0cdc8bbac39b599a1971ea929191a59ef130b41ad2"
+  },
+  {
+    "name": "back@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "a70730097aef84bd56632a298262ec7f11bdc8930322af6f714e500e098c3fd1"
+  },
+  {
+    "name": "notifications-on",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "e542f93adba266e5b2ca51c05481b494b22564969f36bb6ff1610d9eee833163"
+  },
+  {
+    "name": "notifications-on@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "5d74ad8a7c12132e43907591684cc7c1010b0d33d961d0a1454190eb053be907"
+  },
+  {
+    "name": "online",
+    "size": [
+      8,
+      8
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "8166f94cfa2e62cfaf3f47fe13d0c919f5d9b5ab89be40833ddef4b937c75a16"
+  },
+  {
+    "name": "online@2x",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "3062a7b2ab4f51fa269765180caa1d8e67cc6c51a518682362c56fe8cdea01c5"
+  },
+  {
+    "name": "away",
+    "size": [
+      16,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "241a0fb4a9c6dac87d6db2667ef9d3737a68a03a1679aadec639c10526d43d44"
+  },
+  {
+    "name": "away@2x",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "834a21a3fa60016a9c35cb4309ebd78fef0b5a9c5bea241b714f8dd3f2a9a884"
+  },
+  {
+    "name": "bubble",
+    "size": [
+      24,
+      24
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "a032fc329f8606d0809be60021cb28faf6ae355cb4ca0a1e33b5bf4629f27816"
+  },
+  {
+    "name": "bubble-tail",
+    "size": [
+      8,
+      6
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "0127932459883e23bdfed6e7677dd8c621549e8e33a10be20e3d1abbeab3a33f"
+  },
+  {
+    "name": "ring",
+    "size": [
+      32,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "4032e12753e80ea1ddf1ee1890a6192e86e5935ced2e2be6992609dd3f90bb1f"
+  },
+  {
+    "name": "ring-selected",
+    "size": [
+      36,
+      18
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "d4aca8484c7fbb5b64bd6630081d9f0b56bd119c70315714adefed542f89ce04"
+  },
+  {
+    "name": "target",
+    "size": [
+      96,
+      16
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "985974611d6c39f1374ce6f102265f3b0664132511323f32e676510794b930e5"
+  },
+  {
+    "name": "typing",
+    "size": [
+      48,
+      8
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "908111f010cc151d5b87d585989564ca2a58fc2ff6278af89e58f17256750db7"
+  },
+  {
+    "name": "logo",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "36c34cc115dacae7c4b25c34d61e450fa7836052faff96147cdcc2044fb113ee"
+  },
+  {
+    "name": "logo@2x",
+    "size": [
+      64,
+      64
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "5182076190a43ef57b591feb4a0b2f59267ff8eb581f2d128c17a9304f87696a"
+  },
+  {
+    "name": "favicon",
+    "size": [
+      32,
+      32
+    ],
+    "palette": "PASS",
+    "binary_alpha": "PASS",
+    "sha256": "36c34cc115dacae7c4b25c34d61e450fa7836052faff96147cdcc2044fb113ee"
+  }
+]

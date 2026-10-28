@@ -91,7 +91,7 @@ interface AgentSprite {
   container: Phaser.GameObjects.Container
   hit: Phaser.GameObjects.Zone // click/hover target
   hud: Phaser.GameObjects.Container // name, icon, bubble: drawn above the foreground plate
-  ring: Phaser.GameObjects.Ellipse
+  ring: Phaser.GameObjects.Ellipse | Phaser.GameObjects.Image
   token?: Phaser.GameObjects.Arc
   face?: Phaser.GameObjects.Text
   sheet?: Phaser.GameObjects.Sprite
@@ -99,6 +99,9 @@ interface AgentSprite {
   label: Phaser.GameObjects.Text
   icon: Phaser.GameObjects.Text
   bubble: Phaser.GameObjects.Text
+  bubbleBox: Phaser.GameObjects.Container // nine-slice bubble + tail + text, or the typing dots
+  bubbleBg?: Phaser.GameObjects.NineSlice
+  typing?: Phaser.GameObjects.Sprite
   feet: Phaser.GameObjects.Zone // physics body at the feet; the container follows it
   body: Phaser.Physics.Arcade.Body
   path: Point[] // pixel waypoints
@@ -147,7 +150,7 @@ export class OfficeScene extends Phaser.Scene {
   private zoomAnchor: { screen: Point; world: Point } | null = null
   private hover!: Phaser.GameObjects.Graphics
   private trails!: Phaser.GameObjects.Graphics
-  private markers: { x: number; y: number; agentId: string; born: number; bad?: boolean }[] = []
+  private markers: { x: number; y: number; agentId: string; born: number; bad?: boolean; sprite?: Phaser.GameObjects.Sprite }[] = []
   callbacks: SceneCallbacks | null = null
   onReady: (() => void) | null = null
 
@@ -158,7 +161,15 @@ export class OfficeScene extends Phaser.Scene {
   preload() {
     this.load.json('manifest', 'office/manifest.json')
     this.load.on('filecomplete-json-manifest', () => {
-      const manifest = this.cache.json.get('manifest') as { objects?: Record<string, string>; map?: Record<string, string> }
+      const manifest = this.cache.json.get('manifest') as { objects?: Record<string, string>; map?: Record<string, string>; ui?: Record<string, string> }
+      const ui = manifest.ui ?? {}
+      // Codex UI art for in-map chrome; anything missing falls back to drawn shapes.
+      if (ui.ring) this.load.image('ui-ring', ui.ring)
+      if (ui['ring-selected']) this.load.image('ui-ring-selected', ui['ring-selected'])
+      if (ui.bubble) this.load.image('ui-bubble', ui.bubble)
+      if (ui['bubble-tail']) this.load.image('ui-bubble-tail', ui['bubble-tail'])
+      if (ui.target) this.load.spritesheet('ui-target', ui.target, { frameWidth: 32, frameHeight: 16 })
+      if (ui.typing) this.load.spritesheet('ui-typing', ui.typing, { frameWidth: 16, frameHeight: 8 })
       const map = manifest.map
       if (map?.background && map.collision && map.seats) {
         // Gather-style map: one background plate, a foreground plate over characters, and a collision grid.
@@ -173,6 +184,12 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   create() {
+    if (this.textures.exists('ui-target')) {
+      this.anims.create({ key: 'ui-target-pulse', frames: this.anims.generateFrameNumbers('ui-target', { start: 0, end: 2 }), frameRate: 6, yoyo: true, repeat: -1 })
+    }
+    if (this.textures.exists('ui-typing')) {
+      this.anims.create({ key: 'ui-typing-dots', frames: this.anims.generateFrameNumbers('ui-typing', { start: 0, end: 2 }), frameRate: 5, repeat: -1 })
+    }
     this.drawMap()
     this.walls = this.physics.add.staticGroup()
     for (const r of blockedRuns()) {
@@ -386,8 +403,7 @@ export class OfficeScene extends Phaser.Scene {
       const present = d.owners[a.owner]?.present
       crisp(s.label, a.name.split('/').pop() ?? a.name).setAlpha(present ? 1 : 0.6)
       crisp(s.icon, d.icons[a.agent_id] ?? '')
-      const bubble = d.bubbles[a.agent_id]
-      crisp(s.bubble, bubble ?? '').setVisible(!!bubble)
+      this.setBubble(s, d.bubbles[a.agent_id])
     }
     for (const id of [...this.selected]) if (!ids.has(id)) this.selected.delete(id)
     this.resolveTargets()
@@ -397,7 +413,9 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   private spawn(a: OfficeAgent): AgentSprite {
-    const ring = this.add.ellipse(0, 0, 26 * CHAR_SCALE, 10 * CHAR_SCALE, ownerColor(a.owner), 0.85).setStrokeStyle(0)
+    const ring = this.textures.exists('ui-ring')
+      ? this.add.image(0, 0, 'ui-ring').setTint(ownerColor(a.owner)).setScale(CHAR_SCALE * 0.9)
+      : this.add.ellipse(0, 0, 26 * CHAR_SCALE, 10 * CHAR_SCALE, ownerColor(a.owner), 0.85).setStrokeStyle(0)
     const label = this.add
       .text(0, -50, '', { fontFamily: 'Nunito, ui-sans-serif, system-ui', fontStyle: '800', fontSize: '12px', color: '#fdf3e6', backgroundColor: '#48506cee', padding: { x: 6, y: 2 }, resolution: TEXT_RES })
       .setOrigin(0.5, 1)
@@ -408,15 +426,21 @@ export class OfficeScene extends Phaser.Scene {
         fontStyle: '600',
         fontSize: '13px',
         color: '#2c283c',
-        backgroundColor: '#ffffff',
-        padding: { x: 6, y: 3 },
         wordWrap: { width: 180 },
         resolution: TEXT_RES,
       })
       .setOrigin(0.5, 1)
-      .setVisible(false)
+    const bubbleParts: Phaser.GameObjects.GameObject[] = []
+    const bubbleBg = this.textures.exists('ui-bubble') ? this.add.nineslice(0, 0, 'ui-bubble', undefined, 24, 24, 8, 8, 8, 8).setOrigin(0.5, 1) : undefined
+    if (bubbleBg) bubbleParts.push(bubbleBg)
+    if (this.textures.exists('ui-bubble-tail')) bubbleParts.push(this.add.image(0, 5, 'ui-bubble-tail').setOrigin(0.5, 1))
+    bubbleParts.push(bubble)
+    const typing = this.textures.exists('ui-typing') ? this.add.sprite(0, -9, 'ui-typing').setOrigin(0.5, 0.5).setScale(2).setVisible(false) : undefined
+    if (typing) bubbleParts.push(typing)
+    const bubbleBox = this.add.container(0, -60, bubbleParts).setVisible(false)
+    if (!bubbleBg) bubble.setBackgroundColor('#ffffff').setPadding(6, 3, 6, 3)
     const container = this.add.container(0, 0, [ring])
-    const hud = this.add.container(0, 0, [label, icon, bubble]).setDepth(HUD_DEPTH)
+    const hud = this.add.container(0, 0, [label, icon, bubbleBox]).setDepth(HUD_DEPTH)
     // Generous hit box from the feet up to the name tag, ~1.6 tiles wide. A standalone zone (origin at the feet)
     // instead of an interactive container: container hit areas are measured from the container's centre.
     const hit = this.add
@@ -441,6 +465,9 @@ export class OfficeScene extends Phaser.Scene {
       label,
       icon,
       bubble,
+      bubbleBox,
+      bubbleBg,
+      typing,
       feet,
       body,
       path: [],
@@ -682,13 +709,35 @@ export class OfficeScene extends Phaser.Scene {
     }
   }
 
+  /** Speech bubble: words in a nine-slice bubble, or animated typing dots when the text is just "…". */
+  private setBubble(s: AgentSprite, text: string | undefined) {
+    if (!text) {
+      s.bubbleBox.setVisible(false)
+      s.typing?.stop()
+      return
+    }
+    s.bubbleBox.setVisible(true)
+    const dots = text.trim() === '…' && !!s.typing
+    s.bubble.setVisible(!dots)
+    if (dots) {
+      if (!s.typing!.anims.isPlaying) s.typing!.play('ui-typing-dots')
+      s.typing!.setVisible(true)
+      s.bubbleBg?.setSize(44, 22)
+      return
+    }
+    s.typing?.setVisible(false).stop()
+    crisp(s.bubble, text)
+    s.bubble.setY(-6)
+    s.bubbleBg?.setSize(Math.max(24, Math.ceil(s.bubble.width) + 16), Math.max(22, Math.ceil(s.bubble.height) + 10))
+  }
+
   /** Names, icons and bubbles keep the same on-screen size at any zoom, and sit just above the head. */
   private scaleOverlay(s: AgentSprite) {
     const k = 1 / this.cameras.main.zoom
     const head = -(CHAR_FRAME.height - 2) * CHAR_SCALE
     s.label.setScale(k).setY(head)
     s.icon.setScale(k).setPosition(14, head - 2)
-    s.bubble.setScale(k).setY(head - s.label.height * k - 4)
+    s.bubbleBox.setScale(k).setY(head - s.label.height * k - 8)
   }
 
   /** Velocity towards the next waypoint, slowing down on the last one. Replans when stuck. */
@@ -761,8 +810,13 @@ export class OfficeScene extends Phaser.Scene {
   private refreshSelection(notify = true) {
     for (const s of this.sprites.values()) {
       const sel = this.selected.has(s.id)
-      s.ring.setStrokeStyle(sel || s.hovered ? 3 : 0, sel ? 0xffffff : 0xfff3e6)
-      s.ring.setScale(sel ? 1.2 : s.hovered ? 1.15 : 1)
+      if (s.ring instanceof Phaser.GameObjects.Image) {
+        s.ring.setTexture(sel && this.textures.exists('ui-ring-selected') ? 'ui-ring-selected' : 'ui-ring')
+        s.ring.setScale(CHAR_SCALE * 0.9 * (sel ? 1.1 : s.hovered ? 1.12 : 1)).setAlpha(sel || s.hovered ? 1 : 0.85)
+      } else {
+        s.ring.setStrokeStyle(sel || s.hovered ? 3 : 0, sel ? 0xffffff : 0xfff3e6)
+        s.ring.setScale(sel ? 1.2 : s.hovered ? 1.15 : 1)
+      }
     }
     if (notify) this.callbacks?.onSelect([...this.selected])
   }
@@ -963,7 +1017,14 @@ export class OfficeScene extends Phaser.Scene {
       const age = time - m.born
       const s = this.sprites.get(m.agentId)
       const arrived = !m.bad && age > 150 && (!s || !s.path.length)
-      if (age > (m.bad ? 700 : 15000) || arrived) return false
+      if (age > (m.bad ? 700 : 15000) || arrived) {
+        m.sprite?.destroy()
+        return false
+      }
+      if (!m.bad && this.textures.exists('ui-target')) {
+        if (!m.sprite) m.sprite = this.add.sprite(m.x, m.y, 'ui-target').setDepth(3).setScale(1.2).play('ui-target-pulse')
+        return true
+      }
       const pulse = 1 + 0.12 * Math.sin(age / 140)
       if (m.bad) {
         g.lineStyle(3, 0xce8262, 1 - age / 700)
@@ -978,6 +1039,7 @@ export class OfficeScene extends Phaser.Scene {
 
   private mark(agentId: string, p: Point) {
     const c = center(p)
+    for (const m of this.markers) if (m.agentId === agentId) m.sprite?.destroy()
     this.markers = this.markers.filter((m) => m.agentId !== agentId)
     this.markers.push({ x: c.x, y: c.y, agentId, born: this.time.now })
   }

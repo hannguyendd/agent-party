@@ -24,7 +24,9 @@ export type View =
 
 export default function App() {
   const [view, setView] = useState<View>({ kind: 'office' })
-  const openId = view.kind === 'conversation' ? view.id : null
+  // The Office side column can show one conversation too; load its history the same way.
+  const [officeConv, setOfficeConv] = useState<string | null>(null)
+  const openId = view.kind === 'conversation' ? view.id : view.kind === 'office' ? officeConv : null
   const { state, setNode, clearOfficeError } = useLiveState(openId)
 
   const agents = useMemo(() => Object.values(state.agents).sort((a, b) => a.id.localeCompare(b.id)), [state.agents])
@@ -41,7 +43,7 @@ export default function App() {
   let main: React.ReactNode
   switch (view.kind) {
     case 'office':
-      main = <Suspense fallback={<Empty>Opening office…</Empty>}><OfficeView state={state} go={setView} clearError={clearOfficeError} /></Suspense>
+      main = <Suspense fallback={<Empty>Opening office…</Empty>}><OfficeView state={state} go={setView} clearError={clearOfficeError} openConv={officeConv} setOpenConv={setOfficeConv} /></Suspense>
       break
     case 'conversation': {
       const conv = state.conversations[view.id]
