@@ -31,14 +31,15 @@ valid for the agent's whole life. The cost is that peers address the Codex agent
 - `openai-codex` is the optional extra `[codex]` (its CLI is about 306 MB). The installers add it on hosts that have
   Codex.
 - Smoke on 2026-10-28, with two node servers as static peers, a real Claude agent (haiku) and real Codex (own CLI
-  0.165.0): 11/11 checks passed.
+  0.165.0): 14/14 checks passed after the review fixes.
   - A peer message to a Codex agent was answered.
   - An unlisted command raised an approval card and ran once approved.
   - A denied command was declined with no card.
   - With `contact_policy: "ask"`, the mesh tool raised a card, and Codex then reached the Claude agent through the
     proxy.
   - An owner inject steered the running turn.
-  - An interrupt stopped the turn.
+  - An interrupt stopped the turn, including while an approval card was open (it returned at once).
+  - An edit card named the file, and the approved edit was applied.
 - Not covered by that smoke:
   - Codex through a real `agentmesh-one` hub. The mesh layer is unchanged and Codex agents publish like any other
     agent.
