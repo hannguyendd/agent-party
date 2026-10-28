@@ -10,6 +10,9 @@ import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
 import { ConversationPanel } from './ConversationPanel'
+import { NewChatPanel } from './NewChatPanel'
+import { markSeen } from './seen'
+import { ACTIVE_STATUSES } from './status'
 import { who } from './people'
 import { ApprovalsList, ChatsList } from './SideLists'
 import { PeerMenu } from './PeerMenu'
@@ -89,6 +92,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   const [notice, setNotice] = useState<string | null>(null)
   const [side, setSide] = useState<SideTab>(view.side ?? 'agents')
   const [wide, setWide] = useState(false)
+  // A private chat with one of my agents that has no messages yet (opened from the agent card).
+  const [newChat, setNewChat] = useState<string | null>(null)
   useEffect(() => { if (view.side) setSide(view.side) }, [view.side])
   const [notifyPerm, setNotifyPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'denied'))
   const incoming = Object.values(state.approvals).filter(a => a.status === 'pending' && a.tool_name === 'Assignment')
@@ -114,6 +119,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   const conv = openConv ? state.conversations[openConv] : undefined
   // Streaming text arrives per token; the map's bubbles only need a few updates a second.
   const partial = useThrottled(state.partial, 250)
+  // Reading a conversation marks it seen (Chats shows a dot for new messages elsewhere).
+  useEffect(() => { if (conv) markSeen(conv.id, conv.updated_at) }, [conv])
   const ownDesk = Object.entries(desks).find(([, owner]) => owner === me)?.[0]
   const sceneData: SceneData = useMemo(() => ({
     me, agents, desks, owners: isPreview ? { preview: { connected: true, present: true } } : office?.owners ?? {},
@@ -159,7 +166,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   }, [isPreview])
 
 
-  const presentCount = Object.values(office?.owners ?? {}).filter(o => o.present).length
+  const presentOwners = Object.entries(office?.owners ?? {}).filter(([, o]) => o.present).map(([name]) => name).sort()
+  const activeChats = Object.values(state.conversations).filter(c => c.agent_id.startsWith(`${me}/`) && ACTIVE_STATUSES.includes(c.status)).length
   const statusText = (a: OfficeAgent) =>
     a.activity && ['running', 'awaiting_approval', 'awaiting_owner'].includes(a.activity.status) ? 'In a conversation' : a.at.kind === 'desk' ? 'At desk' : 'Wandering'
 
@@ -214,7 +222,15 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
       </div>
 
       <aside className="office-roster">
-        {conv ? (
+        {newChat && !conv ? (
+          <NewChatPanel
+            key={newChat}
+            state={state}
+            agentId={newChat}
+            onBack={() => setNewChat(null)}
+            onCreated={id => { setNewChat(null); setOpenConv(id) }}
+          />
+        ) : conv ? (
           <ConversationPanel
             key={conv.id}
             state={state}
@@ -276,26 +292,17 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           canAct={canAct && !busy}
           preview={isPreview}
           onOpenChat={openChat}
-          onStarted={id => { openChat(id); setSide('chats') }}
-          onError={setError}
+          onMessage={() => { setPeer(null); setOpenConv(null); setNewChat(picked.agent_id) }}
           // Spots inside each room on the map art; the scene snaps to the nearest tile it can reach.
           onGo={where => where === 'desk' ? sceneRef.current?.sendSelectedHome() : sceneRef.current?.goToPlace(where === 'pantry' ? { x: 46, y: 8 } : { x: 47, y: 21 })}
           onSkin={skin => isPreview ? setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin } : a)) : void perform(() => api.setSkin(picked.agent_id, skin))}
           onSettings={() => go({ kind: 'settings', section: 'agents', agentId: picked.agent_id })}
-          candidates={agents.filter(a => a.owner !== me).map(a => who(state, a.agent_id))}
-          limits={state.node?.files}
           contactPolicy={isPreview ? undefined : (state.agents[picked.agent_id]?.contact_policy ?? 'auto')}
           onContactPolicy={policy => { const full = state.agents[picked.agent_id]; if (full) void perform(() => api.saveAgent({ ...full, contact_policy: policy })) }}
         />}
 
         {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2'].filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}
 
-        <details className="o-frame office-card office-help"><summary>How to play</summary>
-          <p>Select an agent, then <kbd>WASD</kbd> / arrows to walk, or click the floor.</p>
-          <p>Click someone's agent to walk over. Stop next to them and their menu opens · <kbd>E</kbd> reopens it.</p>
-          <p><kbd>Shift</kbd> multi-select · <kbd>H</kbd> back to desk · <kbd>F</kbd> follow · <kbd>Esc</kbd> deselect</p>
-          <p>Scroll to zoom · right-drag to pan</p>
-        </details>
         </>}
 
         {side === 'chats' && <ChatsList state={state} me={me} onOpen={openChat} />}
@@ -303,7 +310,17 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         </>}
       </aside>
     </div>
-    <footer className="office-footer"><span className={`office-connection ${isPreview || office?.connected ? 'is-online' : ''}`}>{isPreview ? 'Design preview (sample agents)' : office?.connected ? 'Office connected' : 'Reconnecting'}</span><span>{agents.length} agents · {presentCount} {presentCount === 1 ? 'person' : 'people'} in the office</span></footer>
+    <footer className="office-footer">
+      <span className={`office-connection ${isPreview || office?.connected ? 'is-online' : ''}`}>{isPreview ? 'Design preview' : office?.connected ? 'Office connected' : 'Reconnecting'}</span>
+      {!isPreview && <span className="office-present" title={presentOwners.join(', ')}>
+        {presentOwners.slice(0, 6).map(o => <i key={o} style={{ background: ownerCss(o) }} title={o} />)}
+        {presentOwners.length} in the office
+      </span>}
+      {ownDesk && <span>Desk {ownDesk}</span>}
+      {!isPreview && <button className="office-foot-link" onClick={() => { setOpenConv(null); setSide('chats') }}>{activeChats} active chat{activeChats === 1 ? '' : 's'}</button>}
+      {!isPreview && pendingApprovals.length > 0 && <button className="office-foot-link is-alert" onClick={() => { setOpenConv(null); setSide('approvals') }}>{pendingApprovals.length} waiting for you</button>}
+      <span className="office-keys"><kbd>WASD</kbd> walk · <kbd>E</kbd> talk · <kbd>H</kbd> desk · <kbd>F</kbd> follow · scroll to zoom</span>
+    </footer>
   </section>
 }
 

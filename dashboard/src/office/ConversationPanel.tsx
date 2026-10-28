@@ -1,14 +1,13 @@
 // A conversation in the Office side column: the map stays visible while the owner reads and steers.
 
 import { useState } from 'react'
-import { api, type Approval, type Conversation, type ConversationStatus, type Message } from '../api'
+import { api, type Approval, type Conversation, type FileIn, type Message } from '../api'
 import { ApprovalCard } from '../components/ApprovalCard'
 import { errMsg } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
-import { AttachBar } from './AttachBar'
-import { dropTarget, useAttachments } from './attachments'
-import { MentionInput } from './MentionInput'
+import { STATUS } from './status'
+import { Composer } from './Composer'
 import { Avatar, OfficeChat } from './OfficeChat'
 import { who } from './people'
 
@@ -25,22 +24,11 @@ interface Props {
   wide?: boolean
 }
 
-const STATUS: Record<ConversationStatus, { label: string; tone: string }> = {
-  idle: { label: 'Idle', tone: 'idle' },
-  running: { label: 'Working', tone: 'run' },
-  awaiting_approval: { label: 'Needs approval', tone: 'wait' },
-  awaiting_owner: { label: 'Waiting for you', tone: 'wait' },
-  interrupted: { label: 'Stopped', tone: 'idle' },
-  done: { label: 'Done', tone: 'done' },
-  error: { label: 'Error', tone: 'err' },
-}
-
 export function ConversationPanel({ state, conv, messages, partial, approvals, onBack, onOpen, onExpand, wide }: Props) {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [menu, setMenu] = useState(false)
-  const att = useAttachments(state.node?.files)
   const pending = approvals.filter((a) => a.status === 'pending')
   const mine = who(state, conv.agent_id)
   const peer = conv.peer_agent_id ? who(state, conv.peer_agent_id) : null
@@ -66,15 +54,14 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
     }
   }
   // Files go to my own agent only; a hand-written reply to the peer is text.
-  const canAttach = composer.mode === 'inject'
-  const send = () => {
-    const t = text.trim()
-    if ((!t && !(canAttach && att.files.length)) || composer.mode === 'off') return
-    void run(async () => {
-      await (composer.mode === 'reply' ? api.reply(conv.id, t) : api.inject(conv.id, t, att.payload()))
+  const send = async (t: string, files: FileIn[]) => {
+    let ok = false
+    await run(async () => {
+      await (composer.mode === 'reply' ? api.reply(conv.id, t) : api.inject(conv.id, t, files))
       setText('')
-      att.clear()
+      ok = true
     })
+    return ok
   }
   // Taking over only makes sense when someone is waiting on my agent's answer.
   const canTakeOver = conv.direction === 'inbound'
@@ -159,27 +146,19 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
 
       <OfficeChat state={state} conv={conv} messages={messages} partial={partial} />
 
-      <footer className="o-composer" {...dropTarget(att, !canAttach)}>
-        <div className="o-composer-to">{composer.to}</div>
-        {error && <div className="office-conv-error">{error}</div>}
-        <div className="o-composer-row">
-          <div className="o-compose-box">
-          <MentionInput
-            value={text}
-            onChange={setText}
-            onSubmit={send}
-            onPasteFiles={canAttach ? (f) => void att.add(f) : undefined}
-            candidates={composer.mode === 'inject' ? candidates : []}
-            disabled={composer.mode === 'off'}
-            placeholder={composer.placeholder}
-          />
-          {canAttach && <AttachBar att={att} disabled={busy} />}
-          </div>
-          <button className="btn-primary" disabled={busy || composer.mode === 'off' || (!text.trim() && !(canAttach && att.files.length))} onClick={send}>
-            <Icon name="send" />Send
-          </button>
-        </div>
-      </footer>
+      <Composer
+        value={text}
+        onChange={setText}
+        onSend={send}
+        to={composer.to}
+        placeholder={composer.placeholder}
+        candidates={composer.mode === 'inject' ? candidates : []}
+        limits={state.node?.files}
+        allowFiles={composer.mode === 'inject'}
+        disabled={composer.mode === 'off'}
+        busy={busy}
+        error={error}
+      />
     </div>
   )
 }

@@ -159,6 +159,11 @@ class Store:
             s.commit()
             s.refresh(msg)
         self.bus.publish({"type": "message", "conversation_id": conv_id, "message": dump(msg)})
+        if kind == "text" and role in ("peer", "agent", "owner") and (content.strip() or data.get("files")):
+            # Keep the list's preview line current (attachments-only messages show the first file name).
+            files = data.get("files") or []
+            preview = content.strip() or f"📎 {files[0]['name'] if isinstance(files[0], dict) else files[0]}"
+            self.update_conversation(conv_id, last_preview=" ".join(preview.split())[:160], last_role=role)
         return msg
 
     def list_messages(self, conv_id: str) -> list[Message]:

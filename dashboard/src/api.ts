@@ -89,6 +89,9 @@ export interface Conversation {
   mode: 'auto' | 'manual'
   turn_count: number
   title: string
+  /** Latest chat line and who said it (peer | agent | owner), for the Chats list. */
+  last_preview: string
+  last_role: string
   /** '' | 'inquiry' | 'assignment' (CONTEXT.md) */
   kind: '' | 'inquiry' | 'assignment'
   /** Assignment accepted by this node's owner: file edits run without asking. */
@@ -235,8 +238,8 @@ export const api = {
 
   conversations: (agentId?: string) =>
     req<Conversation[]>('GET', `/api/conversations${agentId ? `?agent_id=${enc(agentId)}` : ''}`),
-  startConversation: (agent_id: string, text: string, files: FileIn[] = []) =>
-    req<Conversation>('POST', '/api/conversations', { agent_id, text, files }),
+  startConversation: (agent_id: string, text: string, files: FileIn[] = [], title = '') =>
+    req<Conversation>('POST', '/api/conversations', { agent_id, text, files, title }),
   conversation: (id: string) => req<ConversationDetail>('GET', `/api/conversations/${enc(id)}`),
   inject: (id: string, text: string, files: FileIn[] = []) =>
     req<{ status: string }>('POST', `/api/conversations/${enc(id)}/inject`, { text, files }),

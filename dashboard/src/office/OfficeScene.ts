@@ -484,6 +484,9 @@ export class OfficeScene extends Phaser.Scene {
     hit.on('pointerdown', (p: Phaser.Input.Pointer) => this.onAgentDown(s, p))
     hit.on('pointerover', () => this.setHover(s, true))
     hit.on('pointerout', () => this.setHover(s, false))
+    // Clicking a speech bubble opens that conversation (mine) or the agent's menu (someone else's).
+    bubble.setInteractive({ useHandCursor: true })
+    bubble.on('pointerdown', (p: Phaser.Input.Pointer) => (this.isMine(s.id) ? this.callbacks?.onOpenAgent(s.id) : this.onAgentDown(s, p)))
     // The name tag is on the HUD layer; make it clickable too.
     label.setInteractive({ useHandCursor: true })
     label.on('pointerdown', (p: Phaser.Input.Pointer) => this.onAgentDown(s, p))

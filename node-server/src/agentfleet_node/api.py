@@ -2,6 +2,7 @@
 
 import asyncio
 import base64
+import re
 import contextlib
 import binascii
 import uuid
@@ -65,6 +66,8 @@ class InjectIn(BaseModel):
 
 class StartIn(InjectIn):
     agent_id: str
+    # Shown in the conversation list instead of the prompt (e.g. the question of an Inquiry).
+    title: str = ""
 
 
 class DeskIn(BaseModel):
@@ -177,12 +180,31 @@ def delete_agent(agent_id: str, request: Request) -> dict[str, str]:
 # conversations
 
 
+_OLD_INQUIRY = re.compile(r"^Use mcp__mesh__send_message to ask (\S+) the question below", re.S)
+
+
+def _backfill_listing(node, conv):
+    """Conversations from before the preview columns get their latest line, and old Inquiry titles (the internal
+    prompt) become "Ask <agent>: <question>". Runs once per conversation, then the stored values are used."""
+    changes: dict[str, Any] = {}
+    m = _OLD_INQUIRY.match(conv.title)
+    if m:
+        first = next((x for x in node.store.list_messages(conv.id) if x.role == "owner"), None)
+        question = first.content.split("Question:", 1)[-1].strip() if first else ""
+        changes["title"] = f"Ask {m.group(1)}: {question}"[:80]
+    if not conv.last_preview:
+        last = next((x for x in reversed(node.store.list_messages(conv.id)) if x.kind == "text" and x.role in ("peer", "agent", "owner") and x.content.strip()), None)
+        if last:
+            changes.update(last_preview=" ".join(last.content.split())[:160], last_role=last.role)
+    return node.store.update_conversation(conv.id, **changes) if changes else conv
+
+
 @router.get("/conversations")
 def list_conversations(request: Request, agent_id: str | None = None) -> list[dict[str, Any]]:
     node = _node(request)
     return [
         {**dump(c), "awaiting_owner": node.sessions.awaiting_owner(c.id)}
-        for c in node.store.list_conversations(agent_id)
+        for c in (_backfill_listing(node, c) for c in node.store.list_conversations(agent_id))
     ]
 
 
@@ -194,7 +216,8 @@ async def start_conversation(body: StartIn, request: Request) -> dict[str, Any]:
     if agent is None or not agent.enabled:
         raise HTTPException(404, "no such agent")
     _need_content(body)
-    conv = node.store.create_conversation(agent.id, f"local-{uuid.uuid4().hex}", Direction.LOCAL, title=(body.text or body.files[0].name)[:80])
+    title = body.title.strip() or body.text or body.files[0].name
+    conv = node.store.create_conversation(agent.id, f"local-{uuid.uuid4().hex}", Direction.LOCAL, title=title[:80])
     files = _save_attachments(node, conv, body.files)
     await node.sessions.worker(conv.id).inject(body.text, files)
     return dump(conv)

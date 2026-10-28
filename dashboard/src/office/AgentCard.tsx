@@ -1,12 +1,10 @@
-// The card for the agent I have selected: talk to it first, then the small stuff (where it goes, how it looks).
+// The card for the agent I have selected. One primary action (message it), then small controls.
 
 import { useState } from 'react'
 import type { Conversation, OfficeAgent } from '../api'
 import { Icon } from './Icon'
-import type { Limits } from './attachments'
-import type { Who } from './people'
-import { MessageAgent } from './SideLists'
 import { SKINS } from './skins'
+import { ACTIVE_STATUSES } from './status'
 
 interface Props {
   agent: OfficeAgent
@@ -16,77 +14,48 @@ interface Props {
   canAct: boolean
   preview: boolean
   onOpenChat: (id: string) => void
-  onStarted: (id: string) => void
-  onError: (msg: string) => void
+  /** Open a new private chat with this agent. */
+  onMessage: () => void
   onGo: (where: 'desk' | 'pantry' | 'manager') => void
   onSkin: (skin: string) => void
   onSettings: () => void
-  /** Other people's agents, offered when typing @. */
-  candidates: Who[]
-  limits?: Limits
   /** "auto": goes ahead and messages others; "ask": asks me first. Undefined in preview. */
   contactPolicy?: 'auto' | 'ask'
   onContactPolicy?: (p: 'auto' | 'ask') => void
 }
 
-const ACTIVE = ['running', 'awaiting_approval', 'awaiting_owner']
-
 export function AgentCard(p: Props) {
   const [looks, setLooks] = useState(false)
   const a = p.agent
-  const talking = a.activity && ACTIVE.includes(a.activity.status)
+  const talking = !!a.activity && ACTIVE_STATUSES.includes(a.activity.status)
   const where = talking
     ? `Talking with ${a.activity?.peer ? p.peerName?.(a.activity.peer) ?? a.activity.peer : 'you'}`
     : a.at.kind === 'desk'
-      ? p.desk ? `At desk ${p.desk}` : 'Waiting by the door'
+      ? p.desk ? `At desk ${p.desk}` : 'By the door'
       : 'Walking around'
   const last = p.lastChat
+  const asking = p.contactPolicy === 'ask'
+
   return (
     <div className="o-frame office-card o-agent-card">
       <div className="o-agent-head">
-        <img src={`office/characters/${a.skin}-portrait.png`} width="40" height="60" alt="" />
-        <div>
+        <img src={`office/characters/${a.skin}-portrait.png`} width="36" height="54" alt="" />
+        <div className="o-agent-id">
           <strong>{a.name}</strong>
           <span className={`o-chip ${talking ? 'is-run' : 'is-idle'}`}>{where}</span>
         </div>
-      </div>
-
-      {!p.preview && <MessageAgent agentId={a.agent_id} name={a.name} candidates={p.candidates} limits={p.limits} onStarted={p.onStarted} onError={p.onError} />}
-
-      {p.contactPolicy && (
-        <div className="o-policy" role="radiogroup" aria-label="Before contacting other agents">
-          <span>Before it messages others</span>
-          <button role="radio" aria-checked={p.contactPolicy === 'auto'} className={p.contactPolicy === 'auto' ? 'is-active' : ''} onClick={() => p.onContactPolicy?.('auto')} title="It finds the right person and asks right away">
-            Go ahead
+        <div className="o-agent-tools">
+          <button className={`o-icon-btn ${looks ? 'is-on' : ''}`} onClick={() => setLooks((v) => !v)} title="Change look" aria-label="Change look" aria-expanded={looks}>
+            👕
           </button>
-          <button role="radio" aria-checked={p.contactPolicy === 'ask'} className={p.contactPolicy === 'ask' ? 'is-active' : ''} onClick={() => p.onContactPolicy?.('ask')} title="You approve each message it wants to send">
-            Ask me first
-          </button>
+          {!p.preview && (
+            <button className="o-icon-btn" onClick={p.onSettings} title="Agent settings" aria-label="Agent settings">
+              <Icon name="settings" />
+            </button>
+          )}
         </div>
-      )}
-
-      {last && (
-        <button className="o-last-chat" onClick={() => p.onOpenChat(last.id)}>
-          <Icon name="inject" />
-          <span>
-            <small>Latest chat{last.peer_agent_id ? ` with ${p.peerName?.(last.peer_agent_id) ?? last.peer_agent_id}` : ''}</small>
-            <strong>{last.title || 'untitled'}</strong>
-          </span>
-          <span className="o-last-open">Open →</span>
-        </button>
-      )}
-
-      <div className="o-go">
-        <span>Go to</span>
-        <button disabled={!p.canAct} onClick={() => p.onGo('desk')}><Icon name="desk" />Desk</button>
-        <button disabled={!p.canAct} onClick={() => p.onGo('pantry')}>☕ Pantry</button>
-        <button disabled={!p.canAct} onClick={() => p.onGo('manager')}><Icon name="host" />Manager room</button>
       </div>
 
-      <div className="o-agent-foot">
-        <button className="office-link" onClick={() => setLooks((v) => !v)} aria-expanded={looks}>{looks ? 'Done' : 'Change look'}</button>
-        {!p.preview && <button className="office-link" onClick={p.onSettings}><Icon name="settings" />Settings</button>}
-      </div>
       {looks && (
         <div className="o-skins" role="listbox" aria-label="Look">
           {SKINS.map((s) => (
@@ -95,6 +64,40 @@ export function AgentCard(p: Props) {
             </button>
           ))}
         </div>
+      )}
+
+      {!p.preview && (
+        <div className="o-agent-primary">
+          <button className="btn-primary o-message-btn" onClick={p.onMessage}>
+            <Icon name="inject" />Message {a.name}
+          </button>
+          {last && (
+            <button className="o-continue" onClick={() => p.onOpenChat(last.id)} title="Open the latest chat">
+              <span>Continue{last.peer_agent_id ? ` with ${p.peerName?.(last.peer_agent_id) ?? last.peer_agent_id}` : ''}:</span>
+              <b>{last.title || 'untitled'}</b>
+              <span aria-hidden>→</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="o-agent-row">
+        <span className="o-agent-label">Go to</span>
+        <div className="o-go">
+          <button disabled={!p.canAct} onClick={() => p.onGo('desk')}><Icon name="desk" />Desk</button>
+          <button disabled={!p.canAct} onClick={() => p.onGo('pantry')}>☕ Pantry</button>
+          <button disabled={!p.canAct} onClick={() => p.onGo('manager')}><Icon name="host" />Manager</button>
+        </div>
+      </div>
+
+      {p.contactPolicy && (
+        <label className="o-agent-row o-switch-row" title="When on, each message it wants to send to another agent waits for your OK">
+          <span className="o-agent-label">Ask me before it contacts others</span>
+          <span className={`o-switch ${asking ? 'is-on' : ''}`}>
+            <input type="checkbox" checked={asking} onChange={(e) => p.onContactPolicy?.(e.target.checked ? 'ask' : 'auto')} />
+            <i />
+          </span>
+        </label>
       )}
     </div>
   )

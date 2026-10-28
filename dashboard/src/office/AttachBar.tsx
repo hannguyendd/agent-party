@@ -2,10 +2,11 @@
 
 import { human, type Attachments } from './attachments'
 
-export function AttachBar({ att, disabled }: { att: Attachments; disabled?: boolean }) {
+/** `list` renders the pending chips, `button` the paperclip; a composer places each where it fits. */
+export function AttachBar({ att, disabled, list, button }: { att: Attachments; disabled?: boolean; list?: boolean; button?: boolean }) {
   return (
     <>
-      {(att.files.length > 0 || att.error) && (
+      {list && (att.files.length > 0 || att.error) && (
         <div className="o-attach-list">
           {att.files.map((f, i) => (
             <span key={i} className="o-attach-chip" title={`${f.name} · ${human(f.size)}`}>
@@ -17,7 +18,7 @@ export function AttachBar({ att, disabled }: { att: Attachments; disabled?: bool
           {att.error && <span className="o-attach-error">{att.error}</span>}
         </div>
       )}
-      <label className={`o-icon-btn o-attach-btn ${disabled ? 'is-disabled' : ''}`} title="Attach files or images (or drop / paste them)">
+      {button && <label className={`o-icon-btn o-attach-btn ${disabled ? 'is-disabled' : ''}`} title="Attach files or images (or drop / paste them)">
         <input
           type="file"
           multiple
@@ -30,7 +31,7 @@ export function AttachBar({ att, disabled }: { att: Attachments; disabled?: bool
           }}
         />
         <span aria-hidden>📎</span>
-      </label>
+      </label>}
     </>
   )
 }

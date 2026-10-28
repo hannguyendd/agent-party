@@ -41,7 +41,7 @@ export function PeerMenu(props: {
         const prompt =
           `Use mcp__mesh__send_message to ask ${peer.agent_id} the question below, then tell me what they answered.\n\n` +
           `Question: ${text.trim()}`
-        const conv = await api.startConversation(asker, prompt)
+        const conv = await api.startConversation(asker, prompt, [], `Ask ${peer.name}: ${text.trim()}`)
         props.onSent(`${asker} is asking ${peer.agent_id}…`, conv.id)
       } else {
         // Assignment: sent as written; the peer's owner must accept before their agent starts (ADR 0002).

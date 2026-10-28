@@ -89,6 +89,9 @@ class Conversation(SQLModel, table=True):
     kind: str = ConversationKind.PLAIN
     # Set when the receiving owner accepted an Assignment: file edits run without asking (ADR 0002).
     accepted: bool = False
+    # Latest chat line for the conversation list (local only; never sent to the world server).
+    last_preview: str = ""
+    last_role: str = ""
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
 
