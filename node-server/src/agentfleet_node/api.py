@@ -154,7 +154,7 @@ def _setup_view(node) -> dict[str, Any]:
         "hub_url": s.hub_url,
         "world_url": s.world_url,
         "has_token": (s.data_dir / "bootstrap-token").exists(),
-        "enrolled": (s.data_dir / "mesh-node" / "agent.db").exists(),
+        "enrolled": node.meshproc.enrolled,
         "agents": len([a for a in node.store.list_agents() if a.enabled]),
         "mesh_node": node.meshproc.status(),
     }
@@ -179,6 +179,7 @@ async def save_setup(body: SetupIn, request: Request) -> dict[str, Any]:
         token_file = s.data_dir / "bootstrap-token"
         token_file.write_text(body.token.strip() + "\n")
         token_file.chmod(0o600)
+        node.meshproc.forget_enrollment()  # a new token means: enroll with it on the next start
     s.owner, s.hub_url, s.world_url = body.owner, hub_url, world_url
     if s.mesh_api_token_path is None:
         s.mesh_api_token_path = s.data_dir / "mesh-api-token"

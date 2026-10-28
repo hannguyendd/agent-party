@@ -14,15 +14,26 @@ import secrets
 import shutil
 from pathlib import Path
 
+import httpx
+
 from agentfleet_node.config import Settings
 
 log = logging.getLogger(__name__)
+
+# Friendlier words for agentmesh-node's enrollment failures, shown on the setup page.
+_KNOWN_FAILURES = {
+    "max usages exceeded": "this join token was already used; ask your admin for a new one (make hub-token)",
+    "no route to host": "can't reach the office server's hub (port 7400); is it running and on this network?",
+    "connection refused": "the office server's hub (port 7400) is not running",
+    "invalid": "the join token is not valid; check it with your admin",
+}
 
 class MeshNodeProcess:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.proc: asyncio.subprocess.Process | None = None
         self.last_error: str | None = None
+        self._confirm: asyncio.Task | None = None
 
     @property
     def installed(self) -> bool:
@@ -36,6 +47,28 @@ class MeshNodeProcess:
     def log_path(self) -> Path:
         return self.settings.data_dir / "mesh-node.log"
 
+    @property
+    def _enrolled_mark(self) -> Path:
+        return self.settings.data_dir / "mesh-node" / "enrolled"
+
+    @property
+    def enrolled(self) -> bool:
+        """Set once the running node answered a mesh call. agent.db alone is not enough: agentmesh-node writes it
+        before enrolling, so a failed first enrollment (hub down, token used) left a node that never enrolls."""
+        return self._enrolled_mark.exists()
+
+    def forget_enrollment(self) -> None:
+        """A new join token was saved: use it on the next start."""
+        self._enrolled_mark.unlink(missing_ok=True)
+
+    def _failure_from_log(self) -> str:
+        """Why the last run stopped, from the end of its log (the FATAL line agentmesh-node prints)."""
+        try:
+            tail = self.log_path.read_text(errors="replace")[-800:].lower()
+        except OSError:
+            return ""
+        return next((text for needle, text in _KNOWN_FAILURES.items() if needle in tail), "")
+
     def status(self) -> dict:
         return {
             "installed": self.installed,
@@ -43,6 +76,7 @@ class MeshNodeProcess:
             "running": self.running,
             "pid": self.proc.pid if self.running and self.proc else None,
             "error": self.last_error,
+            "enrolled": self.enrolled,
             "log": str(self.log_path),
         }
 
@@ -78,8 +112,8 @@ class MeshNodeProcess:
         if s.hub_url.startswith("http://"):
             args.append("--insecure-control-plane")  # v1 is LAN-only over plain http: trust the hub on this network
         bootstrap = data / "bootstrap-token"
-        if bootstrap.exists() and not (data / "mesh-node" / "agent.db").exists():
-            args += ["--bootstrap-token-path", str(bootstrap)]  # enroll only until this node has an identity
+        if bootstrap.exists() and not self.enrolled:
+            args += ["--bootstrap-token-path", str(bootstrap)]  # enroll with the single-use token until it worked
         logf = self.log_path.open("ab")
         try:
             self.proc = await asyncio.create_subprocess_exec(*args, cwd=str(data), env=dict(os.environ), stdout=logf, stderr=asyncio.subprocess.STDOUT)
@@ -88,13 +122,33 @@ class MeshNodeProcess:
             return False
         finally:
             logf.close()
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.8)
         if not self.running:
-            self.last_error = f"agentmesh-node exited right away; see {self.log_path}"
+            reason = self._failure_from_log()
+            self.last_error = f"agentmesh-node stopped: {reason}" if reason else f"agentmesh-node exited right away; see {self.log_path}"
             return False
         self.last_error = None
         log.info("agentmesh-node started (pid %s)", self.proc.pid)
+        if not self.enrolled:
+            self._confirm = asyncio.get_event_loop().create_task(self._confirm_enrollment(token))
         return True
+
+    async def _confirm_enrollment(self, token: Path) -> None:
+        """Mark the node enrolled once its mesh API answers (an unenrolled sidecar answers 404 to mesh calls)."""
+        url = self.settings.mesh_node_url.rstrip("/") + "/mesh/service/discover?type=a2a&limit=1&timeout=1s"
+        headers = {"X-Mesh-Authentication": f"Bearer {token.read_text().strip()}"}
+        async with httpx.AsyncClient(timeout=5) as hc:
+            for _ in range(30):
+                if not self.running:
+                    return
+                with contextlib.suppress(httpx.HTTPError):
+                    r = await hc.get(url, headers=headers)
+                    if r.status_code != 404 and r.status_code < 500:
+                        self._enrolled_mark.write_text("ok\n")
+                        log.info("agentmesh-node is enrolled")
+                        return
+                await asyncio.sleep(1)
+        self.last_error = "agentmesh-node is running but not enrolled with the hub; save a new join token in Settings"
 
     async def stop(self) -> None:
         if not self.running or self.proc is None:

@@ -59,3 +59,33 @@ def test_server_address_forms():
     assert _server_urls("192.168.1.10") == ("http://192.168.1.10:7400", "ws://192.168.1.10:7500/world/ws")
     assert _server_urls("hub.local:7401") == ("http://hub.local:7401", "ws://hub.local:7500/world/ws")
     assert _server_urls("http://hub.local:7400/") == ("http://hub.local:7400", "ws://hub.local:7500/world/ws")
+
+
+async def test_join_token_is_used_until_the_node_has_really_enrolled(tmp_path, monkeypatch):
+    """agent.db appears before enrollment; a failed first try must not stop the token being used next time."""
+    from agentfleet_node.meshproc import MeshNodeProcess
+
+    s = Settings(owner="kien", data_dir=tmp_path, hub_url="http://hub:7400")
+    (tmp_path / "mesh-node").mkdir(parents=True)
+    (tmp_path / "mesh-node" / "agent.db").write_bytes(b"identity, not enrolled")
+    (tmp_path / "bootstrap-token").write_text("tok")
+    (tmp_path / "mesh-node.log").write_text("FATAL Enrollment failed: Bootstrap token max usages exceeded\n")
+    seen: list[list[str]] = []
+
+    async def fake_exec(*args, **kw):
+        seen.append(list(args))
+        raise OSError("not really starting it")
+
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/agentmesh-node")
+    monkeypatch.setattr("asyncio.create_subprocess_exec", fake_exec)
+    m = MeshNodeProcess(s)
+    assert not m.enrolled
+    await m.start()
+    assert "--bootstrap-token-path" in seen[-1]
+    m._enrolled_mark.write_text("ok")
+    await m.start()
+    assert "--bootstrap-token-path" not in seen[-1]  # enrolled: the used token is left alone
+    m.forget_enrollment()
+    await m.start()
+    assert "--bootstrap-token-path" in seen[-1]
+    assert "already used" in (m._failure_from_log())
