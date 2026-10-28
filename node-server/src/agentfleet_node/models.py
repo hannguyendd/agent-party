@@ -88,6 +88,8 @@ class Conversation(SQLModel, table=True):
     mode: Mode = Mode.AUTO
     turn_count: int = 0
     title: str = ""
+    # A short topic written by titles.TitleService after the first message ("" until then; local only).
+    topic: str = ""
     kind: str = ConversationKind.PLAIN
     # Set when the receiving owner accepted an Assignment: file edits run without asking (ADR 0002).
     accepted: bool = False

@@ -1034,3 +1034,7 @@ a.o-file:hover { border-color: var(--o-line); }
 .o-usage-at, .o-usage-none { font-size: 11px; color: var(--o-muted); }
 .o-peer-menu .o-usage { margin-top: 6px; }
 .o-exchange-wait.is-ok-needed { color: #9a6a10; font-weight: 800; }
+
+/* topic titles: who talks moves to the small line */
+.o-crow-who { color: var(--o-ink); font-weight: 700; }
+.o-conv-who { display: block; font-size: 11.5px; font-weight: 700; color: var(--o-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

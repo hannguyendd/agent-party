@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     # Model that writes Recaps (a summary needs no tools; keep it cheap).
     recap_model: str = "claude-haiku-5-5"
 
+    # Name each conversation from its first message with the small model (titles.py).
+    auto_titles: bool = True
+
     # Claude CLI path override (default: whatever the SDK finds).
     claude_cli_path: str | None = None
 

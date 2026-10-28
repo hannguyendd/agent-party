@@ -133,3 +133,13 @@ def node_factory(tmp_path):
         return RunningNode(owner, tmp_path, **kw)
 
     return make
+
+
+@pytest.fixture(autouse=True)
+def no_real_titles(monkeypatch):
+    """Conversation titles would call the real model: tests get a predictable fake instead."""
+
+    async def fake_title(settings, text):
+        return "Title: " + text.strip().splitlines()[0][:30]
+
+    monkeypatch.setattr("agentfleet_node.titles.make_title", fake_title)

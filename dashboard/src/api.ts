@@ -111,6 +111,8 @@ export interface Conversation {
   mode: 'auto' | 'manual'
   turn_count: number
   title: string
+  /** Short topic written from the first message ('' until then). */
+  topic?: string
   /** Latest chat line and who said it (peer | agent | owner), for the Chats list. */
   last_preview: string
   last_role: string

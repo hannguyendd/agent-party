@@ -140,6 +140,9 @@ export function ChatsList({ state, me, onOpen, tab: chosen, onTab }: {
 
 const EARLIER_SHOWN = 6
 
+/** What the conversation is about: the written topic, else its first message as plain text. */
+const topicOf = (c: Conversation, nameOf: (id: string) => string | null) => c.topic || plainPreview(c.title, nameOf)
+
 type Row = { c: Conversation; mine: Who; peer: Who | null }
 
 /** One line per conversation: who, what state needs my eyes, the latest line. Quiet unless something is going on. */
@@ -165,7 +168,7 @@ function ChatRow({ c, mine, peer, state, unread, talks, onOpen }: Row & { state:
       <span className="o-crow-main">
         <span className="o-crow-top">
           <strong>
-            {hosting ? <>🎉 {plainPreview(c.title, nameOf) || 'Party'}</> : <>{mine.name}{peer && <em> {c.direction === 'inbound' ? '←' : '→'} {peer.name}</em>}</>}
+            {hosting ? <>🎉 {plainPreview(c.title, nameOf) || 'Party'}</> : topicOf(c, nameOf) || <>{mine.name}{peer && <em> {c.direction === 'inbound' ? '←' : '→'} {peer.name}</em>}</>}
           </strong>
           {loud && <span className={`o-crow-state is-${st.tone}`}>{st.label}</span>}
           <time>{timeAgo(c.updated_at)}</time>
@@ -173,6 +176,8 @@ function ChatRow({ c, mine, peer, state, unread, talks, onOpen }: Row & { state:
         </span>
         <span className="o-crow-preview">
           {meta.length > 0 && <span className="o-crow-meta">{meta.join(' · ')}</span>}
+          {/* With a topic on top, who talks goes here. */}
+          {!hosting && topicOf(c, nameOf) && <span className="o-crow-who">{mine.name}{peer ? ` ${c.direction === 'inbound' ? '←' : '→'} ${peer.name}` : ''} · </span>}
           {c.last_preview ? <><b>{sender}:</b> {plainPreview(c.last_preview, nameOf)}</> : plainPreview(c.title, nameOf) || 'No messages yet'}
         </span>
       </span>

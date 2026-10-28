@@ -21,6 +21,7 @@ from agentfleet_node.recap import RecapService
 from agentfleet_node.sessions import SessionManager
 from agentfleet_node.store import EventBus, Store
 from agentfleet_node.usage import UsageTracker
+from agentfleet_node.titles import TitleService
 
 # A repo checkout serves dashboard/dist (the latest `bun run build`); the installed package has no repo around it
 # and carries the built dashboard in agentfleet_node/static instead (`make bundle`).
@@ -42,6 +43,7 @@ class Node:
     parties: PartyService
     recaps: RecapService
     usage: UsageTracker
+    titles: TitleService
 
 
 def build_node(settings: Settings, client_factory: Callable | None = None) -> Node:
@@ -75,7 +77,7 @@ def build_node(settings: Settings, client_factory: Callable | None = None) -> No
     world.usage = usage
     usage.listeners.append(lambda u: world.send_usage(u))
     return Node(settings, bus, store, directory, outbound, sessions, gateway, world, MeshNodeProcess(settings),
-                parties, RecapService(settings, store, parties), usage)
+                parties, RecapService(settings, store, parties), usage, TitleService(settings, store, bus))
 
 
 def create_app(settings: Settings | None = None, client_factory: Callable | None = None) -> FastAPI:
@@ -87,10 +89,12 @@ def create_app(settings: Settings | None = None, client_factory: Callable | None
         node.store.recover_after_restart()
         node.directory.sync_node_config()
         node.world.start()
+        node.titles.start()
         if settings.hub_url:
             await node.meshproc.start()  # no-op with a reason in status() if agentmesh-node isn't installed
         yield
         await node.meshproc.stop()
+        await node.titles.stop()
         await node.world.stop()
         await node.sessions.shutdown()
 

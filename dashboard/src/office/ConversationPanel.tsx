@@ -84,10 +84,20 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
           {peer && <Avatar w={peer} size={34} />}
         </div>
         <div className="o-conv-title">
-          <strong>
-            {mine.name}
-            {peer && <span> {conv.direction === 'inbound' ? '←' : '→'} {peer.name}</span>}
+          <strong title={conv.topic || conv.title}>
+            {conv.topic || (
+              <>
+                {mine.name}
+                {peer && <span> {conv.direction === 'inbound' ? '←' : '→'} {peer.name}</span>}
+              </>
+            )}
           </strong>
+          {conv.topic && (
+            <small className="o-conv-who">
+              {mine.name}
+              {peer && ` ${conv.direction === 'inbound' ? '←' : '→'} ${peer.name}`}
+            </small>
+          )}
         </div>
         <span className="o-conv-sub">
           <span className={`o-chip is-${status.tone}`}>{status.label}</span>

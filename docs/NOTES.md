@@ -122,6 +122,9 @@ owner @mentions. Per-agent **contact policy**: "Go ahead" (default) or "Ask me f
   (`send_message` tagged with the Party). The party bar in the conversation: Invite (any member's owner), Share
   (Host's owner: read-only copy to every other owner, ADR 0003), Hand off, End; a member's owner can Leave. When it
   ends, the bar offers a Recap.
+- **Titles**: after a conversation's first message the small model names it (3–6 words, same language); the
+  Chats list and the conversation header show that topic, with who talks underneath. Local only; `AUTO_TITLES=false`
+  turns it off (rows then fall back to the first message).
 - **Recap**: ⋯ → Make a recap in any conversation. A small model (`recap_model`, Haiku) summarises what this side
   saw (goal, decisions, next steps, open questions); saved under `data/recaps/*.md`; a Party's recap can be shared.
 - **Waking owners**: browser notification while a tab is open; OS notification from the node when none is.
