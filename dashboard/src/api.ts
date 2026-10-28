@@ -114,8 +114,12 @@ export interface Conversation {
   /** Latest chat line and who said it (peer | agent | owner), for the Chats list. */
   last_preview: string
   last_role: string
-  /** '' | 'inquiry' | 'assignment' (CONTEXT.md) */
-  kind: '' | 'inquiry' | 'assignment'
+  /** '' | 'inquiry' | 'assignment' | 'party' (the Host's side) | 'party_share' (read-only copy) (CONTEXT.md) */
+  kind: '' | 'inquiry' | 'assignment' | 'party' | 'party_share'
+  /** Party this conversation belongs to ('' when none). */
+  party_id: string
+  /** Host side: the owner shared this Party with the members' owners. */
+  party_shared: boolean
   /** Assignment accepted by this node's owner: file edits run without asking. */
   accepted: boolean
   created_at: string
@@ -180,12 +184,37 @@ export interface OfficeState {
   desks: Record<string, string>
   owners: Record<string, OfficeOwner>
   agents: OfficeAgent[]
+  parties: Party[]
   desk_ids: string[]
   skins: string[]
 }
 
+/** CONTEXT.md "Party": one Host; members talk only with the Host. The world server knows no topic. */
+export interface Party {
+  party_id: string
+  host: string
+  members: string[]
+  kind: 'inquiry' | 'assignment'
+}
+
+/** CONTEXT.md "Recap": written in the background; `body` is Markdown. */
+export interface Recap {
+  id: string
+  conversation_id: string
+  agent_id: string
+  party_id: string
+  title: string
+  status: 'working' | 'done' | 'error'
+  body: string
+  path: string
+  shared: boolean
+  created_at: string
+}
+
 export type WorldEvent =
-  | { type: 'snapshot'; desks: Record<string, string>; owners: Record<string, OfficeOwner>; agents: OfficeAgent[]; desk_ids: string[]; skins: string[] }
+  | { type: 'snapshot'; desks: Record<string, string>; owners: Record<string, OfficeOwner>; agents: OfficeAgent[]; parties?: Party[]; desk_ids: string[]; skins: string[] }
+  | { type: 'party'; party: Party; joined?: string; left?: string; handed_off_from?: string }
+  | { type: 'party_ended'; party_id: string; host: string; members: string[]; reason: 'closed' | 'host_offline' }
   | { type: 'desks'; desks: Record<string, string> }
   | { type: 'owners'; owners: Record<string, OfficeOwner> }
   | { type: 'agent'; agent: OfficeAgent; entered?: boolean }
@@ -203,6 +232,7 @@ export type LiveEvent =
   | { type: 'approval'; approval: Approval }
   | { type: 'mesh'; config_dirty: boolean }
   | { type: 'office'; event: WorldEvent }
+  | { type: 'recap'; recap: Recap }
 
 export class ApiError extends Error {
   status: number
@@ -282,6 +312,18 @@ export const api = {
   setup: () => req<SetupState>('GET', '/api/setup'),
   saveSetup: (owner: string, server: string, token: string) => req<SetupState>('POST', '/api/setup', { owner, server, token }),
   meshRestart: () => req<MeshStatus & { process: MeshProcess }>('POST', '/api/mesh/restart'),
+
+  openParty: (host: string, members: string[], topic: string, kind: Party['kind']) =>
+    req<Conversation>('POST', '/api/parties', { host, members, topic, kind }),
+  partyInvite: (party: string, agent_id: string) => req<{ status: string }>('POST', `/api/parties/${enc(party)}/invite`, { agent_id }),
+  partyLeave: (party: string, agent_id: string) => req<{ status: string }>('POST', `/api/parties/${enc(party)}/leave`, { agent_id }),
+  partyHandoff: (party: string, new_host: string) => req<{ status: string }>('POST', `/api/parties/${enc(party)}/handoff`, { new_host }),
+  partyClose: (party: string) => req<{ status: string }>('POST', `/api/parties/${enc(party)}/close`),
+  partyShare: (party: string) => req<{ sent: string[]; failed: string[] }>('POST', `/api/parties/${enc(party)}/share`),
+  makeRecap: (conv: string) => req<Recap>('POST', `/api/conversations/${enc(conv)}/recap`),
+  recaps: (conv: string) => req<Recap[]>('GET', `/api/recaps?conversation_id=${enc(conv)}`),
+  recapFileUrl: (id: string) => `/api/recaps/${enc(id)}/file`,
+  shareRecap: (id: string) => req<{ sent: string[]; failed: string[] }>('POST', `/api/recaps/${enc(id)}/share`),
 
   approvals: () => req<Approval[]>('GET', '/api/approvals'),
   decide: (id: string, allow: boolean, reason = '') =>

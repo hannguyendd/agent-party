@@ -20,5 +20,10 @@ at once, without running a Claude turn.
 ## Consequences
 
 - `agentfleet.kind` is a sender claim like `agentfleet.from_agent`. A node accepts a `party_update` only if the
-  world server confirms the sender is the Host of a Party that includes one of its agents. A forged update could at
-  worst show text on a screen; it can never run tools.
+  world server confirms both the sender and the receiving agent are in that Party. (Built as: the Host's owner
+  shares the Party; any member's owner can share their own Recap the same way.) A forged update could at worst
+  show text on a screen; it can never run tools.
+- The same mechanism carries a hand-off (`party_handoff`): the new Host's node accepts it only once the world lists
+  that agent as the Host, and it does run a turn (the new Host continues the Party), behind the same acceptance
+  gate as an Assignment when the Party is one.
+- One copy per owner: when an owner has several agents in the Party, only one of them receives the update.

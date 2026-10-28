@@ -798,7 +798,7 @@ export class OfficeScene extends Phaser.Scene {
     const k = 1 / this.cameras.main.zoom
     const head = -(CHAR_FRAME.height - 2) * CHAR_SCALE
     s.label.setScale(k).setPosition(0, head)
-    s.icon.setScale(k).setPosition(14, head - 2)
+    s.icon.setScale(k).setPosition((s.label.width * k) / 2 + 3, head) // just right of the name tag, never over it
     s.bubbleBox.setScale(k).setPosition(0, head - s.label.height * k - 8)
   }
 

@@ -21,8 +21,19 @@ restarts the world link and (re)starts `agentmesh-node` via `meshproc.MeshNodePr
 `_republish`, which restarts the managed mesh node because it reads services only at startup. The owner can't
 change while agents exist (409).
 
+Party (ADR 0003): `party.PartyService` opens it (world op `party_open`, then the Host's conversation of kind
+`party`), and `tags_for(conv_id)` makes the Host's `send_message` carry `PARTY_KEY` + the Party's kind (so an
+Assignment party still goes through acceptance on each member's node). `party_update` (read-only copy) and
+`party_handoff` (Host role + transcript) arrive in `MeshAgentExecutor` and are accepted only when the world mirror
+lists the agents in that Party. World events (joined, left, ended) reach the service through
+`WorldClient.party_listeners`. Recap: `recap.RecapService.start` builds `party.transcript` and writes in the
+background (`recap.summarize`, replaced in tests).
+
+Restart: `Store.recover_after_restart` (lifespan) closes pending approvals and marks mid-turn conversations
+interrupted, since the futures that would finish them died with the process.
+
 Modules: `world.py` (team world server), `office.py` (node ↔ world link), `notify.py` (OS notifications),
-`meshproc.py` (managed `agentmesh-node`), plus the
+`meshproc.py` (managed `agentmesh-node`), `party.py`, `recap.py`, plus the
 original `a2a_bridge`, `sessions`, `mesh`, `mesh_tools`, `store`, `api`, `models`, `db`, `files`, `naming`.
 
 ## Invariants
@@ -39,7 +50,7 @@ original `a2a_bridge`, `sessions`, `mesh`, `mesh_tools`, `store`, `api`, `models
 - **Labels are claims**: `SENDER_KEY` and `KIND_KEY` come from the sender's metadata. Only the receiving owner's
   acceptance widens permissions, so a wrong `kind` gains nothing.
 - **Nothing content-like leaves for the world server**: `WorldClient._conv_view` sends agent, peer, status and
-  direction only (no titles, no text). Keep it that way; a test asserts no message text reaches the world.
+  direction only (no titles, no text). A Party's topic stays on the Host's node too; the world gets IDs and kind. Keep it that way; a test asserts no message text reaches the world.
 - **Owner gate**: manual mode or an interrupted turn parks the inbound request in `_wait_for_owner`; it resumes on a
   manual reply (sent to the peer) or hand-back (agent runs again). Every wait has a timeout from `Settings`.
 - **Peer content is untrusted**: inbound text is wrapped by `format_prompt` in `<mesh_message from=…>`; the

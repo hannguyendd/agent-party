@@ -138,3 +138,20 @@ async def test_assign_api_runs_in_background_and_checks_the_target(node_factory)
         await decide(b, appr.id, True)
         await wait_for(lambda: any(m.content == "tool Edit allowed" for c in a.node.store.list_conversations("han/dev")
                                    for m in a.node.store.list_messages(c.id) if m.role == "peer"))
+
+
+async def test_restart_closes_waits_that_no_longer_exist(tmp_path):
+    from agentfleet_node.app import build_node
+    from agentfleet_node.config import Settings
+    from agentfleet_node.models import Direction
+
+    node = build_node(Settings(owner="kien", data_dir=tmp_path, os_notifications=False))
+    node.store.save_agent(Agent(id="kien/dev", name="Dev", working_dir=str(tmp_path)))
+    conv = node.store.create_conversation("kien/dev", "ctx", Direction.INBOUND, peer_agent_id="bob/api")
+    node.store.update_conversation(conv.id, status="awaiting_approval")
+    appr = node.store.create_approval(conv.id, "Bash", {"command": "make"})
+
+    assert node.store.recover_after_restart() == 2
+    assert node.store.list_approvals(pending_only=True) == []
+    assert [a.status for a in node.store.list_approvals() if a.id == appr.id] == ["timed_out"]
+    assert node.store.get_conversation(conv.id).status == "interrupted"

@@ -21,5 +21,7 @@ and assert on the store. Never spend real Claude calls in this suite.
   them, and limits (size, type, base64, empty message) return 422.
 - `test_setup.py`: the web join form (files written, owner lock, restart reads `setup.json`, office connects);
   `shutil.which` is patched so no real `agentmesh-node` starts.
+- `test_party.py`: world Party rules as units, then three nodes (`Office`) for tagging + acceptance, share
+  (one copy per owner, forged updates refused), hand-off and close, and Recaps (`recap.summarize` patched).
 - Anything holding a WebSocket open (e.g. a dashboard client) must close it before the server stops, or shutdown
   waits for it.

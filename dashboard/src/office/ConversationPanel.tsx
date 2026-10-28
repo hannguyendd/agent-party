@@ -10,6 +10,8 @@ import { STATUS } from './status'
 import { Composer } from './Composer'
 import { Avatar, OfficeChat } from './OfficeChat'
 import { who } from './people'
+import { PartyBar } from './PartyBar'
+import { RecapList } from './RecapList'
 
 interface Props {
   state: LiveState
@@ -34,7 +36,10 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
   const peer = conv.peer_agent_id ? who(state, conv.peer_agent_id) : null
   const active = conv.status === 'running' || conv.status === 'awaiting_approval'
   const status = STATUS[conv.status]
-  const composer: { mode: 'reply' | 'inject' | 'off'; to: string; placeholder: string } = conv.awaiting_owner
+  const readOnly = conv.kind === 'party_share'
+  const composer: { mode: 'reply' | 'inject' | 'off'; to: string; placeholder: string } = readOnly
+    ? { mode: 'off', to: 'Shared with you · read only', placeholder: `A copy of ${peer?.name ?? 'the Host'}'s Party, shared by its owner.` }
+    : conv.awaiting_owner
     ? { mode: 'reply', to: `Reply to ${peer?.name ?? 'peer'} as you`, placeholder: `Write your answer to ${peer?.name ?? 'the peer'}…` }
     : conv.mode === 'auto'
       ? { mode: 'inject', to: `To ${mine.name} · only you see this`, placeholder: active ? `Add something while ${mine.name} works…` : `Message ${mine.name}…` }
@@ -64,7 +69,8 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
     return ok
   }
   // Taking over only makes sense when someone is waiting on my agent's answer.
-  const canTakeOver = conv.direction === 'inbound'
+  const canTakeOver = conv.direction === 'inbound' && !readOnly
+  const recap = () => run(() => api.makeRecap(conv.id))
   const candidates = (state.office?.agents ?? []).filter((a) => !a.agent_id.startsWith(conv.agent_id.split('/')[0] + '/')).map((a) => who(state, a.agent_id))
 
   return (
@@ -87,7 +93,10 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
           <span className={`o-chip is-${status.tone}`}>{status.label}</span>
           {conv.kind === 'assignment' && <span className="o-chip is-kind">Assignment{conv.accepted ? ' · accepted' : ''}</span>}
           {conv.kind === 'inquiry' && <span className="o-chip is-kind">Question</span>}
-          {!peer && <span className="o-chip is-kind">Private</span>}
+          {conv.kind === 'party' && <span className="o-chip is-kind">Party · you host</span>}
+          {conv.kind === 'party_share' && <span className="o-chip is-kind">Shared Party</span>}
+          {conv.party_id && conv.kind !== 'party' && conv.kind !== 'party_share' && <span className="o-chip is-kind">In a Party</span>}
+          {!peer && conv.kind !== 'party' && <span className="o-chip is-kind">Private</span>}
           {peer && <span className="o-conv-owner">{peer.owner}'s agent</span>}
         </span>
         <div className="o-conv-actions">
@@ -123,11 +132,17 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
                 >
                   <Icon name="fork" />Fork privately
                 </button>
+                <button role="menuitem" disabled={busy || !messages?.length} onClick={() => void recap()} title="Summarise what you saw: goal, decisions, next steps, open questions">
+                  <Icon name="recap" />Make a recap
+                </button>
               </div>
             )}
           </div>
         </div>
       </header>
+
+      {conv.party_id && <PartyBar state={state} conv={conv} onRecap={() => void recap()} />}
+      <RecapList state={state} convId={conv.id} />
 
       {conv.mode === 'manual' && (
         <div className="o-conv-banner">
@@ -146,19 +161,23 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
 
       <OfficeChat state={state} conv={conv} messages={messages} partial={partial} />
 
-      <Composer
-        value={text}
-        onChange={setText}
-        onSend={send}
-        to={composer.to}
-        placeholder={composer.placeholder}
-        candidates={composer.mode === 'inject' ? candidates : []}
-        limits={state.node?.files}
-        allowFiles={composer.mode === 'inject'}
-        disabled={composer.mode === 'off'}
-        busy={busy}
-        error={error}
-      />
+      {readOnly ? (
+        <footer className="o-composer o-readonly">{composer.to}. {composer.placeholder}</footer>
+      ) : (
+        <Composer
+          value={text}
+          onChange={setText}
+          onSend={send}
+          to={composer.to}
+          placeholder={composer.placeholder}
+          candidates={composer.mode === 'inject' ? candidates : []}
+          limits={state.node?.files}
+          allowFiles={composer.mode === 'inject'}
+          disabled={composer.mode === 'off'}
+          busy={busy}
+          error={error}
+        />
+      )}
     </div>
   )
 }

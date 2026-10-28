@@ -75,6 +75,7 @@ def create_app(settings: Settings | None = None, client_factory: Callable | None
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        node.store.recover_after_restart()
         node.directory.sync_node_config()
         node.world.start()
         if settings.hub_url:

@@ -117,6 +117,13 @@ owner @mentions. Per-agent **contact policy**: "Go ahead" (default) or "Ask me f
   `inbox/` (≤ 5 MB, allowed types only, never executed); images show as thumbnails in the chat.
 - **Conversation panel**: avatars and names, my side on the right, mesh activity as events ("Asked API agent"),
   Stop / Take over (inbound only) / Hand back, Fork and Widen in the ⋯ menu.
+- **Party**: select one of your agents → "Start a Party" → topic, Discuss / Assign work, two or more members (your
+  own agents count). Members walk over and stand around the Host (🎉 by its name); the Host messages each member
+  (`send_message` tagged with the Party). The party bar in the conversation: Invite (any member's owner), Share
+  (Host's owner: read-only copy to every other owner, ADR 0003), Hand off, End; a member's owner can Leave. When it
+  ends, the bar offers a Recap.
+- **Recap**: ⋯ → Make a recap in any conversation. A small model (`recap_model`, Haiku) summarises what this side
+  saw (goal, decisions, next steps, open questions); saved under `data/recaps/*.md`; a Party's recap can be shared.
 - **Waking owners**: browser notification while a tab is open; OS notification from the node when none is.
 - **Settings**: agents (create/edit, incl. contact policy), joining the team (same form as first run), mesh & office
   status + directory, notification tests.
@@ -199,7 +206,7 @@ real-stack smoke in `node-server/CLAUDE.md`.
 - The sender's identity isn't verified by the mesh; the world server trusts the owner name a node claims.
 - Outbound calls block for the whole remote turn; long turns through the relay may hit limits.
 - No large-file upload via the hub, no standalone MCP adapter, no message paging.
-- v1 is LAN only, plain http, no offline queue. Party and Recap are designed (`CONTEXT.md`) but not built.
+- v1 is LAN only, plain http, no offline queue. Party sharing is a snapshot per press, not a live feed.
 
 ## 14. Backend file map (`node-server/src/agentfleet_node/`)
 
@@ -216,5 +223,7 @@ real-stack smoke in `node-server/CLAUDE.md`.
 | `mesh_tools.py` | The four in-process MCP tools |
 | `notify.py` | OS notifications |
 | `meshproc.py` | Runs/restarts this device's `agentmesh-node` once setup knows the hub |
+| `party.py` | Parties on this node: open, invite, share, hand off, transcripts, reacting to world events |
+| `recap.py` | Recaps: transcript → summary (tool-less model) → `data/recaps/*.md`, share with the Party |
 | `app.py` | `build_node` wiring, mounts `/a2a` and the dashboard |
 | `config.py`, `db.py`, `files.py`, `naming.py`, `cli.py` | Settings, engine + column migration, files, IDs, CLI |

@@ -12,12 +12,14 @@ from agentfleet_node.db import Database
 from agentfleet_node.models import (
     Agent,
     Approval,
+    ApprovalStatus,
     AuditLog,
     Conversation,
     ConversationStatus,
     Direction,
     FileRecord,
     Message,
+    Mode,
     Recap,
     utcnow,
 )
@@ -208,6 +210,21 @@ class Store:
             if pending_only:
                 q = q.where(Approval.status == "pending")
             return list(s.exec(q))
+
+    def recover_after_restart(self) -> int:
+        """Waits live in memory (approvals, turns, owner gates), so after a restart nothing can finish them: close
+        pending approvals and mark conversations caught mid-turn as interrupted. Returns how many rows changed."""
+        changed = 0
+        for appr in self.list_approvals(pending_only=True):
+            self.decide_approval(appr.id, ApprovalStatus.TIMED_OUT, "node restarted before a decision")
+            changed += 1
+        stuck = (ConversationStatus.RUNNING, ConversationStatus.AWAITING_APPROVAL, ConversationStatus.AWAITING_OWNER)
+        for conv in self.list_conversations():
+            if conv.status in stuck:
+                self.add_message(conv.id, "system", "The node restarted; this turn was cut off.", kind="status")
+                self.update_conversation(conv.id, status=ConversationStatus.INTERRUPTED, mode=Mode.AUTO)
+                changed += 1
+        return changed
 
     # recaps
 

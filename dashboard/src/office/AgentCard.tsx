@@ -16,6 +16,8 @@ interface Props {
   onOpenChat: (id: string) => void
   /** Open a new private chat with this agent. */
   onMessage: () => void
+  /** Gather a Party hosted by this agent. Undefined when it is already in one. */
+  onParty?: () => void
   onGo: (where: 'desk' | 'pantry' | 'manager') => void
   onSkin: (skin: string) => void
   onSettings: () => void
@@ -71,6 +73,11 @@ export function AgentCard(p: Props) {
           <button className="btn-primary o-message-btn" onClick={p.onMessage}>
             <Icon name="new-chat" />Message {a.name}
           </button>
+          {p.onParty && (
+            <button className="btn o-party-btn" onClick={p.onParty} title="Gather three or more agents around this one to work on a topic">
+              <Icon name="party" />Start a Party
+            </button>
+          )}
           {last && (
             <button className="o-continue" onClick={() => p.onOpenChat(last.id)} title="Open the latest chat">
               <span>Continue{last.peer_agent_id ? ` with ${p.peerName?.(last.peer_agent_id) ?? last.peer_agent_id}` : ''}:</span>

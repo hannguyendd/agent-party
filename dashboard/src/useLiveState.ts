@@ -1,7 +1,7 @@
 // Live dashboard state: REST snapshot + /api/ws event stream folded through one reducer.
 
 import { useCallback, useEffect, useReducer, useRef } from 'react'
-import { api, wsUrl, type Agent, type Approval, type Conversation, type LiveEvent, type Message, type NodeInfo, type OfficeState, type WorldEvent } from './api'
+import { api, wsUrl, type Agent, type Approval, type Conversation, type LiveEvent, type Message, type NodeInfo, type OfficeState, type Recap, type WorldEvent } from './api'
 
 export interface LiveState {
   connected: boolean
@@ -17,6 +17,8 @@ export interface LiveState {
   office: OfficeState | null
   /** Last error the world server sent back for one of our actions. */
   officeError: string | null
+  /** Recaps made or updated since this tab opened (`recap` events); panels fetch older ones themselves. */
+  recaps: Record<string, Recap>
 }
 
 type Action =
@@ -37,6 +39,7 @@ const initial: LiveState = {
   approvals: {},
   office: null,
   officeError: null,
+  recaps: {},
 }
 
 const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]))
@@ -115,6 +118,8 @@ function applyEvent(s: LiveState, e: LiveEvent): LiveState {
       return { ...s, approvals: { ...s.approvals, [e.approval.id]: e.approval } }
     case 'office':
       return applyWorld(s, e.event)
+    case 'recap':
+      return { ...s, recaps: { ...s.recaps, [e.recap.id]: e.recap } }
   }
 }
 
@@ -126,7 +131,11 @@ function applyWorld(s: LiveState, e: WorldEvent): LiveState {
   if (e.type !== 'link' && !o.connected) return applyWorld({ ...s, office: { ...o, enabled: true, connected: true } }, e)
   switch (e.type) {
     case 'snapshot':
-      return { ...s, office: { ...o, enabled: true, connected: true, desks: e.desks, owners: e.owners, agents: e.agents, desk_ids: e.desk_ids, skins: e.skins } }
+      return { ...s, office: { ...o, enabled: true, connected: true, desks: e.desks, owners: e.owners, agents: e.agents, parties: e.parties ?? [], desk_ids: e.desk_ids, skins: e.skins } }
+    case 'party':
+      return { ...s, office: { ...o, parties: [...(o.parties ?? []).filter((p) => p.party_id !== e.party.party_id), e.party] } }
+    case 'party_ended':
+      return { ...s, office: { ...o, parties: (o.parties ?? []).filter((p) => p.party_id !== e.party_id) } }
     case 'desks':
       return { ...s, office: { ...o, desks: e.desks } }
     case 'owners':

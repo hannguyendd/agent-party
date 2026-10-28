@@ -11,6 +11,7 @@ import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
 import { ConversationPanel } from './ConversationPanel'
 import { NewChatPanel } from './NewChatPanel'
+import { PartyPanel } from './PartyPanel'
 import { markSeen } from './seen'
 import { ACTIVE_STATUSES } from './status'
 import { who } from './people'
@@ -98,6 +99,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   const [wide, setWide] = useState(false)
   // A private chat with one of my agents that has no messages yet (opened from the agent card).
   const [newChat, setNewChat] = useState<string | null>(null)
+  // A Party being gathered around one of my agents (its Host), before it starts.
+  const [newParty, setNewParty] = useState<string | null>(null)
   useEffect(() => { if (view.side) setSide(view.side) }, [view.side])
   const [notifyPerm, setNotifyPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'denied'))
   const incoming = Object.values(state.approvals).filter(a => a.status === 'pending' && a.tool_name === 'Assignment')
@@ -146,9 +149,14 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
       const live = c ? (partial[c.id] ?? '').slice(-60).trim() : ''
       return [a.agent_id, live ? '…' + live : '…']
     })),
-    icons: Object.fromEntries(agents.filter(a => a.activity?.status === 'awaiting_approval').map(a => [a.agent_id, '!'])), pickingDesk,
+    // '!' (waiting for an approval) wins over the Party Host's 🎉.
+    icons: {
+      ...Object.fromEntries((office?.parties ?? []).map(p => [p.host, '🎉'])),
+      ...Object.fromEntries(agents.filter(a => a.activity?.status === 'awaiting_approval').map(a => [a.agent_id, '!'])),
+    },
+    pickingDesk,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [me, agents, desks, isPreview, office?.owners, pickingDesk, partial, state.conversations])
+  }), [me, agents, desks, isPreview, office?.owners, office?.parties, pickingDesk, partial, state.conversations])
 
   // The contact-policy switch flips at once and saves in the background. It doesn't go through perform(), whose
   // busy flag disabled every button on the card for the round trip (the card seemed to re-render).
@@ -180,7 +188,11 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
     onSelect: ids => setSelected(prev => prev.join() === ids.join() ? prev : ids),
     onMove: move, onPeerClick: setPeer,
     // Gather-style: stopping next to someone opens their menu; walking away closes a menu that opened this way.
-    onNearby: click => setPeer(prev => click ?? (prev?.auto ? null : prev)),
+    // Party members stand around their Host on purpose: don't pop the menu between agents of the same Party.
+    onNearby: click => {
+      const together = click && (office?.parties ?? []).some(p => [p.host, ...p.members].includes(click.agentId) && selected.some(id => [p.host, ...p.members].includes(id)))
+      if (!together) setPeer(prev => click ?? (prev?.auto ? null : prev))
+    },
     onDeskPick: id => {
       if (isPreview) { setDemoDesks({ [id]: 'preview' }); setPickingDesk(false) }
       else void perform(async () => { await api.claimDesk(id); setPickingDesk(false) })
@@ -268,7 +280,15 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
       </div>
 
       <aside className="office-roster">
-        {newChat && !conv ? (
+        {newParty && !conv ? (
+          <PartyPanel
+            key={newParty}
+            state={state}
+            hostId={newParty}
+            onBack={() => setNewParty(null)}
+            onCreated={id => { setNewParty(null); setOpenConv(id) }}
+          />
+        ) : newChat && !conv ? (
           <NewChatPanel
             key={newChat}
             state={state}
@@ -319,7 +339,9 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           canAct={canAct && !busy}
           preview={isPreview}
           onOpenChat={openChat}
-          onMessage={() => { setPeer(null); setOpenConv(null); setNewChat(picked.agent_id) }}
+          onMessage={() => { setPeer(null); setOpenConv(null); setNewParty(null); setNewChat(picked.agent_id) }}
+          onParty={isPreview || (office?.parties ?? []).some(p => p.host === picked.agent_id || p.members.includes(picked.agent_id)) ? undefined
+            : () => { setPeer(null); setOpenConv(null); setNewChat(null); setNewParty(picked.agent_id) }}
           // Spots inside each room on the map art; the scene snaps to the nearest tile it can reach.
           onGo={where => where === 'desk' ? sceneRef.current?.sendSelectedHome() : sceneRef.current?.goToPlace(where === 'pantry' ? { x: 46, y: 8 } : { x: 47, y: 21 })}
           onSkin={skin => isPreview ? setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin } : a)) : void perform(() => api.setSkin(picked.agent_id, skin))}

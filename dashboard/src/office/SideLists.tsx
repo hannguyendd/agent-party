@@ -19,8 +19,9 @@ const CHAT_TABS: { id: ChatTab; icon: string; label: string; empty: string }[] =
   { id: 'outgoing', icon: '↗', label: 'Outgoing', empty: "Nothing yet. Your agents' questions and tasks to other agents show up here." },
   { id: 'incoming', icon: '↘', label: 'Incoming', empty: "Nothing yet. When someone's agent asks one of yours, it shows up here." },
 ]
-const tabOf = (c: { direction: string }): ChatTab =>
-  c.direction === 'local' ? 'private' : c.direction === 'outbound' ? 'outgoing' : 'incoming'
+// A Party I host goes with Outgoing (my agent reaches out to members); a shared copy arrives, so Incoming.
+const tabOf = (c: { direction: string; kind?: string }): ChatTab =>
+  c.kind === 'party' ? 'outgoing' : c.kind === 'party_share' ? 'incoming' : c.direction === 'local' ? 'private' : c.direction === 'outbound' ? 'outgoing' : 'incoming'
 
 export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string; onOpen: (id: string) => void }) {
   const [q, setQ] = useState('')
@@ -98,7 +99,11 @@ export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string;
             // Only states worth attention get a chip; idle/done rows stay quiet.
             const loud = st.tone === 'run' || st.tone === 'wait' || st.tone === 'err'
             const kind =
-              c.kind === 'assignment'
+              c.kind === 'party'
+                ? { icon: '🎉', label: 'Party you host' }
+                : c.kind === 'party_share'
+                  ? { icon: '📜', label: 'Shared Party (read only)' }
+                  : c.kind === 'assignment'
                 ? { icon: '📋', label: 'Assignment' }
                 : c.kind === 'inquiry'
                   ? { icon: '🔎', label: 'Question' }

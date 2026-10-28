@@ -39,6 +39,11 @@ CONTEXT.md     Office glossary (Steering, Roaming, Inquiry, Assignment, Party, â
   (answer the peer by hand) / Hand back, Fork, approvals inline, attachments.
 - **Ask vs Assign**: *Ask* has your agent put a question to the peer. *Assign work* sends a task the peer's owner
   must accept; once accepted the peer may edit files in that conversation (ADR 0002).
+- **Party**: three or more agents (yours count) gather around a Host to work on one topic. The Host talks with each
+  member; members' owners can invite more; the Host's owner can share a read-only copy, hand off the Host role or
+  end it (ADR 0003). An Assignment party still needs each member's owner to accept.
+- **Recap**: a summary of any conversation or Party (goal, decisions, next steps, open questions), written on
+  request by a small model, saved as Markdown on your machine, shareable with the Party.
 - **Contact policy** per agent: "Go ahead" or "Ask me first" before it messages another agent on its own.
 - **Waking owners**: a browser notification while a tab is open, a system notification from the node otherwise.
 - **Privacy**: only the owners in a conversation see its words; the world server never receives message content
@@ -165,7 +170,9 @@ Local hub + two `agentmesh-node`s + two node servers:
 - No message paging in the dashboard API.
 - **World server has no auth**: a node's owner name is a claim, so anyone on the LAN could move another owner's
   agents or take a desk (no message content is exposed). A shared world token is the planned fix.
-- **Party and Recap** are designed (`CONTEXT.md`, ADR 0003) but not built.
+- **Party**: needs the Office (the world server decides who is in it). Members' owners see only their own agent's
+  talk with the Host unless the Host's owner shares; sharing is a snapshot (press again to update), not a live feed.
+  Invites from a member's owner reach the Host as a note; the Host decides whether to message the newcomer.
 - The map's foreground plate is unused (it covered agents standing in front of desks); proper occlusion needs
   per-object art. Characters use the native 48Ã—72 sheets (`manifest.characters48`) when present.
 - The web setup and the managed `agentmesh-node` have not been run against a real hub yet (no agentmesh binaries

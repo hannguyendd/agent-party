@@ -26,7 +26,9 @@
     tones), `seen.ts` (per-browser "seen" marks for unread dots), `people.ts` (`who()`: display name / owner / skin),
     `SettingsView.tsx`, `SetupView.tsx` + `SetupForm.tsx` (first-run join page; the form is reused in Settings),
     `Onboarding.tsx` (guide over the map; its step is derived from state in `OfficeView`, and "+ New agent" opens
-    its short agent form alone).
+    its short agent form alone), `PartyPanel.tsx` (gather a Party), `PartyBar.tsx` (party controls inside a
+    conversation, by role), `RecapList.tsx` (recaps of the open conversation), `trim.ts` (portraits cropped to
+    their visible pixels for avatars).
   - Art comes from `public/office/manifest.json` (Codex; see `docs/office/`). Don't hard-code art; add a manifest key.
   - `office.css` scopes the pastel theme to `.office-view` and maps the shared tokens (`--panel`, `--muted`, …) so
     shared components (`ApprovalCard`, `AgentForm`, `Directory`) match it without their own restyle.
