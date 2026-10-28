@@ -257,11 +257,6 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
             onAdvanced={() => { setQuickAgent(false); go({ kind: 'settings', section: 'agents', agentId: 'new' }) }}
           />
         )}
-        <div className="office-zoom" aria-label="Zoom">
-          <button className="o-btn" aria-label="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}>−</button>
-          <button className="o-btn" aria-label="Fit office" onClick={() => sceneRef.current?.fitCamera()}><Icon name="fit" size={32} /></button>
-          <button className="o-btn" aria-label="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}>+</button>
-        </div>
         {peer && agents.some(a => a.agent_id === peer.agentId) && (
           <PeerMenu
             click={peer}
@@ -373,6 +368,12 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
       {ownDesk && <span>Desk {ownDesk}</span>}
       {!isPreview && <button className="office-foot-link" onClick={() => { setOpenConv(null); setSide('chats') }}>{activeChats} active chat{activeChats === 1 ? '' : 's'}</button>}
       {!isPreview && pendingApprovals.length > 0 && <button className="office-foot-link is-alert" onClick={() => { setOpenConv(null); setSide('approvals') }}>{pendingApprovals.length} waiting for you</button>}
+      {/* Zoom lives in the status bar, not over the map's floor. */}
+      <div className="office-zoom" aria-label="Zoom">
+        <button className="o-mini-btn" aria-label="Zoom out" title="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}>−</button>
+        <button className="o-mini-btn" aria-label="Fit office" title="Fit the whole office" onClick={() => sceneRef.current?.fitCamera()}><Icon name="fit" /></button>
+        <button className="o-mini-btn" aria-label="Zoom in" title="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}>+</button>
+      </div>
       <span className="office-keys"><Icon name="keyboard" /><kbd>WASD</kbd> walk · <kbd>E</kbd> talk · <kbd>H</kbd> desk · <kbd>F</kbd> follow · scroll to zoom</span>
     </footer>
   </section>

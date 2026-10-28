@@ -1011,3 +1011,8 @@ a.o-file:hover { border-color: var(--o-line); }
 .office-update:hover:not(:disabled) { background: #f6d277; }
 .office-update.updating { opacity: .8; cursor: progress; }
 .office-update.failed { background: #f8d9cf; border-color: #c4583a; color: #7a3b25; }
+
+/* zoom buttons in the status bar */
+.office-footer .office-zoom { position: static; display: inline-flex; gap: 4px; margin-left: auto; }
+.office-footer .office-zoom button { width: 28px; height: 24px; padding: 0; justify-content: center; font-family: var(--o-pixel); font-size: 16px; line-height: 1; }
+.office-footer .office-zoom + .office-keys { margin-left: 8px; }
