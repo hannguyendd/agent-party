@@ -494,6 +494,11 @@ def create_world_app(data_path: Path | None = None, downloads: Path | None = Non
 
     admin_dir = data_path.parent if data_path else Path("./data")
     app.state.admin = AdminConfig(admin_dir, hub_data, hub_port, downloads, agentmesh_one)
+    # The organization name set on the admin page is kept; a name on the command line replaces it.
+    if org.strip():
+        app.state.admin.save_settings(org=hub.state.org)
+    else:
+        hub.state.org = app.state.admin.saved.get("org", "")
     app.include_router(admin_router(app.state.admin, hub, latest_wheel, latest_build))
 
     # Staff machines install from here: `curl -fsSL http://<server>:7500/install | bash`. The script and the

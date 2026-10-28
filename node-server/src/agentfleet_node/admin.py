@@ -12,7 +12,6 @@ the rest of v1.
 import hashlib
 import hmac
 import json
-import os
 import secrets
 import shutil
 import subprocess
@@ -43,6 +42,16 @@ class InviteIn(BaseModel):
     device: str = Field(min_length=1, max_length=80)
 
 
+class SettingsIn(BaseModel):
+    org: str = Field(default="", max_length=60)
+    hub_data: str = Field(default="", max_length=500)
+    agentmesh_one: str = Field(default="", max_length=500)
+
+
+class KeyIn(BaseModel):
+    key: str = Field(min_length=8, max_length=100)
+
+
 class AdminConfig:
     def __init__(self, data_dir: Path, hub_data: Path | None, hub_port: int, downloads: Path | None,
                  agentmesh_one: str | None = None):
@@ -57,7 +66,30 @@ class AdminConfig:
             key_file.write_text(secrets.token_urlsafe(12) + "\n")
             key_file.chmod(0o600)
         self.key = key_file.read_text().strip()
+        self.key_file = key_file
         self.invites_file = data_dir / "invites.json"
+        # Settings made on the admin page win over the command line (so `make server` needs no parameters).
+        self.settings_file = data_dir / "server.json"
+        self.saved = self._load_settings()
+        if self.saved.get("hub_data"):
+            self.hub_data = Path(self.saved["hub_data"]).expanduser().resolve()
+        if self.saved.get("agentmesh_one"):
+            self.agentmesh_one = self.saved["agentmesh_one"]
+
+    def _load_settings(self) -> dict:
+        try:
+            return json.loads(self.settings_file.read_text())
+        except (OSError, ValueError):
+            return {}
+
+    def save_settings(self, **values: str) -> None:
+        self.saved.update(values)
+        self.settings_file.write_text(json.dumps(self.saved, indent=2))
+
+    def set_key(self, key: str) -> None:
+        self.key = key.strip()
+        self.key_file.write_text(self.key + "\n")
+        self.key_file.chmod(0o600)
 
     def exe(self) -> str | None:
         if self.agentmesh_one:
@@ -67,13 +99,13 @@ class AdminConfig:
     def invite_problem(self) -> str | None:
         """Why invites can't be made here, precisely enough to fix it; None when they can."""
         if not self.exe():
-            where = self.agentmesh_one or "PATH"
-            return (f"agentmesh-one was not found ({where}). The office server looks it up in its own PATH: "
-                    f"{os.environ.get('PATH', '')}. Start it from a shell where `agentmesh-one` works, or pass "
-                    "--agentmesh-one /full/path (make server AGENTMESH_ONE=/full/path).")
+            if self.agentmesh_one:
+                return f"agentmesh-one was not found at {self.agentmesh_one}. Fix the path under Server settings below."
+            return ("agentmesh-one is not on the office server's PATH. Set its full path under Server settings below "
+                    "(in a terminal on this machine, `which agentmesh-one` prints it).")
         if self.hub_data is None or not self.hub_data.is_dir():
-            return (f"the hub's data folder {self.hub_data} does not exist. Point the office server at the folder the "
-                    "hub uses (--hub-data, make server HUB_DATA=/path; hub/start-hub.sh uses hub/data by default).")
+            return (f"the hub's data folder {self.hub_data} does not exist. Set the folder the hub uses under Server "
+                    "settings below (hub/start-hub.sh uses hub/data by default).")
         if not (self.hub_data / "admin-token").exists():
             return f"{self.hub_data} has no admin-token: is it really the hub's data folder, and has the hub started once?"
         return None
@@ -153,12 +185,35 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
             "platforms": [{"name": n, "file": f, "ready": f in files} for n, f in PLATFORMS.items()],
             "can_invite": cfg.invite_problem() is None,
             "invite_problem": cfg.invite_problem(),
+            "settings": {"org": s.org, "hub_data": str(cfg.hub_data or ""), "agentmesh_one": cfg.agentmesh_one or "",
+                         "agentmesh_one_found": cfg.exe() or ""},
             "owners": s.owners_view(),
             "agents": [{"agent_id": a.agent_id, "owner": a.owner, "name": a.name} for a in s.agents.values()],
             "desks": s.desks,
             "parties": len(s.parties),
             "invites": cfg.invites()[:50],
         }
+
+    @r.post("/admin/api/settings")
+    async def settings(body: SettingsIn, request: Request) -> dict[str, Any]:
+        """Organization name (every Office shows "<org> Office" at once), hub data folder, agentmesh-one path."""
+        need_admin(request)
+        org = body.org.strip()[:60]
+        cfg.hub_data = Path(body.hub_data.strip()).expanduser().resolve() if body.hub_data.strip() else cfg.hub_data
+        cfg.agentmesh_one = body.agentmesh_one.strip() or None
+        cfg.save_settings(org=org, hub_data=str(cfg.hub_data or ""), agentmesh_one=cfg.agentmesh_one or "")
+        if org != hub.state.org:
+            hub.state.org = org
+            await hub.broadcast([{"type": "org", "org": org}])
+        return {"ok": True, "invite_problem": cfg.invite_problem()}
+
+    @r.post("/admin/api/key")
+    def change_key(body: KeyIn, request: Request, response: Response) -> dict[str, bool]:
+        """A new admin key; this browser stays signed in, others must enter the new one."""
+        need_admin(request)
+        cfg.set_key(body.key)
+        response.set_cookie(COOKIE, cfg.cookie_value(), httponly=True, samesite="strict", max_age=30 * 24 * 3600)
+        return {"ok": True}
 
     @r.post("/admin/api/invites")
     def invite(body: InviteIn, request: Request) -> dict[str, Any]:

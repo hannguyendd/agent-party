@@ -11,7 +11,8 @@ NODE_DIR := node-server
 DASH_DIR := dashboard
 HUB_DIR  := hub
 
-HUB_HOST ?=
+# This machine's LAN address unless given (macOS: en0/en1; Linux: first address).
+HUB_HOST ?= $(shell ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I 2>/dev/null | awk '{print $$1}')
 HUB_PORT ?= 7400
 HUB_URL  ?= http://$(if $(HUB_HOST),$(HUB_HOST),127.0.0.1):$(HUB_PORT)
 DEVICE   ?=
@@ -44,8 +45,9 @@ up: ## Run this machine's node (dashboard + agents + mesh connection) at http://
 
 # admin: the always-on team machine
 
-server: bundle ## Run hub + Office world server and serve the staff installer (HUB_HOST=<LAN IP> ORG="Taggle")
-	@test -n "$(HUB_HOST)" || { echo "usage: make server HUB_HOST=<fixed LAN IP or hostname>"; exit 1; }
+server: bundle ## Run hub + Office world server + staff installer; settings live on the admin page (/admin)
+	@test -n "$(HUB_HOST)" || { echo "Could not find this machine's LAN address; run: make server HUB_HOST=<LAN IP>"; exit 1; }
+	@echo "Server address: $(HUB_HOST) (detected; override with HUB_HOST=...)"
 	@echo "Admin page (invite staff, see who is online): http://$(HUB_HOST):$(WORLD_PORT)/admin"
 	@echo "Staff install (macOS/Linux): curl -fsSL http://$(HUB_HOST):$(WORLD_PORT)/install | bash"
 	@echo "Staff install (Windows, PowerShell): irm http://$(HUB_HOST):$(WORLD_PORT)/install.ps1 | iex"

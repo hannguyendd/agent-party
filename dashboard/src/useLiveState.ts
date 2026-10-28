@@ -144,6 +144,8 @@ function applyWorld(s: LiveState, e: WorldEvent): LiveState {
       return { ...s, office: { ...o, enabled: true, connected: true, org: e.org ?? o.org, desks: e.desks, owners: e.owners, agents: e.agents, parties: e.parties ?? [], usage: e.usage ?? o.usage, desk_ids: e.desk_ids, skins: e.skins } }
     case 'party':
       return { ...s, office: { ...o, parties: [...(o.parties ?? []).filter((p) => p.party_id !== e.party.party_id), e.party] } }
+    case 'org':
+      return { ...s, office: { ...o, org: e.org } }
     case 'usage':
       return { ...s, office: { ...o, usage: { ...(o.usage ?? {}), [e.owner]: e.usage } } }
     case 'party_ended':

@@ -226,6 +226,7 @@ export interface Recap {
 export type WorldEvent =
   | { type: 'snapshot'; org?: string; usage?: Record<string, PlanUsage>; desks: Record<string, string>; owners: Record<string, OfficeOwner>; agents: OfficeAgent[]; parties?: Party[]; desk_ids: string[]; skins: string[] }
   | { type: 'usage'; owner: string; usage: PlanUsage }
+  | { type: 'org'; org: string }
   | { type: 'party'; party: Party; joined?: string; left?: string; handed_off_from?: string }
   | { type: 'party_ended'; party_id: string; host: string; members: string[]; reason: 'closed' | 'host_offline' }
   | { type: 'desks'; desks: Record<string, string> }

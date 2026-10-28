@@ -71,3 +71,23 @@ def test_invite_problems_are_specific(tmp_path, monkeypatch):
     (tmp_path / "admin-token").write_text("t")
     app = create_world_app(tmp_path / "w4" / "world.json", None, "", tmp_path, 7400, agentmesh_one=str(exe))
     assert app.state.admin.invite_problem() is None
+
+
+def test_settings_from_the_admin_page_are_kept_and_the_org_reaches_every_office(tmp_path, monkeypatch):
+    fake_agentmesh_one(tmp_path, monkeypatch)
+    app = admin_app(tmp_path)
+    c = TestClient(app)
+    key = (tmp_path / "world" / "admin-key").read_text().strip()
+    c.post("/admin/api/login", json={"key": key})
+    hub = tmp_path / "hub-data"
+    r = c.post("/admin/api/settings", json={"org": "Acme", "hub_data": str(hub), "agentmesh_one": ""})
+    assert r.status_code == 200 and r.json()["invite_problem"] is None
+    assert app.state.hub.state.org == "Acme"
+    # A restart without --org keeps the name chosen on the admin page.
+    again = create_world_app(tmp_path / "world" / "world.json", tmp_path / "downloads", "", None, 7400)
+    assert again.state.hub.state.org == "Acme" and again.state.admin.hub_data == hub.resolve()
+    # Changing the key keeps this browser signed in and locks out the old key.
+    assert c.post("/admin/api/key", json={"key": "a-new-key-123"}).status_code == 200
+    assert c.get("/admin/api/overview").json()["locked"] is False
+    other = TestClient(app)
+    assert other.post("/admin/api/login", json={"key": key}).status_code == 401

@@ -135,6 +135,8 @@ class WorldClient:
             m["parties"][ev["party"]["party_id"]] = ev["party"]
         elif t == "party_ended":
             m["parties"].pop(ev.get("party_id"), None)
+        elif t == "org":
+            m["org"] = ev.get("org", "")
         elif t == "usage":
             m["usage"][ev.get("owner", "")] = ev.get("usage", {})
         self.bus.publish({"type": "office", "event": ev})

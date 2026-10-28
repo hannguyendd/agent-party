@@ -11,6 +11,8 @@
   :root { --bg: #f9eadc; --panel: #fefaf2; --panel-2: #fde9d7; --ink: #2c283c; --muted: #71799a; --line: #48506c;
     --soft: #d7cecf; --mint: #9dd6b7; --mint-ink: #2f6b4a; --coral: #c4583a; --gold: #f2c45a; color-scheme: light; }
   * { box-sizing: border-box; margin: 0; }
+  [hidden] { display: none !important; }
+  [hidden] { display: none !important; }
   body { background: var(--bg); color: var(--ink); font: 14px/1.5 Nunito, ui-sans-serif, system-ui, sans-serif; }
   header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #48506c; color: #fdf3e6; }
   header h1 { font: 600 20px Fredoka, sans-serif; }
@@ -24,6 +26,10 @@
   label { display: block; font-weight: 800; font-size: 13px; margin-bottom: 4px; }
   input { width: 100%; padding: 8px 10px; font: inherit; border: 2px solid var(--line); border-radius: 6px; background: #fff; }
   .row { display: flex; gap: 8px; align-items: flex-end; }
+  .settings { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .settings .row { grid-column: 1 / -1; align-items: center; }
+  .settings .note { margin: 4px 0 0; font-size: 12px; }
+  @media (max-width: 760px) { .settings { grid-template-columns: 1fr; } }
   .row > div { flex: 1; }
   button { font: 800 13px Nunito, sans-serif; padding: 8px 14px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel);
     box-shadow: 0 2px 0 var(--line); cursor: pointer; white-space: nowrap; }
@@ -35,7 +41,7 @@
   .kv b { font-size: 12px; color: var(--muted); }
   code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; background: #fff; border: 1px solid var(--soft); border-radius: 4px;
     padding: 4px 6px; overflow-wrap: anywhere; }
-  .err { color: var(--coral); font-weight: 700; font-size: 13px; margin-top: 8px; }
+  .err { color: var(--coral); font-weight: 700; font-size: 13px; margin-top: 8px; overflow-wrap: anywhere; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   td, th { text-align: left; padding: 5px 4px; border-bottom: 1px solid var(--soft); }
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
@@ -92,6 +98,24 @@
   </section>
 
   <section class="card wide">
+    <h2>Server settings <small>saved on this server; make server needs no parameters</small></h2>
+    <form id="settingsForm" class="settings">
+      <div><label for="org">Organization name</label><input id="org" maxlength="60" placeholder="e.g. Taggle" />
+        <p class="note">Every Office shows "&lt;name&gt; Office", right away.</p></div>
+      <div><label for="hubData">Hub data folder</label><input id="hubData" placeholder="…/hub/data" />
+        <p class="note">Where the hub keeps its data (hub/start-hub.sh uses hub/data). Needed to create invites.</p></div>
+      <div><label for="amOne">agentmesh-one</label><input id="amOne" placeholder="leave empty to use PATH" />
+        <p class="note" id="amFound"></p></div>
+      <div class="row"><button class="primary">Save settings</button><span class="note" id="settingsNote"></span></div>
+    </form>
+    <form id="keyForm" class="row" style="margin-top:14px">
+      <div><label for="newKey">Admin key</label><input id="newKey" type="password" minlength="8" placeholder="New admin key (8+ characters)" /></div>
+      <button>Change key</button>
+    </form>
+    <p class="note" id="keyNote"></p>
+  </section>
+
+  <section class="card wide">
     <h2>Invites created <small>tokens are shown once; the list keeps their first letters</small></h2>
     <table><thead><tr><th>Computer</th><th>Created</th><th>Token</th></tr></thead><tbody id="invites"></tbody></table>
   </section>
@@ -125,12 +149,30 @@ async function load() {
     const cls = s.present ? 'on' : s.connected ? 'away' : ''
     return `<tr><td><span class="dot ${cls}"></span>${esc(name)}</td><td>${agents}</td><td>${esc(deskOf[name] || '—')}</td></tr>`
   }).join('') : '<tr><td colspan="3" class="empty">Nobody has joined yet.</td></tr>'
+  if (!$('settingsForm').contains(document.activeElement)) {
+    $('org').value = o.settings.org; $('hubData').value = o.settings.hub_data; $('amOne').value = o.settings.agentmesh_one
+  }
+  $('amFound').textContent = o.settings.agentmesh_one_found ? `Using ${o.settings.agentmesh_one_found}` : 'Not found: set its full path.'
   $('build').textContent = o.build ? `build ${o.build}` : ''
   $('pkg').innerHTML = o.package ? `Package <code>${esc(o.package)}</code> is ready.` : '<span class="miss">No package yet: run make server (or make bundle).</span>'
   $('platforms').innerHTML = o.platforms.map((p) => `<tr><td>${esc(p.name)}</td><td><code>${esc(p.file)}</code></td><td class="${p.ready ? 'ok' : 'miss'}">${p.ready ? 'ready' : 'missing'}</td></tr>`).join('')
   $('invites').innerHTML = o.invites.length ? o.invites.map((i) => `<tr><td>${esc(i.device)}</td><td>${new Date(i.created * 1000).toLocaleString()}</td><td><code>${esc(i.hint)}</code></td></tr>`).join('')
     : '<tr><td colspan="3" class="empty">No invites yet.</td></tr>'
 }
+
+$('settingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('settingsNote').textContent = ''
+  try {
+    const r = await call('/admin/api/settings', { org: $('org').value, hub_data: $('hubData').value, agentmesh_one: $('amOne').value })
+    $('settingsNote').textContent = r.invite_problem ? 'Saved. Invites: ' + r.invite_problem : 'Saved. Invites are ready.'
+    document.activeElement?.blur(); await load()
+  } catch (err) { $('settingsNote').textContent = err.message }
+})
+$('keyForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('keyNote').textContent = ''
+  try { await call('/admin/api/key', { key: $('newKey').value }); $('newKey').value = ''; $('keyNote').textContent = 'Admin key changed.' }
+  catch (err) { $('keyNote').textContent = err.message }
+})
 
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('loginErr').textContent = ''

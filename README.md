@@ -71,7 +71,7 @@ Quick reference (`make help` lists every target):
 
 | Where | Command |
 |---|---|
-| Hub machine (admin) | `make server HUB_HOST=<lan ip> ORG="Taggle"` (hub + Office world server + staff installer), then invite people from **http://&lt;hub ip&gt;:7500/admin** (or `make hub-token DEVICE=…`) |
+| Hub machine (admin) | `make server` (hub + Office world server + staff installer; the LAN address is detected), then everything else on **http://&lt;hub ip&gt;:7500/admin**: organization name, hub paths, invites, who is online |
 | Staff, macOS / Linux | `curl -fsSL http://<hub ip>:7500/install \| bash` |
 | Staff, Windows | in PowerShell: `irm http://<hub ip>:7500/install.ps1 \| iex` |
 | Developer machine | `make setup` once, then `make up` (runs from the repo) |
