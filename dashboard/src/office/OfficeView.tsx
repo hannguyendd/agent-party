@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type Phaser from 'phaser'
 import { api, type OfficeAgent, type OfficeTarget } from '../api'
 import type { LiveState } from '../useLiveState'
 import type { SideTab, View } from '../App'
 import { errMsg } from '../components/format'
-import type { OfficeScene, PeerClick, SceneCallbacks, SceneData } from './OfficeScene'
+import type { MountedRenderer, OfficeRenderer, PeerClick, SceneCallbacks, SceneData } from './renderer'
 import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
@@ -47,7 +46,7 @@ const sampleAgents: OfficeAgent[] = [
 ].map(([id, name, skin, at]) => ({ agent_id: `preview/${id}`, owner: 'preview', name, skin, at, steered: false, activity: null }) as OfficeAgent)
 
 function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
-  data: SceneData; callbacks: SceneCallbacks; sceneRef: React.RefObject<OfficeScene | null>
+  data: SceneData; callbacks: SceneCallbacks; sceneRef: React.RefObject<OfficeRenderer | null>
   onReady: () => void; onError: (message: string) => void
 }) {
   const host = useRef<HTMLDivElement>(null)
@@ -55,32 +54,13 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
   useEffect(() => { latest.current = { data, callbacks, onReady, onError } })
   useEffect(() => {
     let disposed = false
-    let game: Phaser.Game | undefined
-    let observer: ResizeObserver | undefined
-    void Promise.all([import('phaser'), import('./OfficeScene')]).then(([{ default: Phaser }, { OfficeScene }]) => {
+    let mounted: MountedRenderer | undefined
+    void import('./mountPhaser').then(({ mountPhaser }) => {
       if (disposed || !host.current) return
-      const scene = new OfficeScene()
-      sceneRef.current = scene
-      scene.setSceneData(latest.current.data)
-      scene.callbacks = latest.current.callbacks
-      scene.onReady = () => latest.current.onReady()
-      game = new Phaser.Game({
-        type: Phaser.AUTO, parent: host.current, width: host.current.clientWidth, height: host.current.clientHeight,
-        backgroundColor: '#e6ddd8', pixelArt: true, roundPixels: true, antialias: false,
-        scene: [scene], render: { pixelArt: true, antialias: false, roundPixels: true },
-        // We size the canvas ourselves from the host (ResizeObserver below); RESIZE mode kept the old size when
-        // only the host changed (e.g. widening the side column).
-        scale: { mode: Phaser.Scale.NONE },
-        input: { keyboard: { target: host.current } },
-        audio: { noAudio: true },
-      })
-      observer = new ResizeObserver(() => {
-        const w = host.current?.clientWidth, h = host.current?.clientHeight
-        if (w && h && game && (game.scale.width !== w || game.scale.height !== h)) game.scale.resize(w, h)
-      })
-      observer.observe(host.current)
+      mounted = mountPhaser({ host: host.current, data: latest.current.data, callbacks: latest.current.callbacks, onReady: () => latest.current.onReady() })
+      sceneRef.current = mounted.renderer
     }).catch(e => latest.current.onError(errMsg(e)))
-    return () => { disposed = true; observer?.disconnect(); if (sceneRef.current) sceneRef.current.callbacks = null; sceneRef.current = null; game?.destroy(true) }
+    return () => { disposed = true; sceneRef.current = null; mounted?.destroy() }
   }, [sceneRef])
   useEffect(() => { sceneRef.current?.setSceneData(data) }, [data, sceneRef])
   useEffect(() => { if (sceneRef.current) sceneRef.current.callbacks = callbacks }, [callbacks, sceneRef])
@@ -148,7 +128,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
     return () => clearTimeout(t)
   }, [notice])
   const [ready, setReady] = useState(false)
-  const sceneRef = useRef<OfficeScene | null>(null)
+  const sceneRef = useRef<OfficeRenderer | null>(null)
   const agents = isPreview ? demo : office?.agents ?? EMPTY_AGENTS
   const me = isPreview ? 'preview' : office?.owner ?? state.node?.owner ?? ''
   const desks = isPreview ? demoDesks : office?.desks ?? EMPTY_DESKS

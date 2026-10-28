@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { api, type Conversation, type OfficeAgent, type PlanUsage } from '../api'
 import { errMsg } from '../components/format'
-import type { PeerClick } from './OfficeScene'
+import type { PeerClick } from './renderer'
 import { Icon } from './Icon'
 import { ownerCss } from './skins'
 import { UsageMeters } from './Usage'

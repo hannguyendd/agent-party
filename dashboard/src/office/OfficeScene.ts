@@ -4,7 +4,7 @@
 // Pastel art objects and characters are loaded from public/office/manifest.json.
 
 import Phaser from 'phaser'
-import type { OfficeAgent, OfficeOwner, OfficeTarget } from '../api'
+import type { OfficeAgent, OfficeTarget } from '../api'
 import {
   COLS,
   DESKS,
@@ -21,43 +21,8 @@ import {
 import { blockedRuns, distance, findPath, nearestFree, rebuildGrid } from './pathfind'
 import { renderRoom } from './renderRoom'
 import { CHAR_ANIMS, CHAR_FRAME, CHAR_FRAME_48, CHAR_SCALE, SKIN_BY_ID, ownerHue } from './skins'
+import { REACH, type OfficeRenderer, type PeerClick, type SceneCallbacks, type SceneData } from './renderer'
 
-export interface SceneData {
-  me: string
-  agents: OfficeAgent[]
-  desks: Record<string, string>
-  owners: Record<string, OfficeOwner>
-  /** Short text above an agent (own conversations: live text; others: "…"). */
-  bubbles: Record<string, string>
-  /** Status emoji above an agent. */
-  icons: Record<string, string>
-  pickingDesk: boolean
-}
-
-export interface PeerClick {
-  agentId: string
-  screen: Point
-  /** My agents standing within reach of the clicked agent. */
-  reachableBy: string[]
-  /** Opened by proximity rather than a click; closes when the agents part. */
-  auto?: boolean
-}
-
-export interface SceneCallbacks {
-  onSelect: (ids: string[]) => void
-  onMove: (agentId: string, at: OfficeTarget) => void
-  onPeerClick: (click: PeerClick) => void
-  onDeskPick: (deskId: string) => void
-  /** Clicked a desk someone already claimed while picking. */
-  onDeskTaken: (deskId: string, owner: string) => void
-  onOpenAgent: (agentId: string) => void
-  /** My agent stopped next to someone else's (or walked away: null). Gather-style proximity menu. */
-  onNearby: (click: PeerClick | null) => void
-  /** The owner walked their agent to the entrance door and stopped there: offer to go home (offline). */
-  onDoor?: (agentId: string) => void
-}
-
-export const REACH = 2 // tiles; CONTEXT.md "Within reach"
 // Movement feel (pixels per second). Agents accelerate and brake instead of snapping between tiles.
 const WALK_SPEED = 150
 const ACCEL = 1100
@@ -139,7 +104,7 @@ function crisp<T extends Phaser.GameObjects.Text>(t: T, value?: string): T {
 }
 const ownerColor = (owner: string) => Phaser.Display.Color.HSLToColor(ownerHue(owner) / 360, 0.7, 0.5).color
 
-export class OfficeScene extends Phaser.Scene {
+export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
   private data_: SceneData = { me: '', agents: [], desks: {}, owners: {}, bubbles: {}, icons: {}, pickingDesk: false }
   private sprites = new Map<string, AgentSprite>()
   private selected = new Set<string>()

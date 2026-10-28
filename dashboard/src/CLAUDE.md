@@ -17,7 +17,10 @@
   Agent IDs in text (`@han/be`, `han/be`) render as names; list previews use `plainPreview`. Ordinary tool calls
   fold into one "Used N tools" line; `ToolSearch` is hidden; mesh tools render as exchanges.
 - `office/`: the Office.
-  - `OfficeScene.ts`: the Phaser scene. Loads the map plate, `collision.png` (black = blocked, red = seat,
+  - `renderer.ts`: the renderer contract (ADR 0004): `SceneData`, `SceneCallbacks`, `OfficeRenderer` and
+    `MountedRenderer`. `OfficeView` talks to the map only through it, so the 2D and 3D looks are interchangeable.
+    `mountPhaser.ts` mounts the 2D look (a Phaser game sized to its host).
+  - `OfficeScene.ts`: the Phaser scene (the 2D `OfficeRenderer`). Loads the map plate, `collision.png` (black = blocked, red = seat,
     blue = entrance) and `seats.json` from the manifest (`layout.ts` is only the fallback when the map is missing).
     Arcade-physics movement (keyboard driving, smoothed click-to-walk), proximity menu, desk tags, bubbles. It
     reports through `SceneCallbacks` and **never calls the API**; React pushes data in with `setSceneData`.
