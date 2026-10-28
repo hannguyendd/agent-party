@@ -11,6 +11,7 @@ import asyncio
 import contextlib
 import json
 import logging
+from collections.abc import Callable
 from typing import Any
 
 from websockets.asyncio.client import ClientConnection, connect
@@ -29,7 +30,9 @@ class WorldClient:
         self.store = store
         self.bus = bus
         self.connected = False
-        self.mirror: dict[str, Any] = {"desks": {}, "owners": {}, "agents": {}, "desk_ids": [], "skins": []}
+        self.mirror: dict[str, Any] = {"desks": {}, "owners": {}, "agents": {}, "parties": {}, "desk_ids": [], "skins": []}
+        # Called with each Party event from the world (party.PartyService reacts to joins, hand-offs, endings).
+        self.party_listeners: list[Callable[[dict[str, Any]], None]] = []
         self._ws: ClientConnection | None = None
         self._dashboards = 0
         # conv_id -> status-only view, used to work out each agent's current activity
@@ -107,6 +110,7 @@ class WorldClient:
         if t == "snapshot":
             m["desks"], m["owners"] = ev.get("desks", {}), ev.get("owners", {})
             m["agents"] = {a["agent_id"]: a for a in ev.get("agents", [])}
+            m["parties"] = {p["party_id"]: p for p in ev.get("parties", [])}
             m["desk_ids"], m["skins"] = ev.get("desk_ids", []), ev.get("skins", [])
             self.connected = True
         elif t == "desks":
@@ -117,7 +121,17 @@ class WorldClient:
             m["agents"][ev["agent"]["agent_id"]] = ev["agent"]
         elif t == "agent_left":
             m["agents"].pop(ev.get("agent_id"), None)
+        elif t == "party":
+            m["parties"][ev["party"]["party_id"]] = ev["party"]
+        elif t == "party_ended":
+            m["parties"].pop(ev.get("party_id"), None)
         self.bus.publish({"type": "office", "event": ev})
+        if t in ("party", "party_ended"):
+            for listener in self.party_listeners:
+                try:
+                    listener(ev)
+                except Exception:
+                    log.exception("party listener failed")
 
     def view(self) -> dict[str, Any]:
         m = self.mirror
@@ -128,6 +142,7 @@ class WorldClient:
             "desks": m["desks"],
             "owners": m["owners"],
             "agents": list(m["agents"].values()),
+            "parties": list(m["parties"].values()),
             "desk_ids": m["desk_ids"],
             "skins": m["skins"],
         }
@@ -143,6 +158,12 @@ class WorldClient:
         self._dashboards = max(0, self._dashboards - 1)
         if self._dashboards == 0:
             self._spawn_send({"op": "presence", "present": False})
+
+    def party(self, party_id: str) -> dict[str, Any] | None:
+        return self.mirror["parties"].get(party_id)
+
+    def party_of(self, agent_id: str) -> dict[str, Any] | None:
+        return next((p for p in self.mirror["parties"].values() if agent_id == p["host"] or agent_id in p["members"]), None)
 
     async def send(self, op: dict[str, Any]) -> None:
         """Send an owner action; raises when the world server is not reachable."""

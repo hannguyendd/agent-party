@@ -277,11 +277,16 @@ class SessionWorker:
             )
             return result
 
-    async def inject(self, text: str, files: list[dict[str, Any]] | None = None) -> None:
+    async def inject(self, text: str, files: list[dict[str, Any]] | None = None, *, prompt: str | None = None,
+                     note: bool = False) -> None:
         """Owner adds context (optionally with files already saved to the agent's inbox). Mid-turn it is picked up
-        at the agent's next step; when idle it starts a local turn the peer never sees."""
-        self.store.add_message(self.conv_id, "owner", text, **({"files": files} if files else {}))
-        prompt = text
+        at the agent's next step; when idle it starts a local turn the peer never sees. `prompt` replaces what the
+        agent reads (the chat shows `text`); `note` records it as a status line instead of an owner message."""
+        if note:
+            self.store.add_message(self.conv_id, "system", text, kind="status")
+        else:
+            self.store.add_message(self.conv_id, "owner", text, **({"files": files} if files else {}))
+        prompt = prompt or text
         if files:
             paths = ", ".join(f["path"] for f in files)
             prompt = (text + "\n\n" if text else "") + f"Your owner attached files, saved in your working directory: {paths}. Read them as needed."

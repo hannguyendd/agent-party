@@ -150,6 +150,23 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [me, agents, desks, isPreview, office?.owners, pickingDesk, partial, state.conversations])
 
+  // The contact-policy switch flips at once and saves in the background. It doesn't go through perform(), whose
+  // busy flag disabled every button on the card for the round trip (the card seemed to re-render).
+  const [policyDraft, setPolicyDraft] = useState<Record<string, 'auto' | 'ask'>>({})
+  const setContactPolicy = (agentId: string, policy: 'auto' | 'ask') => {
+    const full = state.agents[agentId]
+    if (!full) return
+    setPolicyDraft(d => ({ ...d, [agentId]: policy }))
+    api.saveAgent({ ...full, contact_policy: policy }).catch(e => {
+      setError(errMsg(e))
+      setPolicyDraft(d => { const next = { ...d }; delete next[agentId]; return next })
+    })
+  }
+  // Drop a draft once the saved agent comes back over the live stream.
+  useEffect(() => {
+    const done = Object.keys(policyDraft).filter(id => state.agents[id]?.contact_policy === policyDraft[id])
+    if (done.length) setPolicyDraft(d => Object.fromEntries(Object.entries(d).filter(([id]) => !done.includes(id))))
+  }, [policyDraft, state.agents])
   const perform = async (action: () => Promise<unknown>) => {
     if (!canAct) return
     clearError(); setError(null); setBusy(true)
@@ -307,8 +324,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           onGo={where => where === 'desk' ? sceneRef.current?.sendSelectedHome() : sceneRef.current?.goToPlace(where === 'pantry' ? { x: 46, y: 8 } : { x: 47, y: 21 })}
           onSkin={skin => isPreview ? setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin } : a)) : void perform(() => api.setSkin(picked.agent_id, skin))}
           onSettings={() => go({ kind: 'settings', section: 'agents', agentId: picked.agent_id })}
-          contactPolicy={isPreview ? undefined : (state.agents[picked.agent_id]?.contact_policy ?? 'auto')}
-          onContactPolicy={policy => { const full = state.agents[picked.agent_id]; if (full) void perform(() => api.saveAgent({ ...full, contact_policy: policy })) }}
+          contactPolicy={isPreview ? undefined : (policyDraft[picked.agent_id] ?? state.agents[picked.agent_id]?.contact_policy ?? 'auto')}
+          onContactPolicy={policy => setContactPolicy(picked.agent_id, policy)}
         />}
 
         {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2'].filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}

@@ -48,6 +48,9 @@ class Settings(BaseSettings):
         default_factory=lambda: [".txt", ".md", ".json", ".yaml", ".yml", ".csv", ".log", ".py", ".ts", ".tsx", ".js", ".sql", ".png", ".jpg", ".pdf"]
     )
 
+    # Model that writes Recaps (a summary needs no tools; keep it cheap).
+    recap_model: str = "claude-haiku-5-5"
+
     # Claude CLI path override (default: whatever the SDK finds).
     claude_cli_path: str | None = None
 

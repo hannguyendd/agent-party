@@ -1,6 +1,7 @@
 """Mesh tools given to every agent session, in-process via create_sdk_mcp_server."""
 
 import json
+from collections.abc import Callable
 from typing import Any
 
 from claude_agent_sdk import create_sdk_mcp_server, tool
@@ -20,12 +21,17 @@ def _err(text: str) -> dict[str, Any]:
     return {"content": [{"type": "text", "text": text}], "is_error": True}
 
 
-def make_mesh_tools_factory(settings: Settings, directory: MeshDirectory, outbound: OutboundClient):
+def make_mesh_tools_factory(settings: Settings, directory: MeshDirectory, outbound: OutboundClient,
+                            party_tags: Callable[[str], tuple[str, str]] | None = None):
+    """`party_tags(conversation_id)` gives (party_id, kind) when the session is a Host's party conversation, so its
+    messages to members carry the Party and an Assignment party still needs each member's owner to accept."""
+
     def factory(agent: Agent, worker) -> Any:
         async def _send(args: dict[str, Any], files=None) -> dict[str, Any]:
             to = args.get("to", "")
             if to == agent.id:
                 return _err("You cannot message yourself.")
+            party_id, kind = party_tags(worker.conv_id) if party_tags else ("", "")
             try:
                 res = await outbound.send(
                     from_agent=agent.id,
@@ -34,6 +40,8 @@ def make_mesh_tools_factory(settings: Settings, directory: MeshDirectory, outbou
                     context_id=args.get("context_id") or None,
                     task_id=args.get("task_id") or None,
                     files=files,
+                    kind=kind,
+                    party_id=party_id,
                 )
             except AgentOffline as e:
                 return _err(f"agent offline: {e}")

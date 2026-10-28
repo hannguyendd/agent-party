@@ -1,7 +1,8 @@
 """World server for the Office: one per team, next to the hub (ADR 0001).
 
 It holds only Office state: which owners are present, who claimed which Desk, each agent's Skin and where it is
-heading, and which agents are currently talking (status only). It never sees message content.
+heading, which agents are currently talking (status only) and who is in which Party (Host, members, kind; never
+its topic). It never sees message content.
 
 Clients are node servers, never browsers. Each node connects to ``/world/ws``, says which owner it speaks for,
 and may only act on that owner's agents. The owner claim is not verified (same trust level as the rest of v1 LAN).
@@ -29,6 +30,8 @@ SKINS = ("dev-hoodie", "designer", "lead", "shiba", "cat", "penguin", "alien", "
 # Conversation statuses that mean "these two agents are talking right now".
 ACTIVE_STATUSES = {"running", "awaiting_approval", "awaiting_owner"}
 MAX_TILE = 500
+PARTY_KINDS = ("inquiry", "assignment")
+MIN_PARTY_MEMBERS = 2  # a Party is three or more agents: the Host plus at least two members
 
 
 @dataclass
@@ -43,6 +46,16 @@ class AgentState:
     activity: dict[str, Any] | None = None
 
 
+@dataclass
+class PartyState:
+    """CONTEXT.md "Party": one Host, members talk only with the Host. No topic here (content stays on nodes)."""
+
+    party_id: str
+    host: str
+    members: list[str]
+    kind: str = "inquiry"
+
+
 class WorldState:
     """Pure state + rules, so it can be tested without sockets."""
 
@@ -53,6 +66,7 @@ class WorldState:
         self.agents: dict[str, AgentState] = {}
         self.present: dict[str, int] = {}  # owner -> nodes reporting the owner present
         self.connected: dict[str, int] = {}  # owner -> connected nodes
+        self.parties: dict[str, PartyState] = {}
         self._load()
 
     # persistence: only desk claims and skins survive a restart
@@ -83,6 +97,7 @@ class WorldState:
             "desks": self.desks,
             "owners": self.owners_view(),
             "agents": [asdict(a) for a in self.agents.values()],
+            "parties": [asdict(p) for p in self.parties.values()],
             "desk_ids": list(DESKS),
             "skins": list(SKINS),
         }
@@ -130,6 +145,13 @@ class WorldState:
         if self.agents.pop(agent_id, None) is None:
             return []
         events: list[dict] = [{"type": "agent_left", "agent_id": agent_id}]
+        # The Host dropping offline ends its Party; a member dropping offline just leaves it.
+        for p in list(self.parties.values()):
+            if p.host == agent_id:
+                events += self._end_party(p, "host_offline")
+            elif agent_id in p.members:
+                p.members.remove(agent_id)
+                events.append(self._party_event(p))
         # Anyone walking towards it goes back to their desk.
         for a in self.agents.values():
             if a.at.get("kind") == "near" and a.at.get("agent_id") == agent_id:
@@ -187,13 +209,113 @@ class WorldState:
                 peer = None
         was = a.activity
         a.activity = {"peer": peer, "status": status, "direction": direction} if active else None
-        if direction == "outbound" and peer and peer in self.agents:
+        if direction == "outbound" and peer and peer in self.agents and self.party_of(agent_id) is None:
             if active:
                 # It decided to talk to someone: it walks over, even if its owner had parked it somewhere.
                 a.at, a.steered = {"kind": "near", "agent_id": peer}, False
             elif was is not None and not a.steered:
                 a.at = {"kind": "desk"}
         return [{"type": "agent", "agent": asdict(a)}]
+
+    # parties (CONTEXT.md "Party", ADR 0003)
+
+    def party_of(self, agent_id: str) -> PartyState | None:
+        return next((p for p in self.parties.values() if agent_id == p.host or agent_id in p.members), None)
+
+    def open_party(self, owner: str, party_id: str, host: str, members: list[str], kind: str) -> list[dict]:
+        """The Host's owner gathers a Party: members walk over and stand around the Host."""
+        self._check_owner(owner, host)
+        if not party_id or len(party_id) > 64 or party_id in self.parties:
+            raise ValueError("bad or duplicate party id")
+        if kind not in PARTY_KINDS:
+            raise ValueError(f"unknown party kind {kind!r}")
+        members = list(dict.fromkeys(m for m in members if m != host))
+        if len(members) < MIN_PARTY_MEMBERS:
+            raise ValueError("a Party needs the Host and at least two other agents")
+        for a in [host, *members]:
+            if a not in self.agents:
+                raise ValueError(f"{a} is not in the Office")
+            if self.party_of(a):
+                raise ValueError(f"{a} is already in a Party")
+        p = self.parties[party_id] = PartyState(party_id, host, members, kind)
+        return [self._party_event(p), *self._gather(p, members)]
+
+    def invite(self, owner: str, party_id: str, agent_id: str) -> list[dict]:
+        """Any owner with an agent in the Party can bring another agent in."""
+        p = self._party_for(owner, party_id)
+        if agent_id not in self.agents:
+            raise ValueError(f"{agent_id} is not in the Office")
+        if self.party_of(agent_id):
+            raise ValueError(f"{agent_id} is already in a Party")
+        p.members.append(agent_id)
+        return [self._party_event(p, joined=agent_id), *self._gather(p, [agent_id])]
+
+    def leave(self, owner: str, party_id: str, agent_id: str) -> list[dict]:
+        """A member's owner takes it out. The Host can't just leave: it hands off or ends the Party."""
+        self._check_owner(owner, agent_id)
+        p = self.parties.get(party_id)
+        if p is None or agent_id not in p.members:
+            raise ValueError(f"{agent_id} is not a member of that Party")
+        p.members.remove(agent_id)
+        return [self._party_event(p, left=agent_id), *self._send_home([agent_id])]
+
+    def hand_off(self, owner: str, party_id: str, new_host: str) -> list[dict]:
+        """The Host leaves on purpose: its owner passes the role to a member; the old Host goes back to its desk."""
+        p = self.parties.get(party_id)
+        if p is None:
+            raise ValueError("no such Party")
+        self._check_owner(owner, p.host)
+        if new_host not in p.members:
+            raise ValueError(f"{new_host} is not a member of that Party")
+        old = p.host
+        p.members.remove(new_host)
+        p.host = new_host
+        a = self.agents[new_host]
+        a.at, a.steered = {"kind": "desk"} if a.at.get("kind") == "near" else a.at, False
+        return [self._party_event(p, handed_off_from=old), *self._send_home([old]), {"type": "agent", "agent": asdict(a)},
+                *self._gather(p, p.members)]
+
+    def close_party(self, owner: str, party_id: str) -> list[dict]:
+        p = self.parties.get(party_id)
+        if p is None:
+            return []
+        self._check_owner(owner, p.host)
+        return self._end_party(p, "closed")
+
+    def _party_for(self, owner: str, party_id: str) -> PartyState:
+        p = self.parties.get(party_id)
+        if p is None:
+            raise ValueError("no such Party")
+        if not any(owner_of(a) == owner for a in [p.host, *p.members]):
+            raise PermissionError(f"{owner} has no agent in that Party")
+        return p
+
+    def _end_party(self, p: PartyState, reason: str) -> list[dict]:
+        self.parties.pop(p.party_id, None)
+        return [{"type": "party_ended", "party_id": p.party_id, "host": p.host, "members": p.members, "reason": reason},
+                *self._send_home(p.members)]
+
+    def _gather(self, p: PartyState, ids: list[str]) -> list[dict]:
+        out = []
+        for i in ids:
+            a = self.agents.get(i)
+            if a:
+                a.at, a.steered = {"kind": "near", "agent_id": p.host}, False
+                out.append({"type": "agent", "agent": asdict(a)})
+        return out
+
+    def _send_home(self, ids: list[str]) -> list[dict]:
+        out = []
+        for i in ids:
+            a = self.agents.get(i)
+            if a:
+                a.at, a.steered = {"kind": "desk"}, False
+                out.append({"type": "agent", "agent": asdict(a)})
+        return out
+
+    @staticmethod
+    def _party_event(p: PartyState, **extra: str) -> dict:
+        return {"type": "party", "party": asdict(p), **extra}
 
     # helpers
 
@@ -274,6 +396,19 @@ class WorldHub:
                         events = self.state.set_skin(owner, str(msg.get("agent_id", "")), str(msg.get("skin", "")))
                     elif op == "move":
                         events = self.state.move(owner, str(msg.get("agent_id", "")), dict(msg.get("at") or {}))
+                    elif op == "party_open":
+                        events = self.state.open_party(
+                            owner, str(msg.get("party_id", "")), str(msg.get("host", "")),
+                            [str(m) for m in msg.get("members") or []], str(msg.get("kind", "inquiry")),
+                        )
+                    elif op == "party_invite":
+                        events = self.state.invite(owner, str(msg.get("party_id", "")), str(msg.get("agent_id", "")))
+                    elif op == "party_leave":
+                        events = self.state.leave(owner, str(msg.get("party_id", "")), str(msg.get("agent_id", "")))
+                    elif op == "party_handoff":
+                        events = self.state.hand_off(owner, str(msg.get("party_id", "")), str(msg.get("new_host", "")))
+                    elif op == "party_close":
+                        events = self.state.close_party(owner, str(msg.get("party_id", "")))
                     elif op == "activity":
                         events = self.state.activity(
                             owner, str(msg.get("agent_id", "")), msg.get("peer"),

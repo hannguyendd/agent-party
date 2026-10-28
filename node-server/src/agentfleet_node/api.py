@@ -91,6 +91,21 @@ class AssignIn(BaseModel):
     text: str = Field(min_length=1)
 
 
+class PartyIn(BaseModel):
+    host: str
+    members: list[str] = Field(min_length=2)
+    topic: str = Field(min_length=1, max_length=4000)
+    kind: str = Field(default="inquiry", pattern="^(inquiry|assignment)$")
+
+
+class PartyAgentIn(BaseModel):
+    agent_id: str
+
+
+class HandOffIn(BaseModel):
+    new_host: str
+
+
 class DecisionIn(BaseModel):
     allow: bool
     reason: str = ""
@@ -512,6 +527,96 @@ async def office_assign(body: AssignIn, request: Request) -> dict[str, str]:
             return {"status": "sent", "conversation_id": conv.id}
         await asyncio.sleep(0.05)
     return {"status": "sent", "conversation_id": ""}
+
+
+# parties (CONTEXT.md "Party", ADR 0003)
+
+
+async def _party_call(coro):
+    """Map party.PartyService errors to HTTP answers."""
+    try:
+        return await coro
+    except PermissionError as e:
+        raise HTTPException(403, str(e)) from None
+    except LookupError as e:
+        raise HTTPException(404, str(e)) from None
+    except ConnectionError as e:
+        raise HTTPException(409, str(e)) from None
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from None
+
+
+@router.post("/parties")
+async def open_party(body: PartyIn, request: Request) -> dict[str, Any]:
+    """Gather a Party around one of my agents (the Host); returns the Host's party conversation."""
+    node = _node(request)
+    _own_agent(node, body.host)
+    conv = await _party_call(node.parties.open(body.host, body.members, body.topic.strip(), body.kind))
+    return dump(conv)
+
+
+@router.post("/parties/{party_id}/invite")
+async def party_invite(party_id: str, body: PartyAgentIn, request: Request) -> dict[str, str]:
+    await _party_call(_node(request).parties.invite(party_id, body.agent_id))
+    return {"status": "invited"}
+
+
+@router.post("/parties/{party_id}/leave")
+async def party_leave(party_id: str, body: PartyAgentIn, request: Request) -> dict[str, str]:
+    node = _node(request)
+    _own_agent(node, body.agent_id)
+    await _party_call(node.parties.leave(party_id, body.agent_id))
+    return {"status": "left"}
+
+
+@router.post("/parties/{party_id}/handoff")
+async def party_handoff(party_id: str, body: HandOffIn, request: Request) -> dict[str, str]:
+    await _party_call(_node(request).parties.hand_off(party_id, body.new_host))
+    return {"status": "handed_off"}
+
+
+@router.post("/parties/{party_id}/close")
+async def party_close(party_id: str, request: Request) -> dict[str, str]:
+    await _party_call(_node(request).parties.close(party_id))
+    return {"status": "closed"}
+
+
+@router.post("/parties/{party_id}/share")
+async def party_share(party_id: str, request: Request) -> dict[str, list[str]]:
+    return await _party_call(_node(request).parties.share(party_id))
+
+
+# recaps
+
+
+@router.post("/conversations/{conv_id}/recap")
+async def make_recap(conv_id: str, request: Request) -> dict[str, Any]:
+    """Start a Recap of what this side saw; it is written in the background (watch for `recap` events)."""
+    node = _node(request)
+    _conv_or_404(node, conv_id)
+    try:
+        return dump(node.recaps.start(conv_id))
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from None
+
+
+@router.get("/recaps")
+async def list_recaps(request: Request, conversation_id: str | None = None) -> list[dict[str, Any]]:
+    return [dump(r) for r in _node(request).store.list_recaps(conversation_id)]
+
+
+@router.get("/recaps/{recap_id}/file")
+async def recap_file(recap_id: str, request: Request) -> FileResponse:
+    node = _node(request)
+    recap = node.store.get_recap(recap_id)
+    if recap is None or not recap.path or not Path(recap.path).is_file():
+        raise HTTPException(404, "no such recap file")
+    return FileResponse(recap.path, media_type="text/markdown", filename=Path(recap.path).name)
+
+
+@router.post("/recaps/{recap_id}/share")
+async def share_recap(recap_id: str, request: Request) -> dict[str, list[str]]:
+    return await _party_call(_node(request).recaps.share(recap_id))
 
 
 # Keep references to fire-and-forget tasks so they are not garbage-collected mid-flight.

@@ -16,6 +16,8 @@ from agentfleet_node.mesh_tools import make_mesh_tools_factory
 from agentfleet_node.meshproc import MeshNodeProcess
 from agentfleet_node.notify import os_notify
 from agentfleet_node.office import WorldClient
+from agentfleet_node.party import PartyService
+from agentfleet_node.recap import RecapService
 from agentfleet_node.sessions import SessionManager
 from agentfleet_node.store import EventBus, Store
 
@@ -33,6 +35,8 @@ class Node:
     gateway: A2AGateway
     world: WorldClient
     meshproc: MeshNodeProcess
+    parties: PartyService
+    recaps: RecapService
 
 
 def build_node(settings: Settings, client_factory: Callable | None = None) -> Node:
@@ -41,9 +45,14 @@ def build_node(settings: Settings, client_factory: Callable | None = None) -> No
     directory = MeshDirectory(settings, store)
     outbound = OutboundClient(settings, store, directory)
     kwargs = {"client_factory": client_factory} if client_factory else {}
-    sessions = SessionManager(settings, store, make_mesh_tools_factory(settings, directory, outbound), **kwargs)
+    holder: list[PartyService] = []  # sessions need the party tags; the party service needs the sessions
+    tools = make_mesh_tools_factory(settings, directory, outbound, party_tags=lambda conv_id: holder[0].tags_for(conv_id))
+    sessions = SessionManager(settings, store, tools, **kwargs)
     gateway = A2AGateway(settings, store, sessions)
     world = WorldClient(settings, store, bus)
+    parties = PartyService(settings, store, sessions, outbound, world)
+    holder.append(parties)
+    gateway.parties = parties
 
     def wake_owner(conv_id: str, approval_id: str, sender: str | None) -> str:
         # An open dashboard notifies through the browser (it receives the approval event); otherwise use the OS.
@@ -56,7 +65,8 @@ def build_node(settings: Settings, client_factory: Callable | None = None) -> No
         return "none"
 
     sessions.wake_owner = wake_owner
-    return Node(settings, bus, store, directory, outbound, sessions, gateway, world, MeshNodeProcess(settings))
+    return Node(settings, bus, store, directory, outbound, sessions, gateway, world, MeshNodeProcess(settings),
+                parties, RecapService(settings, store, parties))
 
 
 def create_app(settings: Settings | None = None, client_factory: Callable | None = None) -> FastAPI:

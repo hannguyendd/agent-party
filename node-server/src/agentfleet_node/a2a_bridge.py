@@ -49,6 +49,12 @@ SENDER_KEY = "agentfleet.from_agent"
 # "inquiry" | "assignment" (CONTEXT.md). A sender claim like SENDER_KEY: only the receiving owner's acceptance
 # widens permissions, so a wrong label gains nothing (ADR 0002).
 KIND_KEY = "agentfleet.kind"
+# Party the message belongs to (a sender claim, used to group conversations on screen).
+PARTY_KEY = "agentfleet.party"
+# Party messages that don't start an ordinary conversation (ADR 0003): a read-only copy of the Party for a member's
+# owner, and the Host role passed to another agent together with the Party transcript.
+PARTY_UPDATE = "party_update"
+PARTY_HANDOFF = "party_handoff"
 
 
 def build_card(settings: Settings, agent: Agent) -> AgentCard:
@@ -88,11 +94,12 @@ def format_prompt(sender: str | None, text: str, saved_files: list[str], rejecte
 
 
 class MeshAgentExecutor(AgentExecutor):
-    def __init__(self, agent_id: str, settings: Settings, store: Store, sessions: SessionManager):
+    def __init__(self, agent_id: str, settings: Settings, store: Store, sessions: SessionManager, parties=None):
         self.agent_id = agent_id
         self.settings = settings
         self.store = store
         self.sessions = sessions
+        self.parties = parties  # party.PartyService; None in setups without the Office
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         msg = context.message
@@ -114,15 +121,31 @@ class MeshAgentExecutor(AgentExecutor):
         except InvalidAgentId:
             sender = None
         text = get_message_text(msg)
-        kind = meta.get(KIND_KEY) if meta.get(KIND_KEY) in (ConversationKind.INQUIRY, ConversationKind.ASSIGNMENT) else ""
+        raw_kind = meta.get(KIND_KEY)
+        kind = raw_kind if raw_kind in (ConversationKind.INQUIRY, ConversationKind.ASSIGNMENT) else ""
+        party_id = str(meta.get(PARTY_KEY) or "")[:64]
 
-        conv = self.store.find_conversation(self.agent_id, task.context_id)
+        if raw_kind == PARTY_UPDATE:
+            # Read-only: stored for the owner to read, no Claude turn (ADR 0003).
+            ok, note = self.parties.receive_update(self.agent_id, sender, party_id, text) if self.parties else (False, "no Office here")
+            reply = up.new_agent_message([Part(text=note)])
+            await (up.complete(reply) if ok else up.reject(reply))
+            return
+        prompt_override = None
+        if raw_kind == PARTY_HANDOFF:
+            try:
+                conv, prompt_override = await self.parties.receive_handoff(self.agent_id, sender, party_id, task.context_id, text)
+            except (PermissionError, AttributeError) as e:
+                await up.reject(up.new_agent_message([Part(text=f"hand-off refused: {e}")]))
+                return
+        else:
+            conv = self.store.find_conversation(self.agent_id, task.context_id)
         if conv is None:
             conv = self.store.create_conversation(
                 agent_id=self.agent_id, context_id=task.context_id, direction=Direction.INBOUND, peer_agent_id=sender, title=text[:80]
             )
-            if kind:
-                conv = self.store.update_conversation(conv.id, kind=kind)
+            if kind or party_id:
+                conv = self.store.update_conversation(conv.id, kind=kind, party_id=party_id)
         self.store.audit("inbound_message", agent_id=self.agent_id, peer_agent_id=sender, context_id=task.context_id, task_id=task.id, chars=len(text))
         if conv.turn_count >= self.settings.max_turns_per_context:
             self.store.add_message(conv.id, "system", "Turn limit reached; message rejected.", kind="status")
@@ -149,7 +172,8 @@ class MeshAgentExecutor(AgentExecutor):
         async def status_hook(note: str) -> None:
             await up.update_status(TaskState.TASK_STATE_WORKING, up.new_agent_message([Part(text=note)]))
 
-        if conv.kind == ConversationKind.ASSIGNMENT and not conv.accepted:
+        needs_accept = conv.kind == ConversationKind.ASSIGNMENT or (prompt_override and self.parties.party_kind(party_id) == "assignment")
+        if needs_accept and not conv.accepted:
             accepted, reason = await self.sessions.request_acceptance(conv.id, sender, text, status_hook)
             self.store.audit("assignment_decided", agent_id=self.agent_id, peer_agent_id=sender, context_id=task.context_id,
                              task_id=task.id, accepted=accepted)
@@ -158,7 +182,8 @@ class MeshAgentExecutor(AgentExecutor):
                 return
 
         try:
-            result = await self.sessions.handle_inbound(conv.id, format_prompt(sender, text, saved_paths, rejected), status_hook)
+            prompt = prompt_override or format_prompt(sender, text, saved_paths, rejected)
+            result = await self.sessions.handle_inbound(conv.id, prompt, status_hook)
         except TurnTimeout as e:
             await up.failed(up.new_agent_message([Part(text=str(e))]))
             return
@@ -192,6 +217,7 @@ class A2AGateway:
         self.settings = settings
         self.store = store
         self.sessions = sessions
+        self.parties = None  # set by build_node
         self._apps: dict[str, Starlette] = {}
 
     def invalidate(self, agent_id: str) -> None:
@@ -202,7 +228,7 @@ class A2AGateway:
         if app is None:
             card = build_card(self.settings, agent)
             handler = DefaultRequestHandler(
-                agent_executor=MeshAgentExecutor(agent.id, self.settings, self.store, self.sessions),
+                agent_executor=MeshAgentExecutor(agent.id, self.settings, self.store, self.sessions, self.parties),
                 task_store=InMemoryTaskStore(),
                 agent_card=card,
             )
@@ -255,6 +281,7 @@ class OutboundClient:
         files: list[tuple[str, bytes, str]] | None = None,
         kind: str = "",
         timeout_s: float | None = None,
+        party_id: str = "",
     ) -> OutboundResult:
         validate_agent_id(to_agent)
         endpoint = await self.directory.resolve(to_agent)  # raises AgentOffline
@@ -263,8 +290,8 @@ class OutboundClient:
         conv = self.store.find_conversation(from_agent, context_id) or self.store.create_conversation(
             agent_id=from_agent, context_id=context_id, direction=Direction.OUTBOUND, peer_agent_id=to_agent, title=text[:80]
         )
-        if kind and not conv.kind:
-            conv = self.store.update_conversation(conv.id, kind=kind)
+        if (kind and not conv.kind) or (party_id and not conv.party_id):
+            conv = self.store.update_conversation(conv.id, kind=conv.kind or kind, party_id=conv.party_id or party_id)
         if conv.turn_count >= self.settings.max_turns_per_context:
             raise RuntimeError(f"turn limit ({self.settings.max_turns_per_context}) reached for context {context_id}")
         self.store.update_conversation(conv.id, turn_count=conv.turn_count + 1, status=ConversationStatus.RUNNING)
@@ -276,7 +303,7 @@ class OutboundClient:
         msg = Message(message_id=uuid.uuid4().hex, role=Role.ROLE_USER, parts=parts, context_id=context_id)
         if task_id:
             msg.task_id = task_id
-        msg.metadata.update({SENDER_KEY: from_agent, **({KIND_KEY: kind} if kind else {})})
+        msg.metadata.update({SENDER_KEY: from_agent, **({KIND_KEY: kind} if kind else {}), **({PARTY_KEY: party_id} if party_id else {})})
 
         headers = self.directory.mesh_headers() if endpoint.via_mesh else {}
         try:
@@ -312,3 +339,26 @@ class OutboundClient:
         )
         self.store.audit("outbound_reply", agent_id=from_agent, peer_agent_id=to_agent, context_id=context_id, task_id=out_task, state=state)
         return OutboundResult(reply=reply.strip(), state=state, context_id=context_id, task_id=out_task, conversation_id=conv.id, files=names)
+
+    async def send_update(self, from_agent: str, to_agent: str, text: str, kind: str, party_id: str,
+                          context_id: str | None = None, timeout_s: float | None = None) -> tuple[str, str]:
+        """A Party message that is not a conversation of ours (a shared copy, a recap, a hand-off): no conversation
+        row on this side, only an audit entry. Returns (state, reply text)."""
+        validate_agent_id(to_agent)
+        endpoint = await self.directory.resolve(to_agent)
+        msg = Message(message_id=uuid.uuid4().hex, role=Role.ROLE_USER, parts=[Part(text=text)], context_id=context_id or uuid.uuid4().hex)
+        msg.metadata.update({SENDER_KEY: from_agent, KIND_KEY: kind, PARTY_KEY: party_id})
+        headers = self.directory.mesh_headers() if endpoint.via_mesh else {}
+        async with httpx.AsyncClient(headers=headers, timeout=httpx.Timeout(timeout_s or 60, connect=10)) as hc:
+            client = await ClientFactory(ClientConfig(httpx_client=hc, streaming=False)).create_from_url(endpoint.url)
+            last = None
+            async for ev in client.send_message(SendMessageRequest(message=msg)):
+                last = ev
+        state, reply = "unknown", ""
+        if last is not None and last.HasField("task"):
+            t = last.task
+            state = TaskState.Name(t.status.state).removeprefix("TASK_STATE_").lower()
+            if t.status.HasField("message"):
+                reply = get_message_text(t.status.message)
+        self.store.audit(kind, agent_id=from_agent, peer_agent_id=to_agent, party_id=party_id, state=state, chars=len(text))
+        return state, reply

@@ -39,6 +39,8 @@ class ConversationKind(StrEnum):
     PLAIN = ""  # dashboard / mesh-tool conversations
     INQUIRY = "inquiry"
     ASSIGNMENT = "assignment"  # needs the receiving owner's acceptance (CONTEXT.md, ADR 0002)
+    PARTY = "party"  # the Host's side of a Party: the owner briefs the Host, the Host talks with each member
+    PARTY_SHARE = "party_share"  # read-only copy of a Party the Host's owner shared (ADR 0003); never runs a turn
 
 
 class Mode(StrEnum):
@@ -92,6 +94,11 @@ class Conversation(SQLModel, table=True):
     # Latest chat line for the conversation list (local only; never sent to the world server).
     last_preview: str = ""
     last_role: str = ""
+    # Party this conversation belongs to: the Host's party conversation, the Host's talks with members, a member's
+    # talk with the Host, or a shared copy. Set from the sender's metadata on the member side (a claim; display only).
+    party_id: str = ""
+    # Host side: the owner shared this Party with the members' owners (late joiners get the backlog too).
+    party_shared: bool = False
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
 
@@ -133,6 +140,24 @@ class FileRecord(SQLModel, table=True):
     path: str
     size: int
     media_type: str = ""
+    created_at: datetime = Field(default_factory=utcnow)
+
+
+class Recap(SQLModel, table=True):
+    """A written summary of a Conversation or Party (CONTEXT.md "Recap"). Kept on this machine as a Markdown file
+    unless its owner shares it with the Party."""
+
+    __tablename__ = "recaps"
+
+    id: str = Field(default_factory=new_id, primary_key=True)
+    conversation_id: str = Field(index=True, foreign_key="conversations.id")
+    agent_id: str
+    party_id: str = ""
+    title: str = ""
+    status: str = "working"  # working | done | error
+    body: str = ""
+    path: str = ""
+    shared: bool = False
     created_at: datetime = Field(default_factory=utcnow)
 
 

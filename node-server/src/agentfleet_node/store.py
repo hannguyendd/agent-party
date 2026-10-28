@@ -18,6 +18,7 @@ from agentfleet_node.models import (
     Direction,
     FileRecord,
     Message,
+    Recap,
     utcnow,
 )
 
@@ -206,6 +207,27 @@ class Store:
                 q = q.where(Approval.conversation_id == conv_id)
             if pending_only:
                 q = q.where(Approval.status == "pending")
+            return list(s.exec(q))
+
+    # recaps
+
+    def save_recap(self, recap: Recap) -> Recap:
+        with self.db.session() as s:
+            recap = s.merge(recap)
+            s.commit()
+            s.refresh(recap)
+        self.bus.publish({"type": "recap", "recap": dump(recap)})
+        return recap
+
+    def get_recap(self, recap_id: str) -> Recap | None:
+        with self.db.session() as s:
+            return s.get(Recap, recap_id)
+
+    def list_recaps(self, conversation_id: str | None = None) -> list[Recap]:
+        with self.db.session() as s:
+            q = select(Recap).order_by(col(Recap.created_at).desc())
+            if conversation_id:
+                q = q.where(Recap.conversation_id == conversation_id)
             return list(s.exec(q))
 
     # files + audit
