@@ -72,3 +72,20 @@ Publishing is automatic: a push to `develop` that touches `site/`, `dashboard/pu
 `scripts/build-site.sh` runs `.github/workflows/pages.yml`. One-time repo setup (an admin): **Settings → Pages →
 Source: GitHub Actions**, then put the Pages URL in the repo's About website. Re-run by hand with
 `gh workflow run pages.yml --ref develop`.
+
+## When the 3D art is final (to do)
+
+The 3D view is built and tested against the work-in-progress art in the `internal-agent-fleet-3d` worktree
+(commit `b886b9b`, with uncommitted model edits at the time). When that art is final and merged into `develop`:
+
+1. Preview first: `OFFICE_3D_DIR=../internal-agent-fleet-3d/dashboard/public/office/3d make site`, or just
+   `make site` once it is on `develop`.
+2. Check the contract `office3d.js` relies on still holds (`design/office-style/3d/README.md`): 1 unit = 1 tile,
+   front = +Z, origins on the floor; folders `props/`, `kit/`, `characters/`; `layout3d.json` with `objects`
+   (`model, x, z, rot, y`) and `walls` (`facing` = north / south / east / west); clip names `idle, walk, sit, type,
+   sit-idle, talk, wave`. If any of these change, update `FACE`, `FACING`, `clipFor()` or the loaders.
+3. Every skin used in `office.js` (`AGENTS` and `PLAYER`, which is `alien`) needs a 3D character; a missing one
+   falls back to the first that loaded.
+4. Look at: seated agents sitting on their chairs (not floating or sunk), the walls dropping on the camera side at
+   all four rotations, held mugs staying hidden, no 404s in the console, and the frame rate on a laptop.
+5. Merge: Pages republishes on its own because `dashboard/public/office/` changed.
