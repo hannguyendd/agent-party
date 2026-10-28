@@ -50,12 +50,14 @@ class Node:
     notifications: NotificationService | None = None
 
 
-def build_node(settings: Settings, client_factory: Callable | None = None) -> Node:
+def build_node(settings: Settings, client_factory: Callable | None = None, codex_session_factory: Callable | None = None) -> Node:
     bus = EventBus()
     store = Store(Database(make_engine(settings.db_path)), bus)
     directory = MeshDirectory(settings, store)
     outbound = OutboundClient(settings, store, directory)
-    kwargs = {"client_factory": client_factory} if client_factory else {}
+    kwargs: dict = {"client_factory": client_factory} if client_factory else {}
+    if codex_session_factory:
+        kwargs["codex_session_factory"] = codex_session_factory
     holder: list[PartyService] = []  # sessions need the party tags; the party service needs the sessions
     tools = make_mesh_tools_factory(settings, directory, outbound, party_tags=lambda conv_id: holder[0].tags_for(conv_id))
     sessions = SessionManager(settings, store, tools, **kwargs)
@@ -84,9 +86,10 @@ def build_node(settings: Settings, client_factory: Callable | None = None) -> No
                 parties, RecapService(settings, store, parties), usage, TitleService(settings, store, bus, outbound))
 
 
-def create_app(settings: Settings | None = None, client_factory: Callable | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, client_factory: Callable | None = None,
+               codex_session_factory: Callable | None = None) -> FastAPI:
     settings = (settings or Settings()).apply_setup_file()
-    node = build_node(settings, client_factory)
+    node = build_node(settings, client_factory, codex_session_factory)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):

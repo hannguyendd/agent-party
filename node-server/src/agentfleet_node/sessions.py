@@ -23,6 +23,7 @@ from claude_agent_sdk import ClaudeSDKClient, fork_session
 from agentfleet_node.config import Settings
 from agentfleet_node.models import Agent, ApprovalStatus, ConversationStatus, Direction, Mode
 from agentfleet_node.runtimes import AgentRuntime, RuntimeContext, make_runtime
+from agentfleet_node.runtimes.codex import SdkCodexSession
 from agentfleet_node.store import Store
 
 log = logging.getLogger(__name__)
@@ -170,6 +171,8 @@ class SessionWorker:
             prompt=MESH_PROMPT.format(agent_id=self.agent.id, name=self.agent.name, description=self.agent.description or "(none given)")
             + ("\n" + self.agent.system_prompt if self.agent.system_prompt else ""),
             client_factory=self.m.client_factory,
+            manager=self.m,
+            accepted=self._accepted,
         )
         self.runtime = make_runtime(ctx, self)
         await self.runtime.start(conv.session_id if conv else None)
@@ -326,11 +329,13 @@ class SessionManager:
         store: Store,
         mesh_tools_factory: Callable[[Agent, SessionWorker], Any],
         client_factory: Callable[..., Any] = ClaudeSDKClient,
+        codex_session_factory: Callable[..., Any] = SdkCodexSession,
     ):
         self.settings = settings
         self.store = store
         self.mesh_tools_factory = mesh_tools_factory
         self.client_factory = client_factory
+        self.codex_session_factory = codex_session_factory
         self._workers: dict[str, SessionWorker] = {}
         self._approvals: dict[str, asyncio.Future[tuple[bool, str]]] = {}
         self._owner_gates: dict[str, asyncio.Future[OwnerDecision]] = {}

@@ -2,8 +2,9 @@
 
 from agentfleet_node.runtimes.base import AgentRuntime, RuntimeContext, RuntimeEvents
 from agentfleet_node.runtimes.claude import ClaudeRuntime
+from agentfleet_node.runtimes.codex import CodexRuntime
 
-RUNTIMES: dict[str, type] = {"claude": ClaudeRuntime}
+RUNTIMES: dict[str, type] = {"claude": ClaudeRuntime, "codex": CodexRuntime}
 
 
 def make_runtime(ctx: RuntimeContext, events: RuntimeEvents) -> AgentRuntime:

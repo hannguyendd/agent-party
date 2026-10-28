@@ -21,6 +21,8 @@ class RuntimeContext:
     mesh_tools: Any  # the mesh tools factory's result for this worker
     prompt: str  # mesh prompt + the agent's own system prompt
     client_factory: Callable[..., Any]
+    manager: Any = None  # the SessionManager: mesh tokens and the Codex session factory
+    accepted: Callable[[], bool] = lambda: False  # is this conversation an accepted Assignment (ADR 0002)
 
 
 class RuntimeEvents(Protocol):
