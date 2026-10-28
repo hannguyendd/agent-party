@@ -79,6 +79,24 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 .mapbox { container-type: size; min-height: 0; display: grid; place-items: center; }
 /* the map always fits the space left between the bars; 9px margin leaves room for its frame */
 .mapfit.real3d #office { visibility: hidden; }
+/* zoom: the 2D map scales inside the frame; the 3D view zooms its camera */
+.mapfit.zoomed { clip-path: inset(-9px round 25px); }
+.mapfit.zoomed #office { cursor: grab; }
+.mapfit.grabbing #office { cursor: grabbing; }
+#office { transform-origin: 0 0; }
+#office, .mapfit .ap3 { transition: opacity .22s cubic-bezier(.2, 0, 0, 1); }
+.mapfit.fading #office, .mapfit.fading .ap3 { opacity: 0; }
+.zoom { position: absolute; right: 12px; bottom: 12px; z-index: 4; display: grid; gap: 4px; padding: 4px; border-radius: 14px; background: rgba(255, 247, 238, .92); box-shadow: 0 3px 0 var(--paper-edge); }
+.zoom button { width: 32px; height: 32px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); font: 700 18px/1 var(--display); cursor: pointer; display: grid; place-items: center; transition-property: background-color, scale; transition-duration: .15s; }
+.zoom button:hover { background: var(--paper-2); }
+.zoom .rot { display: none; }
+.mapfit.real3d .zoom .rot { display: grid; }
+.zoom button:active { scale: .92; }
+.zoom svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.loading3d { position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 4; display: flex; align-items: center; gap: 10px; background: var(--paper); color: var(--ink); font: 600 15px var(--display); padding: 10px 18px; border-radius: 999px; box-shadow: 0 4px 0 var(--paper-edge), 0 20px 40px -20px rgba(80, 50, 90, .45); font-variant-numeric: tabular-nums; transition-property: opacity, scale; transition-duration: .2s; }
+.loading3d[hidden] { display: flex !important; opacity: 0; scale: .9; pointer-events: none; }
+.loading3d .bar { width: 80px; height: 6px; border-radius: 999px; background: var(--paper-2); overflow: hidden; }
+.loading3d .bar i { display: block; height: 100%; width: var(--p, 0%); background: var(--accent); border-radius: inherit; transition: width .2s; }
 .mapfit { position: relative; width: min(100cqw - 18px, (100cqh - 18px) * 1.5556); margin: 9px; }
 
 /* toasts on the map: the invitation sits in the middle, the rest at the bottom */
@@ -291,6 +309,14 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
         <div id="office" role="img" aria-label="Office map with agents walking between desks and talking"></div>
         <div class="invite" id="invite"><b>Psst, you can play!</b><span>Press <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or click the floor to walk in</span></div>
         <p class="hint off" id="hint" aria-live="polite"></p>
+        <div class="loading3d" id="loading3d" hidden role="status"><span class="dots"></span><span id="loading3d-text">Building the 3D office</span><span class="bar"><i id="loading3d-bar"></i></span></div>
+        <div class="zoom" role="group" aria-label="Zoom">
+          <button type="button" id="zin" aria-label="Zoom in">+</button>
+          <button type="button" id="zout" aria-label="Zoom out">&minus;</button>
+          <button type="button" class="rot" id="rotl" aria-label="Rotate left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg></button>
+          <button type="button" class="rot" id="rotr" aria-label="Rotate right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4"/></svg></button>
+          <button type="button" id="zfit" aria-label="Fit the whole office"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+        </div>
         </div>
       </div>
 
@@ -447,22 +473,83 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
         if (!loading3d) {
           loading3d = has3d.then(function (ok) {
             if (!ok) return null;
-            return import('./office3d.js').then(function (m) { return m.mount(mapfit, office); });
+            return import('./office3d.js').then(function (m) { return m.mount(mapfit, office, { hidden: true, onProgress: progress3d }); });
           }).then(function (v) { view3d = v; return v; }, function (err) { console.warn('3D office unavailable, tilting the map instead', err); return null; });
         }
         return loading3d;
+      }
+      var loadingEl = document.getElementById('loading3d'), loadingText = document.getElementById('loading3d-text'), loadingBar = document.getElementById('loading3d-bar');
+      function progress3d(done, total) {
+        loadingText.textContent = 'Building the 3D office \u00b7 ' + done + '/' + total;
+        loadingBar.style.setProperty('--p', Math.round(done / Math.max(1, total) * 100) + '%');
+      }
+      // Swap views behind a short fade so the switch never pops.
+      function fade(fn) {
+        if (reduce) { fn(); return; }
+        mapfit.classList.add('fading');
+        setTimeout(function () { fn(); requestAnimationFrame(function () { mapfit.classList.remove('fading'); }); }, 200);
       }
       function set(m) {
         mode = m;
         b2.setAttribute('aria-pressed', m === '2d'); b3.setAttribute('aria-pressed', m === '3d');
         try { localStorage.setItem(KEY, m); } catch (e) {}
-        if (m === '2d') { view.setTilt(false); mapfit.classList.remove('real3d'); if (view3d) view3d.setActive(false); return; }
+        if (m === '2d') {
+          loadingEl.hidden = true;
+          fade(function () { view.setTilt(false); mapfit.classList.remove('real3d'); if (view3d) view3d.setActive(false); });
+          return;
+        }
+        if (!view3d) loadingEl.hidden = false;
         load3d().then(function (v) {
+          loadingEl.hidden = true;
           if (mode !== '3d') return;
-          if (v) { v.setActive(true); view.setTilt(false); mapfit.classList.add('real3d'); }
-          else view.setTilt(true);
+          fade(function () {
+            reset2d();
+            if (v) { v.setActive(true); view.setTilt(false); mapfit.classList.add('real3d'); }
+            else view.setTilt(true);
+          });
         });
       }
+
+      // 2D zoom and pan: wheel or the buttons zoom around the pointer, drag moves the map; a click still walks.
+      var officeEl = document.getElementById('office'), z = 1, tx = 0, ty = 0;
+      function apply2d() {
+        var w = mapfit.clientWidth, h = mapfit.clientHeight;
+        tx = Math.min(0, Math.max(w - w * z, tx)); ty = Math.min(0, Math.max(h - h * z, ty));
+        officeEl.style.transform = z === 1 ? '' : 'translate(' + tx + 'px, ' + ty + 'px) scale(' + z + ')';
+        mapfit.classList.toggle('zoomed', z > 1 && mode === '2d');
+      }
+      function zoom2d(f, cx, cy) {
+        var r = mapfit.getBoundingClientRect(), px = cx - r.left, py = cy - r.top, nz = Math.max(1, Math.min(4, z * f));
+        tx = px - (px - tx) * (nz / z); ty = py - (py - ty) * (nz / z); z = nz;
+        if (z === 1) { tx = 0; ty = 0; }
+        apply2d();
+      }
+      function reset2d() { z = 1; tx = 0; ty = 0; apply2d(); }
+      officeEl.addEventListener('wheel', function (e) { if (mode !== '2d') return; e.preventDefault(); zoom2d(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
+      var drag = null, dragged = false;
+      officeEl.addEventListener('pointerdown', function (e) { if (z > 1) { drag = { x: e.clientX, y: e.clientY }; dragged = false; } });
+      addEventListener('pointermove', function (e) {
+        if (!drag) return;
+        var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+        if (!dragged && Math.hypot(dx, dy) < 5) return;
+        dragged = true; mapfit.classList.add('grabbing');
+        tx += dx; ty += dy; drag = { x: e.clientX, y: e.clientY }; apply2d();
+      });
+      addEventListener('pointerup', function () { drag = null; mapfit.classList.remove('grabbing'); });
+      // a drag must not count as a click on the floor
+      officeEl.addEventListener('click', function (e) { if (dragged) { dragged = false; e.stopImmediatePropagation(); } }, true);
+      function zoomBy(f) {
+        if (mode === '3d' && view3d && mapfit.classList.contains('real3d')) { view3d.zoomBy(f); return; }
+        var r = mapfit.getBoundingClientRect(); zoom2d(f, r.left + r.width / 2, r.top + r.height / 2);
+      }
+      document.getElementById('zin').addEventListener('click', function () { zoomBy(1.4); });
+      document.getElementById('zout').addEventListener('click', function () { zoomBy(1 / 1.4); });
+      document.getElementById('rotl').addEventListener('click', function () { if (view3d) view3d.rotate(-1); });
+      document.getElementById('rotr').addEventListener('click', function () { if (view3d) view3d.rotate(1); });
+      document.getElementById('zfit').addEventListener('click', function () { if (view3d) view3d.resetZoom(); reset2d(); });
+      addEventListener('resize', apply2d);
+      // Build the 3D office in the background once the office is up, so the 3D switch is instant later.
+      onReveal.push(function () { setTimeout(load3d, 1500); });
       set(saved === '3d' ? '3d' : '2d');
       b2.addEventListener('click', function () { set('2d'); });
       b3.addEventListener('click', function () { set('3d'); });

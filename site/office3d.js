@@ -7,7 +7,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const BASE = 'office/3d/';
 const EL = 0.86;            // camera elevation (about 49 degrees), as in the approved prototype
-const AZ = -0.26;           // a slight turn so walls and desks show depth (the prototype used -0.42; less fills the frame)
+const AZ = -0.26;           // start with a slight turn so walls and desks show depth; the visitor can rotate from there
 const FACE = { down: 0, right: Math.PI / 2, up: Math.PI, left: -Math.PI / 2 };
 
 const css = `
@@ -19,13 +19,13 @@ const css = `
 .ap3-bubble { position: absolute; left: 0; top: 0; background: #fff; border-radius: 10px; padding: 6px 8px; box-shadow: 0 0 0 1.5px #332C4A, 0 3px 0 rgba(51, 44, 74, .2); opacity: 0; transition: opacity .2s; will-change: transform; }
 .ap3-bubble.on { opacity: 1; }
 .ap3-bubble i { display: block; width: 24px; height: 6px; background: url(office/ui/typing.png) 0 0 / 72px 6px; image-rendering: pixelated; animation: dots .9s steps(3) infinite; }
-.ap3-status { position: absolute; left: 50%; top: 50%; translate: -50% -50%; font: 600 14px Fredoka, system-ui, sans-serif; color: #5E5878; background: rgba(255, 247, 238, .9); padding: 8px 14px; border-radius: 999px; }
+.ap3 canvas.grabbing { cursor: grabbing; }
 `;
 
 function modelUrl(name, dirs) { return BASE + dirs[name] + '/' + name + '.glb'; }
 
 // Load many files a few at a time, retrying once; a file that still fails comes back as null.
-async function loadAll(loader, urls, limit = 6) {
+async function loadAll(loader, urls, onEach, limit = 6) {
   const out = new Array(urls.length).fill(null);
   let next = 0;
   async function worker() {
@@ -34,6 +34,7 @@ async function loadAll(loader, urls, limit = 6) {
       for (let attempt = 0; attempt < 2 && !out[i]; attempt++) {
         try { out[i] = await loader.loadAsync(urls[i]); } catch (e) { if (attempt) console.warn('3D model failed to load:', urls[i]); }
       }
+      if (onEach) onEach();
     }
   }
   await Promise.all(Array.from({ length: limit }, worker));
@@ -67,8 +68,8 @@ export async function mount(host, office, opts) {
   }
   const root = document.createElement('div'); root.className = 'ap3';
   const labels = document.createElement('div'); labels.className = 'ap3-labels';
-  const status = document.createElement('div'); status.className = 'ap3-status'; status.textContent = 'Building the 3D office...';
-  root.append(labels, status);
+  root.append(labels);
+  if (opts.hidden) root.hidden = true;
   host.appendChild(root);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -81,9 +82,16 @@ export async function mount(host, office, opts) {
   const scene = new THREE.Scene();
   const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 400);
   const target = new THREE.Vector3(28, 0, 18);
-  cam.position.set(target.x + Math.sin(AZ) * Math.cos(EL) * 90, Math.sin(EL) * 90, target.z + Math.cos(AZ) * Math.cos(EL) * 90);
-  cam.lookAt(target);
-  cam.updateMatrixWorld();
+  // The camera orbits the office centre at angle az (radians), offset by pan when zoomed in.
+  let az = AZ, azGoal = AZ;
+  const pan = new THREE.Vector3();
+  function place(withPan = true) {
+    const t = withPan ? target.clone().add(pan) : target;
+    cam.position.set(t.x + Math.sin(az) * Math.cos(EL) * 90, Math.sin(EL) * 90, t.z + Math.cos(az) * Math.cos(EL) * 90);
+    cam.lookAt(t);
+    cam.updateMatrixWorld();
+  }
+  place();
 
   scene.add(new THREE.HemisphereLight('#fff4ea', '#d8c9ea', 1.9));
   const sun = new THREE.DirectionalLight('#fff1e0', 2.3);
@@ -104,20 +112,41 @@ export async function mount(host, office, opts) {
   const index = await (await fetch(BASE + 'models.json')).json();
   ['props', 'kit'].forEach((d) => (index[d] || []).forEach((n) => { if (!dirs[n]) dirs[n] = d; }));
   const names = [...want].filter((n) => dirs[n] || console.warn('3D model missing:', n));
+  const skinsAll = [...new Set(sim.all.map((a) => a.skin))];
+  let done = 0;
+  const total = names.length + skinsAll.length;
+  const tick = () => { done++; if (opts.onProgress) opts.onProgress(done, total); };
+  tick(); done = 0;
   const loaded = {};
-  (await loadAll(loader, names.map((n) => modelUrl(n, dirs)))).forEach((g, i) => { if (g) loaded[names[i]] = g; });
+  (await loadAll(loader, names.map((n) => modelUrl(n, dirs)), tick)).forEach((g, i) => { if (g) loaded[names[i]] = g; });
 
-  // Walls on the camera's side are lowered so they don't hide the room (the prototype's cut-away).
-  const near = { south: 0.22, west: 0.22 };
   const byModel = {};
   layout.objects.forEach((o) => { (byModel[o.model] = byModel[o.model] || []).push(o); });
-  layout.walls.forEach((w) => { (byModel[w.model] = byModel[w.model] || []).push(Object.assign({}, w, { sy: near[w.facing] || 1 })); });
   Object.keys(byModel).forEach((name) => { if (loaded[name]) scene.add(instance(loaded[name].scene, byModel[name])); });
+  // Walls are grouped by the side they face. The sides turned toward the camera drop low so they don't hide the
+  // room (the prototype's cut-away); which sides those are changes as the view rotates.
+  const FACING = { south: [0, 1], north: [0, -1], east: [1, 0], west: [-1, 0] };
+  const wallGroups = {};
+  Object.keys(FACING).forEach((f) => {
+    const g = new THREE.Group(), mine = {};
+    layout.walls.filter((w) => w.facing === f).forEach((w) => { (mine[w.model] = mine[w.model] || []).push(w); });
+    Object.keys(mine).forEach((name) => { if (loaded[name]) g.add(instance(loaded[name].scene, mine[name])); });
+    scene.add(g); wallGroups[f] = g;
+  });
+  function cutaway(step) {
+    const cx = Math.sin(az), cz = Math.cos(az);
+    Object.keys(FACING).forEach((f) => {
+      const dot = FACING[f][0] * cx + FACING[f][1] * cz;
+      const want = dot > 0.2 ? 0.22 : 1, g = wallGroups[f];
+      g.scale.y += (want - g.scale.y) * step;
+    });
+  }
+  cutaway(1);
 
   // ---- characters, one per simulated agent, plus the visitor ----
   const skins = [...new Set(sim.all.map((a) => a.skin))];
   const charGltf = {};
-  (await loadAll(loader, skins.map((s) => BASE + 'characters/' + s + '.glb'))).forEach((g, i) => { if (g) charGltf[skins[i]] = g; });
+  (await loadAll(loader, skins.map((s) => BASE + 'characters/' + s + '.glb'), tick)).forEach((g, i) => { if (g) charGltf[skins[i]] = g; });
   const anyChar = Object.values(charGltf)[0];
   if (!anyChar) throw new Error('no 3D characters loaded');
   const actors = sim.all.map((a) => {
@@ -158,7 +187,9 @@ export async function mount(host, office, opts) {
     const w = host.clientWidth || 1, h = host.clientHeight || 1, aspect = w / h;
     renderer.setSize(w, h, false);
     let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-    const inv = cam.matrixWorldInverse;
+    place(false); // frame the whole office from the unpanned camera
+    const inv = cam.matrixWorldInverse.clone();
+    place();
     corners.forEach((c) => { const p = c.clone().applyMatrix4(inv); minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); });
     let halfW = (maxX - minX) / 2 * 1.02, halfH = (maxY - minY) / 2 * 1.02;
     if (halfW / halfH > aspect) halfH = halfW / aspect; else halfW = halfH * aspect;
@@ -171,26 +202,71 @@ export async function mount(host, office, opts) {
   const ro = 'ResizeObserver' in window ? new ResizeObserver(fit) : null;
   if (ro) ro.observe(host); else addEventListener('resize', fit);
 
-  // ---- clicking the floor walks you there ----
-  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
-  renderer.domElement.addEventListener('click', (e) => {
-    const r = renderer.domElement.getBoundingClientRect();
-    ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  // ---- the floor under the pointer; click walks there, drag pans, wheel zooms ----
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const canvas = renderer.domElement;
+  function groundAt(x, y) {
+    const r = canvas.getBoundingClientRect(), out = new THREE.Vector3();
+    ndc.set((x - r.left) / r.width * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, cam);
-    if (!ray.ray.intersectPlane(ground, hit)) return;
+    return ray.ray.intersectPlane(ground, out) ? out : null;
+  }
+  function shift(dx, dz) {
+    // keep the office in view: the further in, the further you may pan
+    const k = 1 - 1 / cam.zoom;
+    pan.x = Math.max(-28 * k, Math.min(28 * k, pan.x + dx));
+    pan.z = Math.max(-18 * k, Math.min(18 * k, pan.z + dz));
+    place();
+  }
+  function zoomAt(f, x, y) {
+    const before = groundAt(x, y);
+    cam.zoom = Math.max(1, Math.min(5, cam.zoom * f));
+    cam.updateProjectionMatrix(); cam.updateMatrixWorld();
+    if (cam.zoom === 1) { pan.set(0, 0, 0); place(); return; }
+    const after = groundAt(x, y);
+    if (before && after) shift(before.x - after.x, before.z - after.z);
+  }
+  function center() { const r = canvas.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
+  canvas.addEventListener('wheel', (e) => { e.preventDefault(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
+  // Drag pans when zoomed in; right-drag, Shift+drag, or a drag at full view rotates.
+  let down = null, dragged = false, rotating = false;
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  canvas.addEventListener('pointerdown', (e) => {
+    down = { x: e.clientX, y: e.clientY }; dragged = false;
+    rotating = e.button === 2 || e.shiftKey || cam.zoom === 1;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!down) return;
+    if (!dragged && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 5) return;
+    if (!dragged) { dragged = true; canvas.classList.add('grabbing'); }
+    if (rotating) {
+      az -= (e.clientX - down.x) * 0.008; azGoal = az; place(); fit();
+    } else {
+      const a = groundAt(down.x, down.y), b = groundAt(e.clientX, e.clientY);
+      if (a && b) shift(a.x - b.x, a.z - b.z);
+    }
+    down = { x: e.clientX, y: e.clientY };
+  });
+  canvas.addEventListener('pointerup', () => { down = null; canvas.classList.remove('grabbing'); });
+  canvas.addEventListener('click', (e) => {
+    if (dragged) { dragged = false; return; }
+    const hit = groundAt(e.clientX, e.clientY);
+    if (!hit) return;
     const tx = Math.floor(hit.x), ty = Math.floor(hit.z);
     if (tx < 0 || ty < 0 || tx >= 56 || ty >= 36) return;
     sim.spawn();
     sim.walkPlayerTo(tx, ty);
   });
 
-  status.remove();
-  let active = true, last = performance.now();
+  let active = !opts.hidden, last = performance.now();
   const v = new THREE.Vector3();
   const view = {
     draw() {
       if (!active) return;
       const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now;
+      if (Math.abs(azGoal - az) > 0.001) { az += (azGoal - az) * Math.min(1, dt * 7); place(); fit(); }
+      cutaway(Math.min(1, dt * 8));
       const w = host.clientWidth, h = host.clientHeight;
       actors.forEach((act) => {
         const a = act.a;
@@ -214,6 +290,9 @@ export async function mount(host, office, opts) {
       renderer.render(scene, cam);
     },
     setActive(on) { active = on; root.hidden = !on; if (on) { last = performance.now(); fit(); } },
+    zoomBy(f) { const c = center(); zoomAt(f, c[0], c[1]); },
+    resetZoom() { cam.zoom = 1; cam.updateProjectionMatrix(); pan.set(0, 0, 0); azGoal = AZ + Math.round((az - AZ) / (2 * Math.PI)) * 2 * Math.PI; place(); },
+    rotate(dir) { azGoal = Math.round((azGoal - AZ) / (Math.PI / 2)) * (Math.PI / 2) + AZ + dir * Math.PI / 2; },
   };
   office.addView(view);
   if (opts.onReady) opts.onReady();

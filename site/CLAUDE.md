@@ -23,7 +23,12 @@ product: nothing here talks to a node, the mesh or the world server, and every a
   loaded on first use of the 3D switch. It reads `office/3d/layout3d.json` and `models.json`, instances every
   repeated model (floor tiles, walls, desk sets), lowers the walls on the camera's side, and gives each simulated
   agent its 3D character with the clips `walk / type / sit-idle / talk / idle / wave`; name tags and typing dots
-  are DOM labels projected from the 3D positions. Clicking the floor walks you there.
+  are DOM labels projected from the 3D positions. Clicking the floor walks you there. The camera orbits the office
+  centre: wheel zooms toward the pointer, drag pans when zoomed in, right-drag / Shift+drag / a drag at full view
+  rotates, and the walls facing the camera drop low whichever way it turns. It is built hidden in the background
+  1.5 s after the office shows, so the 3D switch is instant; a progress pill shows if it isn't ready yet.
+- The 2D map zooms and pans too (CSS transform on `#office`, wheel / drag / the +, −, fit buttons). A drag never
+  counts as a floor click.
 
 ## Rules
 
