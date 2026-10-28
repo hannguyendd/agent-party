@@ -240,3 +240,16 @@ def test_world_serves_the_staff_installer_and_the_org_name(tmp_path):
 def test_org_name_reaches_every_node(tmp_path):
     w = WorldState(org="Taggle")
     assert w.snapshot()["org"] == "Taggle"
+
+
+def test_new_skins_can_be_picked_and_defaults_never_move():
+    from agentfleet_node.world import DEFAULT_SKINS
+
+    w = WorldState()
+    w.sync_agents("kien", [{"agent_id": "kien/dev", "name": "Dev"}], set())
+    assert w.agents["kien/dev"].skin in DEFAULT_SKINS
+    # The default for an id is the same as before the second batch existed (8 skins).
+    old = ("dev-hoodie", "designer", "lead", "shiba", "cat", "penguin", "alien", "robot")
+    assert w.default_skin("kien/dev") == old[sum(map(ord, "kien/dev")) % 8]
+    w.set_skin("kien", "kien/dev", "dragon")
+    assert w.agents["kien/dev"].skin == "dragon"

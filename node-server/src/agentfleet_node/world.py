@@ -28,7 +28,10 @@ log = logging.getLogger(__name__)
 
 # The real office: D1-D16 in the L-shaped block, M1/M2 in the middle (see docs/office/ASSET-BRIEF.md).
 DESKS = tuple([f"D{i}" for i in range(1, 17)] + ["M1", "M2"])
-SKINS = ("dev-hoodie", "designer", "lead", "shiba", "cat", "penguin", "alien", "robot")
+SKINS = ("dev-hoodie", "designer", "lead", "shiba", "cat", "penguin", "alien", "robot",
+         "mage", "knight", "ranger", "healer", "rogue", "berserker", "slime", "dragon")
+# Agents that never picked a look get one of the first eight, so adding skins never changes an existing default.
+DEFAULT_SKINS = SKINS[:8]
 # Conversation statuses that mean "these two agents are talking right now".
 ACTIVE_STATUSES = {"running", "awaiting_approval", "awaiting_owner"}
 MAX_TILE = 500
@@ -109,7 +112,7 @@ class WorldState:
         }
 
     def default_skin(self, agent_id: str) -> str:
-        return self.skins.get(agent_id) or SKINS[sum(map(ord, agent_id)) % len(SKINS)]
+        return self.skins.get(agent_id) or DEFAULT_SKINS[sum(map(ord, agent_id)) % len(DEFAULT_SKINS)]
 
     # mutations: each returns the events to broadcast
 

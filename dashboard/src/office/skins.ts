@@ -17,6 +17,15 @@ export const SKINS: SkinInfo[] = [
   { id: 'penguin', label: 'Penguin', emoji: '🐧', color: 0x1e293b },
   { id: 'alien', label: 'Alien', emoji: '👽', color: 0x22c55e },
   { id: 'robot', label: 'Robot', emoji: '🤖', color: 0x94a3b8 },
+  // Fantasy Office cast, batch 2 (labels from design/office-style/REQUESTS.md)
+  { id: 'mage', label: 'Coffee Mage', emoji: '🧙', color: 0x8b7aa8 },
+  { id: 'knight', label: 'Keyboard Knight', emoji: '🛡️', color: 0xb8b0c8 },
+  { id: 'ranger', label: 'Paper Ranger', emoji: '🏹', color: 0x4f8a4a },
+  { id: 'healer', label: 'Band-Aid Healer', emoji: '🩹', color: 0xf0c98a },
+  { id: 'rogue', label: 'Donut Rogue', emoji: '🍩', color: 0x5a4a6a },
+  { id: 'berserker', label: 'Debug Viking', emoji: '🦆', color: 0xb5794a },
+  { id: 'slime', label: 'Crowned Slime', emoji: '👑', color: 0x8fd3b0 },
+  { id: 'dragon', label: 'Cardigan Dragon', emoji: '🐉', color: 0xe0a070 },
 ]
 export const SKIN_BY_ID: Record<string, SkinInfo> = Object.fromEntries(SKINS.map((s) => [s.id, s]))
 
