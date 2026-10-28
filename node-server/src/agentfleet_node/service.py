@@ -35,8 +35,15 @@ WIN_TASK = "AgentMeshNode"
 # what is installed and where it points
 
 
+def _in_repo() -> bool:
+    """node-server/src/agentfleet_node: a checkout (where `make bundle` also writes static/build.json)."""
+    return (Path(__file__).resolve().parents[2] / "pyproject.toml").exists()
+
+
 def build_id() -> str:
     """The build this node runs (written into the package by `make bundle`); 'dev' for a repo checkout."""
+    if _in_repo():
+        return "dev"
     try:
         return str(json.loads((Path(__file__).with_name("static") / "build.json").read_text())["build"])
     except (OSError, ValueError, KeyError):
