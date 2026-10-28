@@ -16,6 +16,10 @@
   --o-coral: #ce8262;
   --o-peach: #f4b592;
   --o-shadow: #48506c;
+  --o-scroll-track: transparent;
+  --o-scroll-thumb: #8c7080;
+  --o-scroll-hover: #658c8c;
+  --o-scroll-active: var(--o-mint-ink);
   /* Fredoka: rounded, game-like display face for UI chrome (picked over pixel fonts for readability).
      Nunito: body text and anything user-named (agent names, desks). Both cover Vietnamese. */
   --o-pixel: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
@@ -53,8 +57,47 @@
     --o-lav: #4b4063;
     --o-mint-ink: #9dd6b7;
     --o-shadow: #0d0b13;
+    --o-scroll-thumb: var(--o-muted);
+    --o-scroll-hover: var(--o-mint);
+    --o-scroll-active: var(--o-peach);
     --agent: #2c3d36;
     --owner: #3d3324;
+  }
+}
+
+/* Shared by chat, lists, Settings, textareas and horizontal code/table scrollers.
+   Keep system colors in forced-colors mode. Firefox uses the standard fallback;
+   Chromium/Safari use the padded thumb so hover/pressed feedback remains visible. */
+@media (forced-colors: none) {
+  .office-view,
+  .office-view * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--o-scroll-thumb) var(--o-scroll-track);
+  }
+  @supports selector(::-webkit-scrollbar) {
+    .office-view,
+    .office-view * { scrollbar-width: auto; scrollbar-color: auto; }
+    .office-view::-webkit-scrollbar,
+    .office-view *::-webkit-scrollbar { width: 12px; height: 12px; }
+    .office-view::-webkit-scrollbar-track,
+    .office-view *::-webkit-scrollbar-track { background: var(--o-scroll-track); }
+    .office-view::-webkit-scrollbar-thumb,
+    .office-view *::-webkit-scrollbar-thumb {
+      min-height: 32px;
+      min-width: 32px;
+      border: 2px solid transparent;
+      border-radius: 7px;
+      background: var(--o-scroll-thumb);
+      background-clip: padding-box;
+    }
+    .office-view::-webkit-scrollbar-thumb:hover,
+    .office-view *::-webkit-scrollbar-thumb:hover { background-color: var(--o-scroll-hover); }
+    .office-view::-webkit-scrollbar-thumb:active,
+    .office-view *::-webkit-scrollbar-thumb:active { background-color: var(--o-scroll-active); }
+    .office-view::-webkit-scrollbar-corner,
+    .office-view *::-webkit-scrollbar-corner { background: var(--o-scroll-track); }
+    .office-view::-webkit-scrollbar-button,
+    .office-view *::-webkit-scrollbar-button { display: none; }
   }
 }
 
@@ -620,7 +663,7 @@ a.o-file:hover { border-color: var(--o-line); }
 
 /* composer v3: text on top, then hint + paperclip + Send */
 .o-composer { display: flex; flex-direction: column; gap: 6px; }
-.o-composer .o-mention textarea { min-height: 42px; max-height: 160px; overflow-y: auto; scrollbar-width: thin; }
+.o-composer .o-mention textarea { min-height: 42px; max-height: 160px; overflow-y: auto; }
 .o-composer-row { display: flex; align-items: center; gap: 8px; }
 .o-composer-row .btn-primary { height: 34px; padding: 0 14px; }
 .o-composer-hint { flex: 1; min-width: 0; font-size: 11px; color: var(--o-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
