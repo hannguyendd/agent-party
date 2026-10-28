@@ -28,6 +28,27 @@ make hub HUB_HOST=<fixed LAN IP or hostname>         # keep it running
 make hub-token DEVICE="han laptop"                   # in another terminal, once per device
 ```
 
+`HUB_HOST` is the address teammates' devices use to reach the hub (it becomes the hub's external URL), so it
+must resolve from the other machines, not only from the hub itself:
+
+| Kind | Example | When to use it |
+|---|---|---|
+| LAN IP | `HUB_HOST=192.168.1.50` | The usual choice, if the IP is stable (DHCP reservation on the router, or static IP). |
+| LAN IP, other ranges | `HUB_HOST=10.0.0.23`, `HUB_HOST=172.16.4.10` | Common on office networks. |
+| mDNS / Bonjour name | `HUB_HOST=hans-mac-mini.local` | Macs on the same network; no setup, survives IP changes. |
+| DNS hostname | `HUB_HOST=agentmesh.office.lan` | Only if your network has a DNS record for the machine. |
+| Loopback | `HUB_HOST=127.0.0.1` | Single-machine testing only (see below); other devices can't reach it. |
+
+To find the values on the hub Mac:
+
+```sh
+ipconfig getifaddr en0          # Wi-Fi IP, e.g. 192.168.1.50 (try en1 if empty)
+scutil --get LocalHostName      # e.g. hans-mac-mini, so use hans-mac-mini.local
+```
+
+Check it from a teammate's machine with `ping <HUB_HOST>`. Without a DHCP reservation, prefer the `.local` name,
+since the IP can change after a reboot. Each device passes the same value to `make mesh-node HUB_HOST=…`.
+
 The hub reads no `.env`; `HUB_HOST`, `HUB_PORT` and `DATA_DIR` come from the command line or the shell.
 `make hub-token` prints a single-use token. Send it to that teammate privately. The hub console is at
 `http://<hub>:7400/console`; the admin token is in `hub/data/admin-token`.
