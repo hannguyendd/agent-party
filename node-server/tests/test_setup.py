@@ -1,6 +1,7 @@
 """First-run setup from the web: owner, office server and join token, applied without a restart."""
 
 import json
+import os
 
 import httpx
 
@@ -97,3 +98,34 @@ async def test_a_repo_checkout_is_never_offered_an_update(node_factory):
         info = (await c.get("/api/update")).json()
         assert info["installed"] is False and info["available"] is False and info["build"] == "dev"
         assert (await c.post("/api/update")).status_code == 409
+
+
+async def test_mesh_node_is_brought_back_when_it_dies_but_not_for_a_used_token(tmp_path, monkeypatch):
+    import asyncio
+    import stat
+
+    from agentfleet_node import meshproc
+    from agentfleet_node.meshproc import MeshNodeProcess
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    runs = tmp_path / "runs"
+    exe = bin_dir / "agentmesh-node"
+    # First run dies after 1.2 s (a crash); later runs stay up.
+    exe.write_text(f'#!/bin/sh\necho x >> "{runs}"\n[ "$(wc -l < "{runs}")" -le 1 ] && {{ sleep 1.2; exit 1; }}\nsleep 30\n')
+    exe.chmod(exe.stat().st_mode | stat.S_IEXEC)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    monkeypatch.setattr(meshproc, "_RETRY_WAITS", (0.2,))
+    s = Settings(owner="kien", data_dir=tmp_path / "data", hub_url="http://127.0.0.1:1")
+    (s.data_dir / "mesh-node").mkdir(parents=True)
+    (s.data_dir / "mesh-node" / "enrolled").write_text("ok")  # skip the enrollment probe
+    m = MeshNodeProcess(s)
+    assert await m.start()
+    for _ in range(60):
+        if runs.exists() and len(runs.read_text().splitlines()) >= 2 and m.running:
+            break
+        await asyncio.sleep(0.1)
+    assert len(runs.read_text().splitlines()) == 2 and m.running  # restarted once, now up
+    await m.stop()
+    await asyncio.sleep(0.5)
+    assert not m.running and len(runs.read_text().splitlines()) == 2  # a deliberate stop stays stopped

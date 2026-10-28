@@ -17,6 +17,8 @@ Settings are `AGENTFLEET_*` env vars or `.env` (`src/agentfleet_node/config.py`)
   `init` SystemMessage before naming tools in defaults or prompts.
 - `agentmesh-node` reads its `services` only at startup: after agents change, the node must be restarted
   (the dashboard banner tracks `config_dirty`).
+- `meshproc` supervises the agentmesh-node it runs: if it dies it is started again (2 s, 5 s, 15 s, 30 s, then every
+  minute), except after token failures (used / invalid join token), which wait for the person to act.
 - **SQLite schema changes**: `SQLModel.metadata.create_all` never alters existing tables. `db._add_missing_columns`
   adds new columns (with their scalar default) at startup, so a new model field just works on old databases.
   Renames, type changes or drops need a real migration.

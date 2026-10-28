@@ -20,6 +20,10 @@ from agentfleet_node.config import Settings
 
 log = logging.getLogger(__name__)
 
+# If agentmesh-node dies while it should run, start it again after these waits (seconds), then every minute.
+_RETRY_WAITS = (2, 5, 15, 30, 60)
+# Failures a restart can't fix (the person has to act): no automatic retry for these.
+_NO_RETRY = ("max usages exceeded", "invalid")
 # Friendlier words for agentmesh-node's enrollment failures, shown on the setup page.
 _KNOWN_FAILURES = {
     "max usages exceeded": "this join token was already used; ask your admin for a new one (make hub-token)",
@@ -34,6 +38,8 @@ class MeshNodeProcess:
         self.proc: asyncio.subprocess.Process | None = None
         self.last_error: str | None = None
         self._confirm: asyncio.Task | None = None
+        self._watch: asyncio.Task | None = None
+        self._stopping = False  # set while we stop it on purpose, so the watcher doesn't bring it back
 
     @property
     def installed(self) -> bool:
@@ -129,6 +135,9 @@ class MeshNodeProcess:
             return False
         self.last_error = None
         log.info("agentmesh-node started (pid %s)", self.proc.pid)
+        self._stopping = False
+        if self._watch is None or self._watch.done():
+            self._watch = asyncio.get_event_loop().create_task(self._supervise())
         if not self.enrolled:
             self._confirm = asyncio.get_event_loop().create_task(self._confirm_enrollment(token))
         return True
@@ -150,7 +159,37 @@ class MeshNodeProcess:
                 await asyncio.sleep(1)
         self.last_error = "agentmesh-node is running but not enrolled with the hub; save a new join token in Settings"
 
+    async def _supervise(self) -> None:
+        """Bring agentmesh-node back if it dies (network blip, crash), with growing waits. Not for failures only the
+        person can fix (a used or invalid join token): those stay stopped with the reason on the setup page."""
+        attempt = 0
+        while True:
+            proc = self.proc
+            if proc is None:
+                return
+            await proc.wait()
+            if self._stopping or proc is not self.proc:
+                return
+            tail = self._failure_from_log()
+            log.warning("agentmesh-node exited (code %s)%s", proc.returncode, f": {tail}" if tail else "")
+            try:
+                raw = self.log_path.read_text(errors="replace")[-800:].lower()
+            except OSError:
+                raw = ""
+            if any(n in raw for n in _NO_RETRY):
+                self.last_error = f"agentmesh-node stopped: {tail or 'see ' + str(self.log_path)}"
+                return
+            wait = _RETRY_WAITS[min(attempt, len(_RETRY_WAITS) - 1)]
+            self.last_error = f"agentmesh-node stopped; restarting in {wait}s"
+            await asyncio.sleep(wait)
+            if self._stopping:
+                return
+            attempt += 1
+            if await self.start():
+                attempt = 0  # running again; the loop now waits on the new process
+
     async def stop(self) -> None:
+        self._stopping = True
         if not self.running or self.proc is None:
             return
         self.proc.terminate()
