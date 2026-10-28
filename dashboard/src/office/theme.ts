@@ -46,12 +46,20 @@ export function useOfficeTheme(): OfficeTheme {
   return useSyncExternalStore(subscribe, () => current)
 }
 
-/** True when this browser can draw WebGL at all; otherwise the 3D option is greyed out. */
+let webgl: boolean | null = null
+/** True when this browser can draw WebGL at all; otherwise the 3D option is greyed out. Probed once: every probe
+ *  makes a WebGL context, and components call this on each render, so probing each time piled up contexts until
+ *  Chrome dropped the oldest one, which was the 3D Office's own. */
 export function webglAvailable(): boolean {
-  try {
-    const c = document.createElement('canvas')
-    return !!(c.getContext('webgl2') || c.getContext('webgl'))
-  } catch {
-    return false
+  if (webgl === null) {
+    try {
+      const c = document.createElement('canvas')
+      const gl = c.getContext('webgl2') || c.getContext('webgl')
+      webgl = !!gl
+      gl?.getExtension('WEBGL_lose_context')?.loseContext()
+    } catch {
+      webgl = false
+    }
   }
+  return webgl
 }
