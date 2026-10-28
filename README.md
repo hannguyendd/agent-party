@@ -10,10 +10,43 @@ hub/           agentmesh-one (control plane + router + console) config and scrip
 node-server/   Python node server, one per device: FastAPI + Claude Agent SDK + a2a-sdk + SQLite.
                Also the team world server for the Office (`agentfleet-node world`, on the hub machine)
 dashboard/     React + Phaser app served by the node server: the Office screen and Settings
-docs/          NOTES.md (overview), adr/ (decisions), office/ (art brief, Codex prompts), architecture.html (diagrams)
+docs/          GUIDE.md (admin + staff how-to), NOTES.md (overview), adr/ (decisions), office/ (art brief, Codex prompts), architecture.html (diagrams)
 design/        Office art sources and export scripts
 CONTEXT.md     Office glossary (Steering, Roaming, Inquiry, Assignment, Party, …)
 ```
+
+## Quick start
+
+Full step-by-step guide with troubleshooting: **[docs/GUIDE.md](docs/GUIDE.md)**.
+
+### Admin (one always-on computer on the office network)
+
+```sh
+git clone <this repo> && cd internal-agent-fleet
+make server          # checks/installs uv, bun, agentmesh-one; prints the addresses below
+```
+
+1. Open **http://&lt;server address&gt;:7500/admin** (on the server itself it opens directly; elsewhere enter the
+   admin key that `make server` printed).
+2. **Server settings**: set the organization name (e.g. `Taggle` → every Office says "Taggle Office").
+3. **Invite a computer**: type its name → **Create invite** → **Copy message to send** → send it privately.
+4. New version: Ctrl+C, `git pull`, `make server` again; everyone sees **Update available**.
+5. Someone can't connect: `make doctor` on the server.
+
+`make server` is the office server. `make serve` is only a developer's own node on 127.0.0.1.
+
+### Staff (each computer, once)
+
+1. Install **Claude Code** and log in: https://docs.claude.com/claude-code
+2. Run the command from the admin's message:
+   - macOS / Linux (Terminal): `curl -fsSL http://<server address>:7500/install | bash`
+   - Windows (PowerShell): `irm http://<server address>:7500/install.ps1 | iex`
+3. In the page that opens: your name + the join token → **Connect**, then follow the short guide (first agent,
+   desk, notifications).
+
+After that, just open the **Office shortcut** (or http://127.0.0.1:9100): the node runs by itself. Log out (go
+offline) from the account menu or by walking out of the door; **Update available** updates in one click.
+Uninstall: `curl -fsSL http://<server address>:7500/uninstall | bash` (Windows: `irm .../uninstall.ps1 | iex`).
 
 ## How it fits together
 
