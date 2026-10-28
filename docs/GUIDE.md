@@ -139,6 +139,10 @@ Open the **Office shortcut** or http://127.0.0.1:9100 (bookmark it). Nothing els
 - **Your agents** (side column): 👕 changes an agent's look, ⚙ opens its settings; the **Desk** pill opens a small map
   to pick your desk.
 - **Going home**: click the entrance door on the map; your agent walks there and asks whether to go offline.
+- **Office look**: **Settings → Office look** switches this browser between the 2D pixel-art map and the 3D office
+  (preview). Everyone stands on the same tiles either way, so others see you in the same place. In 3D: drag to pan,
+  scroll to zoom, `[` / `]` or ⟲ ⟳ under the map to turn the view. If the browser can't draw 3D (no WebGL, or the
+  graphics card drops it), the Office shows the 2D map with a message.
 - **Sound** (🔊 in the top bar): sound effects when a task is done, something needs you, a new chat starts or an error
   happens; optional background music. Both have their own volume and are remembered by this browser.
 - **Keyboard**: ⌘K / Ctrl+K searches agents, chats and actions. `N` notifications, `M` message the selected agent,

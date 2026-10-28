@@ -209,6 +209,13 @@
   font: 800 12px/1.4 Nunito, ui-sans-serif, system-ui; color: #fdf3e6; background: color-mix(in srgb, var(--o-line) 93%, transparent);
 }
 .o3d-tag.is-selected .o3d-name { outline: 2px solid var(--o-panel); }
+.o3d-desk {
+  position: absolute; left: 0; top: 0; padding: 0 5px; border-radius: 4px; white-space: nowrap;
+  font: 800 11px/1.5 Nunito, ui-sans-serif, system-ui; color: var(--o-line); opacity: 0.5;
+}
+.o3d-desk[data-look='taken'] { color: #2f5a44; opacity: 0.75; }
+.o3d-desk[data-look='mine'] { opacity: 1; color: #4a2412; background: var(--o-peach); border: 1.5px solid #8a4a2c; }
+.o3d-desk[data-look='pick'] { opacity: 1; color: #2f5a22; background: #d9f2c9; border: 1.5px solid #70a65b; }
 .o3d-bubble {
   max-width: 180px; padding: 4px 8px; border: 2px solid var(--o-line); border-radius: 10px; background: var(--o-panel);
   font: 700 12px/1.3 Nunito, ui-sans-serif, system-ui; color: var(--o-ink);

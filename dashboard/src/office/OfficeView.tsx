@@ -141,6 +141,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   }, [notice])
   const [ready, setReady] = useState(false)
   const sceneRef = useRef<OfficeRenderer | null>(null)
+  const theme = useOfficeTheme()
   const agents = isPreview ? demo : office?.agents ?? EMPTY_AGENTS
   const me = isPreview ? 'preview' : office?.owner ?? state.node?.owner ?? ''
   const desks = isPreview ? demoDesks : office?.desks ?? EMPTY_DESKS
@@ -347,6 +348,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         onNotification={n => go(notificationTarget(n))}
         onZoom={f => sceneRef.current?.zoomBy(f)}
         onFit={() => sceneRef.current?.fitCamera()}
+        onRotate={theme === '3d' ? s => sceneRef.current?.rotate?.(s) : undefined}
       />
       </div>
 

@@ -11,6 +11,7 @@ import {
   ROWS,
   SPAWN,
   TILE,
+  deskTagSpot,
   walkable,
   type Facing,
   type SeatRow,
@@ -53,9 +54,6 @@ const TAG_LOOK = {
   mine: { fill: 0xf4b592, stroke: 0x8a4a2c, color: '#4a2412', chip: true, alpha: 1 },
   pick: { fill: 0xd9f2c9, stroke: 0x70a65b, color: '#2f5a22', chip: true, alpha: 1 },
 }
-// From the seat, one tile away from the desk: the floor behind the chair.
-// Side desks' chairs are drawn wider than a tile, so their tag sits a bit further out.
-const BEHIND: Record<string, Point> = { right: { x: -1.7, y: 0 }, left: { x: 1.7, y: 0 }, down: { x: 0, y: -1 }, up: { x: 0, y: 1 } }
 
 interface AgentSprite {
   id: string
@@ -219,11 +217,8 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
       renderRoom(this)
     }
     for (const d of DESKS) {
-      // Behind the chair, or beside it when that is a wall (the HR seat backs onto the north wall).
-      const behind = BEHIND[d.seat.face] ?? { x: 0, y: 1 }
-      const back = [behind, { x: behind.y, y: behind.x }, { x: -behind.y, y: -behind.x }]
-        .find((o) => walkable(d.seat.x + Math.round(o.x), d.seat.y + Math.round(o.y))) ?? behind
-      const at = { x: (d.seat.x + back.x + 0.5) * TILE, y: (d.seat.y + back.y + 0.5) * TILE }
+      const spot = deskTagSpot(d)
+      const at = { x: spot.x * TILE, y: spot.y * TILE }
       const text = crisp(
         this.add
           .text(0, 0, d.id, { fontFamily: 'Nunito, ui-sans-serif, system-ui', fontStyle: '800', fontSize: '11px', color: '#48506c', resolution: TEXT_RES })

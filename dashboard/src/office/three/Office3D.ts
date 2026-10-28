@@ -6,7 +6,7 @@
 import * as THREE from 'three'
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { OfficeAgent } from '../../api'
-import { COLS, DESKS, ROWS, SPAWN, walkable, type Facing, type Point } from '../layout'
+import { COLS, DESKS, ROWS, SPAWN, deskTagSpot, walkable, type Facing, type Point } from '../layout'
 import { fetchManifest, loadMapData, type Models3d } from '../mapData'
 import { distance, findPath, nearestFree } from '../pathfind'
 import { resolveTargets } from '../placement'
@@ -114,6 +114,9 @@ export class Office3D implements OfficeRenderer {
   private listeners: [EventTarget, string, EventListener][] = []
   private keys = new Set<string>()
   private lostTimer = 0
+  private deskTags = new Map<string, { el: HTMLDivElement; at: THREE.Vector3 }>()
+  private zoomAnchor: { x: number; y: number } | null = null
+  private perf = { frames: 0, time: 0 }
   private doors: { root: THREE.Object3D; mixer: THREE.AnimationMixer; clips: THREE.AnimationClip[]; at: THREE.Vector2; open: boolean }[] = []
 
   private host: HTMLElement
@@ -121,8 +124,8 @@ export class Office3D implements OfficeRenderer {
   constructor(host: HTMLElement) {
     this.host = host
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
-    // Retina at full resolution plus a big shadow map is more than integrated GPUs keep up with.
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5))
+    // Full sharpness on retina; frame() lowers it only if this machine can't keep up (see adaptResolution).
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2))
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     this.renderer.setClearColor(0xe6ddd8)
@@ -180,6 +183,13 @@ export class Office3D implements OfficeRenderer {
     await this.loadModels([...needed], m3)
     if (this.disposed) return
     this.buildRoom(layout)
+    for (const d of DESKS) {
+      const el = document.createElement('div')
+      el.className = 'o3d-desk'
+      const s = deskTagSpot(d)
+      this.overlay.prepend(el)
+      this.deskTags.set(d.id, { el, at: toWorld(s.x, s.y) })
+    }
     this.ready = true
     this.sync()
     this.fitCamera()
@@ -473,6 +483,11 @@ export class Office3D implements OfficeRenderer {
   }
 
   private refreshDesks() {
+    for (const [id, tag] of this.deskTags) {
+      const owner = this.data.desks[id]
+      tag.el.textContent = owner ? `${id} · ${owner}` : id
+      tag.el.dataset.look = owner === this.data.me ? 'mine' : owner ? 'taken' : this.data.pickingDesk ? 'pick' : 'free'
+    }
     for (const c of this.deskMarks.children) (c as THREE.Mesh).geometry.dispose()
     this.deskMarks.clear()
     if (!this.data.pickingDesk) return
@@ -665,17 +680,28 @@ export class Office3D implements OfficeRenderer {
     this.following = agentId && this.agents.has(agentId) ? agentId : null
   }
 
-  zoomBy(factor: number) {
+  /** `anchor` (px in the host) stays over the same spot of the floor while the zoom glides. */
+  zoomBy(factor: number, anchor?: Point) {
     this.zoomTarget = THREE.MathUtils.clamp(this.zoomTarget * factor, 0.7, 6)
+    this.zoomAnchor = anchor ?? null
+  }
+
+  /** The floor point under a host pixel, with the camera as it is now. */
+  private groundAt(x: number, y: number): THREE.Vector3 | null {
+    const ndc = new THREE.Vector2((x / this.host.clientWidth) * 2 - 1, -(y / this.host.clientHeight) * 2 + 1)
+    this.raycaster.setFromCamera(ndc, this.camera)
+    const hit = new THREE.Vector3()
+    return this.raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)
   }
 
   fitCamera() {
+    this.zoomAnchor = null
     this.zoomTarget = 1
     this.following = null
     this.target.set(0, 0, 1)
   }
 
-  private rotate(step: number) {
+  rotate(step: number) {
     this.azTarget += (step * Math.PI) / 2
   }
 
@@ -749,7 +775,8 @@ export class Office3D implements OfficeRenderer {
       (e) => {
         const w = e as WheelEvent
         w.preventDefault()
-        this.zoomBy(Math.exp(-THREE.MathUtils.clamp(w.deltaY, -200, 200) * 0.0016))
+        const r = this.host.getBoundingClientRect()
+        this.zoomBy(Math.exp(-THREE.MathUtils.clamp(w.deltaY, -200, 200) * 0.0016), { x: w.clientX - r.left, y: w.clientY - r.top })
       },
       { passive: false },
     )
@@ -886,7 +913,9 @@ export class Office3D implements OfficeRenderer {
 
   private frame() {
     if (this.disposed || document.hidden) return
-    const dt = Math.min(this.clock.getDelta(), 0.08)
+    const raw = this.clock.getDelta()
+    const dt = Math.min(raw, 0.08)
+    this.adaptResolution(raw)
     this.az += (this.azTarget - this.az) * Math.min(1, dt * 7)
     this.zoom += (this.zoomTarget - this.zoom) * Math.min(1, dt * 10)
     if (this.ready) {
@@ -900,6 +929,41 @@ export class Office3D implements OfficeRenderer {
       const at = toWorld(followed.pos.x, followed.pos.y)
       this.target.lerp(at, Math.min(1, dt * 4))
     }
+    const anchor = this.zoomAnchor && Math.abs(this.zoomTarget - this.zoom) > 0.001 ? this.zoomAnchor : null
+    const before = anchor ? this.groundAt(anchor.x, anchor.y) : null
+    this.placeCamera()
+    const after = anchor ? this.groundAt(anchor.x, anchor.y) : null
+    if (before && after) {
+      this.target.add(before.sub(after))
+      this.following = null
+      this.placeCamera()
+    }
+    const camDir = new THREE.Vector2(Math.sin(this.az), Math.cos(this.az))
+    for (const w of this.walls) {
+      const want = w.out.dot(camDir) > CUT_AWAY ? 0.1 : 1
+      w.group.scale.y += (want - w.group.scale.y) * Math.min(1, dt * 8)
+    }
+    this.renderer.render(this.scene, this.camera)
+    if (this.ready) this.placeTags()
+  }
+
+  /** Every 2 s of drawing: when frames average over ~22 ms (under 45 fps), drop the pixel ratio a step (2 → 1.5 →
+   *  1.25 → 1). Sharp where the GPU allows, smooth where it doesn't. */
+  private adaptResolution(raw: number) {
+    if (raw > 0.25) return // a stall (tab switch, GC) says nothing about steady speed
+    this.perf.frames++
+    this.perf.time += raw
+    if (this.perf.time < 2) return
+    const avg = this.perf.time / this.perf.frames
+    this.perf = { frames: 0, time: 0 }
+    const now_ = this.renderer.getPixelRatio()
+    if (avg > 0.022 && now_ > 1) {
+      this.renderer.setPixelRatio(Math.max(1, now_ - (now_ > 1.5 ? 0.5 : 0.25)))
+      this.resize()
+    }
+  }
+
+  private placeCamera() {
     const aspect = this.host.clientWidth / Math.max(1, this.host.clientHeight)
     const h = this.viewHeight()
     Object.assign(this.camera, { left: (-h * aspect) / 2, right: (h * aspect) / 2, top: h / 2, bottom: -h / 2 })
@@ -911,13 +975,7 @@ export class Office3D implements OfficeRenderer {
       this.target.z + Math.cos(this.az) * Math.cos(ELEVATION) * far,
     )
     this.camera.lookAt(this.target)
-    const camDir = new THREE.Vector2(Math.sin(this.az), Math.cos(this.az))
-    for (const w of this.walls) {
-      const want = w.out.dot(camDir) > CUT_AWAY ? 0.1 : 1
-      w.group.scale.y += (want - w.group.scale.y) * Math.min(1, dt * 8)
-    }
-    this.renderer.render(this.scene, this.camera)
-    if (this.ready) this.placeTags()
+    this.camera.updateMatrixWorld()
   }
 
   private step(s: Agent3D, dt: number) {
@@ -1036,6 +1094,10 @@ export class Office3D implements OfficeRenderer {
     const w = this.host.clientWidth
     const h = this.host.clientHeight
     const v = new THREE.Vector3()
+    for (const tag of this.deskTags.values()) {
+      v.copy(tag.at).project(this.camera)
+      tag.el.style.transform = `translate(${(((v.x + 1) / 2) * w).toFixed(1)}px, ${(((1 - v.y) / 2) * h).toFixed(1)}px) translate(-50%, -50%)`
+    }
     const spots: { s: Agent3D; x: number; y: number; w: number; h: number }[] = []
     for (const s of this.agents.values()) {
       ;(s.top ?? s.root).getWorldPosition(v)

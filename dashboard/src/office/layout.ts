@@ -78,6 +78,19 @@ for (const r of [...DESKS.map(d => d.table), ...DIVIDERS, ...FURNITURE]) {
 }
 export const walkable = (x: number, y: number) => Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0 && x < COLS && y < ROWS && !BLOCKED[y][x]
 
+// From the seat, one tile away from the desk: the floor behind the chair. Side desks' chairs are drawn wider than a
+// tile, so their tag sits a bit further out.
+const BEHIND: Record<Facing, Point> = { right: { x: -1.7, y: 0 }, left: { x: 1.7, y: 0 }, down: { x: 0, y: -1 }, up: { x: 0, y: 1 } }
+
+/** Where a desk's name tag sits (tile units, centre of the spot): behind the chair, or beside it when that is a
+ *  wall (the HR seat backs onto the north wall). Shared by the 2D and 3D looks. */
+export function deskTagSpot(d: Desk): Point {
+  const behind = BEHIND[d.seat.face] ?? { x: 0, y: 1 }
+  const back = [behind, { x: behind.y, y: behind.x }, { x: -behind.y, y: -behind.x }]
+    .find((o) => walkable(d.seat.x + Math.round(o.x), d.seat.y + Math.round(o.y))) ?? behind
+  return { x: d.seat.x + back.x + 0.5, y: d.seat.y + back.y + 0.5 }
+}
+
 // Map data from the art (public/office/map, see design/office-style/REQUESTS.md). When present it replaces the
 // procedural layout above: collision.png is the authoritative grid and seats.json lists the desks (the 18 work desks, the Manager Room armchair MGR and the HR desk).
 export interface SeatRow {

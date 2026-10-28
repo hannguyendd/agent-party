@@ -54,6 +54,8 @@ export interface OfficeRenderer {
   walkSelectedTo(agentId: string): void
   sendSelectedHome(): void
   goToPlace(spot: Point): void
+  /** Turn the camera a quarter (3D only; the 2D map has one fixed view). */
+  rotate?(step: number): void
 }
 
 /** A renderer attached to a host element; `destroy` releases its canvas, listeners and GPU resources. */
