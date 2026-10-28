@@ -9,7 +9,7 @@ export const notificationsSupported = () => typeof window !== 'undefined' && 'No
 export async function enableNotifications(): Promise<NotificationPermission> {
   if (!notificationsSupported()) return 'denied'
   const p = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission
-  if (p === 'granted') new Notification('Agent Mesh', { body: 'Thông báo đã bật. Bạn sẽ được gọi khi có người giao việc.' })
+  if (p === 'granted') new Notification('Agent Mesh', { body: "Notifications are on. You'll be pinged when someone assigns you work." })
   return p
 }
 
@@ -28,8 +28,8 @@ export function useApprovalNotifications(approvals: Record<string, Approval>, on
       if (!notificationsSupported() || Notification.permission !== 'granted') continue
       if (!document.hidden && document.hasFocus()) continue // the page itself shows it
       const assignment = a.tool_name === 'Assignment'
-      const n = new Notification(assignment ? `${a.tool_input.from ?? 'Ai đó'} muốn giao việc` : `Cần duyệt: ${a.tool_name}`, {
-        body: assignment ? String(a.tool_input.task ?? '').slice(0, 140) : 'Một agent của bạn đang chờ bạn cho phép.',
+      const n = new Notification(assignment ? `${a.tool_input.from ?? 'Someone'} wants to assign work` : `Approval needed: ${a.tool_name}`, {
+        body: assignment ? String(a.tool_input.task ?? '').slice(0, 140) : 'One of your agents is waiting for your permission.',
         tag: a.id,
         requireInteraction: assignment,
       })

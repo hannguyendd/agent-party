@@ -34,9 +34,9 @@ export function ApprovalCard({ approval, context }: { approval: Approval; contex
     >
       <div className="mb-1.5 flex items-center gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
-          {assignment ? (pending ? 'Giao việc' : approval.status === 'allowed' ? 'Đã nhận' : approval.status === 'timed_out' ? 'Hết hạn' : 'Đã từ chối') : pending ? 'Approval needed' : approval.status.replace('_', ' ')}
+          {assignment ? (pending ? 'Assignment' : approval.status === 'allowed' ? 'Accepted' : approval.status === 'timed_out' ? 'Expired' : 'Declined') : pending ? 'Approval needed' : approval.status.replace('_', ' ')}
         </span>
-        <span className="font-mono text-[12.5px] font-semibold">{assignment ? `từ ${from}` : approval.tool_name}</span>
+        <span className="font-mono text-[12.5px] font-semibold">{assignment ? `from ${from}` : approval.tool_name}</span>
         <span className="ml-auto text-[11px] text-muted">{timeAgo(approval.created_at)}</span>
       </div>
       {context && <div className="mb-1.5 text-xs text-muted">{context}</div>}
@@ -46,22 +46,22 @@ export function ApprovalCard({ approval, context }: { approval: Approval; contex
         <Json value={approval.tool_input} />
       )}
       {assignment && pending && (
-        <div className="mt-1 text-[11px] text-muted">Nhận: agent bắt đầu làm và được sửa file trong việc này (lệnh shell khác vẫn hỏi).</div>
+        <div className="mt-1 text-[11px] text-muted">Accept: your agent starts and may edit files for this task (other shell commands still ask).</div>
       )}
       {!pending && approval.reason && <div className="mt-1 text-xs text-muted">Reason: {approval.reason}</div>}
       {pending && (
         <div className="mt-2 flex items-center gap-1.5">
           <input
             className="input flex-1"
-            placeholder={assignment ? 'Lý do (tuỳ chọn, gửi cho bên giao)' : 'Reason (optional, sent to the agent)'}
+            placeholder={assignment ? 'Reason (optional, sent back)' : 'Reason (optional, sent to the agent)'}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
           <button className="btn-primary" disabled={busy} onClick={() => decide(true)}>
-            {assignment ? 'Nhận' : 'Allow'}
+            {assignment ? 'Accept' : 'Allow'}
           </button>
           <button className="btn-danger" disabled={busy} onClick={() => decide(false)}>
-            {assignment ? 'Từ chối' : 'Deny'}
+            {assignment ? 'Decline' : 'Deny'}
           </button>
         </div>
       )}

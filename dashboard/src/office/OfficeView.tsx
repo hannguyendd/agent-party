@@ -115,6 +115,7 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
       if (isPreview) { setDemoDesks({ [id]: 'preview' }); setPickingDesk(false) }
       else void perform(async () => { await api.claimDesk(id); setPickingDesk(false) })
     },
+    onDeskTaken: (id, owner) => setNotice(`${id} is ${owner}'s desk. Pick one outlined in green.`),
     onOpenAgent: id => { if (!isPreview) go({ kind: 'agent-edit', id }) },
   }
   useEffect(() => {
@@ -128,23 +129,52 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
   }, [isPreview])
 
 
+  const pendingCount = Object.values(state.approvals).filter(a => a.status === 'pending').length
+  const presentCount = Object.values(office?.owners ?? {}).filter(o => o.present).length
+  const mesh = state.node?.mesh
+  const statusText = (a: OfficeAgent) =>
+    a.activity && ['running', 'awaiting_approval', 'awaiting_owner'].includes(a.activity.status) ? 'In a conversation' : a.at.kind === 'desk' ? 'At desk' : 'Wandering'
+
   return <section className="office-view">
+    <nav className="office-appbar" aria-label="Navigation">
+      <div className="office-logo"><b>◆</b>Agent Mesh</div>
+      <div className="office-nav">
+        <button className="is-active" aria-current="page">Office</button>
+        <button onClick={() => go({ kind: 'home' })}>Conversations</button>
+        <button onClick={() => go({ kind: 'approvals' })}>Approvals{pendingCount > 0 && <span className="o-count">{pendingCount}</span>}</button>
+        <button onClick={() => go({ kind: 'directory' })}>Mesh directory</button>
+        <button onClick={() => go({ kind: 'agent-edit' })}>+ Agent</button>
+      </div>
+      <div className="office-status">
+        {state.node && <span>{state.node.owner}</span>}
+        {mesh && <span title={`agentmesh-node ${mesh.node_url}`}><i className={mesh.node_healthy ? 'is-on' : ''} />mesh</span>}
+        {mesh?.config_dirty && <span title="agentmesh-node.yaml changed: restart agentmesh-node to publish new agents">⚠ restart mesh</span>}
+        <span><i className={state.connected ? 'is-on' : ''} />{state.connected ? 'live' : 'reconnecting'}</span>
+      </div>
+    </nav>
+
     <div className="office-toolbar">
-      <div><h1>Office <span className="office-mode">{isPreview ? 'Design preview' : 'Shared office'}</span></h1>
-        <p>{isPreview ? 'Explore the pastel office. Changes here stay in this preview.' : `${agents.length} agents · ${Object.values(office?.owners ?? {}).filter(o => o.present).length} owners present`}</p>
+      <div className="office-title">
+        <div>
+          <h1>Office <span className={`office-mode ${isPreview ? '' : 'is-live'}`}>{isPreview ? 'preview' : 'live'}</span></h1>
+          <p>{isPreview ? 'Sample agents. Nothing here leaves your browser.' : `${agents.length} agents · ${presentCount} ${presentCount === 1 ? 'owner' : 'owners'} in the office`}</p>
+        </div>
       </div>
       <div className="office-tools">
-        {office?.enabled && <button className="btn" onClick={() => setPreview(!preview)}>{preview ? 'Back to live' : 'Preview'}</button>}
-        <button className="btn" disabled={!canAct || busy} aria-pressed={pickingDesk} onClick={() => setPickingDesk(!pickingDesk)}>{pickingDesk ? 'Cancel desk selection' : ownDesk ? `Desk ${ownDesk} · Change` : 'Choose a desk'}</button>
-        {notifyPerm !== 'granted' && notificationsSupported() && <button className="btn" title="Được gọi khi có người giao việc lúc bạn không xem tab này" onClick={() => void enableNotifications().then(setNotifyPerm)}>🔔 Bật thông báo</button>}
+        {office?.enabled && <button className="btn" onClick={() => setPreview(!preview)}>{preview ? '← Back to live' : 'Preview'}</button>}
+        <button className="btn" disabled={!canAct || busy} aria-pressed={pickingDesk} onClick={() => setPickingDesk(!pickingDesk)}>{pickingDesk ? 'Cancel' : ownDesk ? `Desk ${ownDesk} · Change` : 'Choose a desk'}</button>
+        {notifyPerm !== 'granted' && notificationsSupported() && <button className="btn" title="Get pinged when someone assigns you work while this tab is in the background" onClick={() => void enableNotifications().then(setNotifyPerm)}>🔔 Notifications</button>}
         <button className="btn" disabled={!ready} onClick={() => sceneRef.current?.fitCamera()}>Fit office</button>
       </div>
     </div>
-    {!isPreview && !office?.connected && <div className="office-notice" role="status">Office is reconnecting. You can look around; steering resumes when the connection returns.</div>}
-    {(error || state.officeError) && <div className="office-notice office-error" role="alert">{error || state.officeError}<button onClick={() => { setError(null); clearError() }} aria-label="Dismiss error">×</button></div>}
+
+    {!isPreview && !office?.connected && <div className="office-notice" role="status">Reconnecting to the office. You can look around; moving resumes once it's back.</div>}
+    {(error || state.officeError) && <div className="office-notice office-error" role="alert">{error || state.officeError}<button onClick={() => { setError(null); clearError() }} aria-label="Dismiss">✕</button></div>}
     {notice && <div className="office-notice" role="status">{notice}</div>}
-    {pickingDesk && <div className="office-notice" role="status">Click an unclaimed desk, or choose one from the desk list below.</div>}
+    {pickingDesk && <div className="office-notice" role="status">Click a desk outlined in green, or pick one from the list on the right.</div>}
+
     <div className="office-workspace">
+      <div className="office-stage-wrap">
       <div className="office-stage">
         <OfficeCanvas data={sceneData} callbacks={callbacks} sceneRef={sceneRef} onReady={() => setReady(true)} onError={setError} />
         {!ready && <div className="office-loading" role="status">Opening the office…</div>}
@@ -152,14 +182,14 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
           <div className="office-incoming">
             {incoming.map(a => {
               const conv = state.conversations[a.conversation_id]
-              return <ApprovalCard key={a.id} approval={a} context={conv ? <>cho <span className="font-mono">{conv.agent_id}</span></> : undefined} />
+              return <ApprovalCard key={a.id} approval={a} context={conv ? <>for <span className="font-mono">{conv.agent_id}</span></> : undefined} />
             })}
           </div>
         )}
-        <div className="office-zoom" aria-label="Office zoom">
-          <button aria-label="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}>−</button>
-          <button aria-label="Fit whole office" onClick={() => sceneRef.current?.fitCamera()}>⌂</button>
-          <button aria-label="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}>+</button>
+        <div className="office-zoom" aria-label="Zoom">
+          <button className="o-btn" aria-label="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}>−</button>
+          <button className="o-btn" aria-label="Fit office" onClick={() => sceneRef.current?.fitCamera()}>⌂</button>
+          <button className="o-btn" aria-label="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}>+</button>
         </div>
         {peer && agents.some(a => a.agent_id === peer.agentId) && (
           <PeerMenu
@@ -177,28 +207,40 @@ export default function OfficeView({ state, go, clearError }: { state: LiveState
           />
         )}
       </div>
+      </div>
+
       <aside className="office-roster">
-        <div className="office-roster-heading"><h2>Your agents</h2><span>{mine.length}</span></div>
-        {!mine.length && <p className="office-empty">Your online agents will appear here.</p>}
-        <div className="office-agent-list">{mine.map(a => <button key={a.agent_id} className={`office-agent ${selected.includes(a.agent_id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(a.agent_id)} onClick={() => sceneRef.current?.selectOnly([a.agent_id])}>
-          <img src={`office/characters/${a.skin}-portrait.png`} alt="" width="32" height="48" />
-          <span><strong>{a.name}</strong><small>{a.at.kind === 'desk' ? 'At desk' : a.activity?.status === 'running' ? 'In conversation' : 'Exploring'}</small></span>
-          <i style={{ backgroundColor: ownerCss(a.owner) }} />
-        </button>)}</div>
-        {picked && <div className="office-agent-actions"><h3>{picked.name}</h3>
+        <div className="o-frame office-card">
+          <h2>Your agents <span>{mine.length}</span></h2>
+          {!mine.length && <p className="office-empty">Your online agents show up here. <button className="btn" onClick={() => go({ kind: 'agent-edit' })}>+ New agent</button></p>}
+          <div className="office-agent-list">{mine.map(a => <button key={a.agent_id} className={`office-agent ${selected.includes(a.agent_id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(a.agent_id)} onClick={() => sceneRef.current?.selectOnly([a.agent_id])}>
+            <img src={`office/characters/${a.skin}-portrait.png`} alt="" width="32" height="48" />
+            <span><strong>{a.name}</strong><small>{statusText(a)}</small></span>
+            <i style={{ backgroundColor: ownerCss(a.owner) }} />
+          </button>)}</div>
+        </div>
+
+        {picked && <div className="o-frame office-card office-agent-actions"><h3>{picked.name}</h3>
           <label htmlFor="office-skin">Skin</label><select id="office-skin" className="input" value={picked.skin} disabled={!canAct || busy} onChange={e => {
             if (isPreview) setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin: e.target.value } : a))
             else void perform(() => api.setSkin(picked.agent_id, e.target.value))
           }}>{SKINS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}</select>
-          <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.sendSelectedHome()}>Return to desk</button>
-          <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.moveSelectedTo({ x: 43, y: 10 })}>Walk to pantry</button>
-          <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.moveSelectedTo({ x: 41, y: 20 })}>Enter manager room</button>
-          {!isPreview && <button className="btn" onClick={() => go({ kind: 'agent-edit', id: picked.agent_id })}>Open agent</button>}
+          <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.sendSelectedHome()}>Back to desk</button>
+          <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.moveSelectedTo({ x: 43, y: 10 })}>Go to pantry</button>
+          <button className="btn" disabled={!canAct} onClick={() => sceneRef.current?.moveSelectedTo({ x: 41, y: 20 })}>Go to meeting room</button>
+          {!isPreview && <button className="btn" onClick={() => go({ kind: 'agent-edit', id: picked.agent_id })}>Agent settings</button>}
         </div>}
-        {pickingDesk && <label className="office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2'].filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}
-        <div className="office-help"><h3>Make yourself at home</h3><p>Chọn agent của bạn, rồi <kbd>WASD</kbd>/mũi tên để đi, hoặc click sàn.</p><p>Dừng cạnh agent người khác: menu tự hiện · <kbd>E</kbd> mở lại menu</p><p><kbd>Shift</kbd> chọn nhiều · <kbd>H</kbd> về bàn · <kbd>F</kbd> camera bám theo · <kbd>Esc</kbd> bỏ chọn</p><p>Click agent người khác để mở menu. Lăn chuột: zoom · Chuột phải kéo: xem chỗ khác.</p></div>
+
+        {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2'].filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}
+
+        <div className="o-frame office-card office-help"><h3>How to play</h3>
+          <p>Select an agent, then <kbd>WASD</kbd> / arrows to walk, or click the floor.</p>
+          <p>Click someone's agent to walk over. Stop next to them and their menu opens · <kbd>E</kbd> reopens it.</p>
+          <p><kbd>Shift</kbd> multi-select · <kbd>H</kbd> back to desk · <kbd>F</kbd> follow · <kbd>Esc</kbd> deselect</p>
+          <p>Scroll to zoom · right-drag to pan</p>
+        </div>
       </aside>
     </div>
-    <footer className="office-footer"><span className={`office-connection ${isPreview || office?.connected ? 'is-online' : ''}`}>{isPreview ? 'Local preview' : office?.connected ? 'Office connected' : 'Reconnecting'}</span><span>Pastel office · 18 desks · Open pantry</span></footer>
+    <footer className="office-footer"><span className={`office-connection ${isPreview || office?.connected ? 'is-online' : ''}`}>{isPreview ? 'Local preview' : office?.connected ? 'Office connected' : 'Reconnecting'}</span><span>18 desks · pantry · meeting room</span></footer>
   </section>
 }

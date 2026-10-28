@@ -48,6 +48,8 @@ export interface SceneCallbacks {
   onMove: (agentId: string, at: OfficeTarget) => void
   onPeerClick: (click: PeerClick) => void
   onDeskPick: (deskId: string) => void
+  /** Clicked a desk someone already claimed while picking. */
+  onDeskTaken: (deskId: string, owner: string) => void
   onOpenAgent: (agentId: string) => void
   /** My agent stopped next to someone else's (or walked away: null). Gather-style proximity menu. */
   onNearby: (click: PeerClick | null) => void
@@ -68,6 +70,20 @@ const DESK_FREE = 0x70a65b // outline on free desks while picking one
 const USE_FOREGROUND = false
 const FOREGROUND_DEPTH = 50_000 // the map's foreground plate draws over characters (depth = feet y)
 const HUD_DEPTH = 60_000 // names, icons and bubbles stay above the foreground
+
+/** Desk name tag: a solid chip (rounded box + text) so it reads on top of the busy desk art. */
+interface DeskTag {
+  box: Phaser.GameObjects.Container
+  bg: Phaser.GameObjects.Graphics
+  text: Phaser.GameObjects.Text
+  look: string
+}
+const TAG_LOOK = {
+  free: { fill: 0xfefaf2, stroke: 0x48506c, color: '#48506c' },
+  taken: { fill: 0x9dd6b7, stroke: 0x2f6b52, color: '#1f3b2f' },
+  mine: { fill: 0xf4b592, stroke: 0x8a4a2c, color: '#4a2412' },
+  pick: { fill: 0xd9f2c9, stroke: 0x70a65b, color: '#2f5a22' },
+}
 
 interface AgentSprite {
   id: string
@@ -115,7 +131,7 @@ export class OfficeScene extends Phaser.Scene {
   private data_: SceneData = { me: '', agents: [], desks: {}, owners: {}, bubbles: {}, icons: {}, pickingDesk: false }
   private sprites = new Map<string, AgentSprite>()
   private selected = new Set<string>()
-  private deskLabels = new Map<string, Phaser.GameObjects.Text>()
+  private deskLabels = new Map<string, DeskTag>()
   private deskHighlight!: Phaser.GameObjects.Graphics
   private selectBox!: Phaser.GameObjects.Graphics
   private drag: { start: Point; world: Point; mode: 'select' | 'pan'; scroll: Point } | null = null
@@ -176,6 +192,11 @@ export class OfficeScene extends Phaser.Scene {
 
     this.setupInput()
     this.loadSheets()
+    // Web fonts arrive after the first draw; redraw every text once they are ready.
+    void document.fonts?.ready.then(() => {
+      for (const tag of this.deskLabels.values()) this.paintTag(tag, tag.look, true)
+      for (const sp of this.sprites.values()) for (const t of [sp.label, sp.bubble]) crisp(t).updateText()
+    })
     this.ready = true
     this.sync()
     this.onReady?.()
@@ -207,11 +228,14 @@ export class OfficeScene extends Phaser.Scene {
     }
     for (const d of DESKS) {
       const t = d.table
-      const label = this.add.text((t.x + t.w / 2) * TILE, t.y * TILE - 7, d.id, {
-        fontFamily: 'ui-sans-serif, system-ui', fontSize: '11px', fontStyle: '600', color: '#4a4258',
-        backgroundColor: '#fff3e6cc', padding: { x: 4, y: 1 }, resolution: TEXT_RES,
-      }).setOrigin(0.5, 1).setDepth(HUD_DEPTH - 1)
-      this.deskLabels.set(d.id, crisp(label))
+      const text = crisp(
+        this.add
+          .text(0, 0, d.id, { fontFamily: 'Nunito, ui-sans-serif, system-ui', fontStyle: '800', fontSize: '11px', color: '#48506c', resolution: TEXT_RES })
+          .setOrigin(0.5, 0.5),
+      )
+      const bg = this.add.graphics()
+      const box = this.add.container((t.x + t.w / 2) * TILE, t.y * TILE - 2, [bg, text]).setDepth(HUD_DEPTH - 1)
+      this.deskLabels.set(d.id, { box, bg, text, look: '' })
     }
   }
 
@@ -300,7 +324,7 @@ export class OfficeScene extends Phaser.Scene {
 
   private scaleDeskLabels() {
     const k = 1 / this.cameras.main.zoom
-    for (const l of this.deskLabels.values()) l.setScale(k)
+    for (const tag of this.deskLabels.values()) tag.box.setScale(k)
   }
 
   /** Bounds only when the map is bigger than the view; otherwise they would pin it to the top-left. */
@@ -375,12 +399,13 @@ export class OfficeScene extends Phaser.Scene {
   private spawn(a: OfficeAgent): AgentSprite {
     const ring = this.add.ellipse(0, 0, 26 * CHAR_SCALE, 10 * CHAR_SCALE, ownerColor(a.owner), 0.85).setStrokeStyle(0)
     const label = this.add
-      .text(0, -50, '', { fontFamily: 'ui-sans-serif, system-ui', fontSize: '13px', color: '#ffffff', backgroundColor: '#48506cdd', padding: { x: 5, y: 2 }, resolution: TEXT_RES })
+      .text(0, -50, '', { fontFamily: 'Nunito, ui-sans-serif, system-ui', fontStyle: '800', fontSize: '12px', color: '#fdf3e6', backgroundColor: '#48506cee', padding: { x: 6, y: 2 }, resolution: TEXT_RES })
       .setOrigin(0.5, 1)
     const icon = this.add.text(14, -40, '', { fontSize: '16px', resolution: TEXT_RES }).setOrigin(0, 1)
     const bubble = this.add
       .text(0, -60, '', {
-        fontFamily: 'ui-sans-serif, system-ui',
+        fontFamily: 'Nunito, ui-sans-serif, system-ui',
+        fontStyle: '600',
         fontSize: '13px',
         color: '#2c283c',
         backgroundColor: '#ffffff',
@@ -747,12 +772,30 @@ export class OfficeScene extends Phaser.Scene {
     this.deskHighlight.clear()
     for (const d of DESKS) {
       const owner = desks[d.id]
-      crisp(this.deskLabels.get(d.id)!, owner ? `${d.id} · ${owner}` : d.id).setColor(owner === me ? '#487b65' : '#63596f')
+      const tag = this.deskLabels.get(d.id)!
+      crisp(tag.text, owner ? `${d.id} · ${owner}` : d.id)
+      this.paintTag(tag, owner === me ? 'mine' : owner ? 'taken' : pickingDesk ? 'pick' : 'free')
       if (pickingDesk && !owner) {
         const t = d.table
         this.deskHighlight.lineStyle(2, DESK_FREE).strokeRect(t.x * TILE - 2, t.y * TILE - 2, t.w * TILE + 4, t.h * TILE + 4)
       }
     }
+  }
+
+  /** Redraw a desk tag's chip to fit its text in one of the TAG_LOOK styles. */
+  private paintTag(tag: DeskTag, look: string, force = false) {
+    if (!force && tag.look === look && tag.bg.getData('w') === tag.text.width) return
+    const style = TAG_LOOK[look as keyof typeof TAG_LOOK] ?? TAG_LOOK.free
+    tag.look = look
+    tag.text.setColor(style.color)
+    crisp(tag.text).updateText()
+    const w = Math.ceil(tag.text.width) + 12
+    const h = Math.ceil(tag.text.height) + 4
+    tag.bg.clear()
+    tag.bg.fillStyle(0x2c283c, 0.25).fillRoundedRect(-w / 2, -h / 2 + 2, w, h, 4) // hard drop shadow
+    tag.bg.fillStyle(style.fill, 1).fillRoundedRect(-w / 2, -h / 2, w, h, 4)
+    tag.bg.lineStyle(1.5, style.stroke, 1).strokeRoundedRect(-w / 2, -h / 2, w, h, 4)
+    tag.bg.setData('w', tag.text.width)
   }
 
   private deskAt(p: Point): string | null {
@@ -862,7 +905,9 @@ export class OfficeScene extends Phaser.Scene {
       const tile = tileOf({ x: p.worldX, y: p.worldY + 6 })
       if (this.data_.pickingDesk) {
         const desk = this.deskAt(tile)
-        if (desk && !this.data_.desks[desk]) this.callbacks?.onDeskPick(desk)
+        const owner = desk ? this.data_.desks[desk] : undefined
+        if (desk && !owner) this.callbacks?.onDeskPick(desk)
+        else if (desk && owner && owner !== this.data_.me) this.callbacks?.onDeskTaken(desk, owner)
         return
       }
       this.moveSelectedTo(tile)
@@ -969,7 +1014,7 @@ export class OfficeScene extends Phaser.Scene {
     for (const id of this.selected) this.callbacks?.onMove(id, { kind: 'desk' })
   }
 
-  /** Steering towards another agent ("Đi tới"). */
+  /** Steering towards another agent ("Walk over"). */
   walkSelectedTo(agentId: string) {
     const target = this.sprites.get(agentId)
     if (!target) return

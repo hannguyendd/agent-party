@@ -114,12 +114,14 @@ export default function App() {
       main = <Home conversations={conversations} go={setView} hasAgents={agents.length > 0} />
   }
 
+  if (view.kind === 'office') return <div className="h-full">{main}</div>
+
   return (
     <div className="flex h-full flex-col">
       <Header node={state.node} connected={state.connected} pendingApprovals={pending.length} view={view} go={setView} setNode={setNode} />
       <div className="flex min-h-0 flex-1">
-        {view.kind !== 'office' && <Sidebar agents={agents} conversations={conversations} view={view} go={setView} />}
-        <main className={view.kind === 'office' ? 'min-w-0 flex-1 overflow-hidden' : 'min-w-0 flex-1 overflow-y-auto'}>{main}</main>
+        <Sidebar agents={agents} conversations={conversations} view={view} go={setView} />
+        <main className="min-w-0 flex-1 overflow-y-auto">{main}</main>
       </div>
     </div>
   )
