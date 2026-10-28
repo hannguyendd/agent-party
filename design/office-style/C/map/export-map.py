@@ -60,7 +60,9 @@ for i,x in enumerate([18,23,28,33]):
     seat(f'D{13+i}',x,30,'up',[(x-1,30),(x+1,30),(x,31)])
 seat('M1',23,14,'right',[(23,13),(23,15),(25,16)])
 seat('M2',31,14,'left',[(31,13),(31,15),(30,16)])
-seats.sort(key=lambda s: (s['id'].startswith('M'), int(s['id'][1:])))
+# The Manager Room's armchair behind the large desk is a claimable desk too (owner request, 2026-10-28).
+seat('MGR',51,21,'down',[(50,21),(52,21),(51,20)])
+seats.sort(key=lambda s: (s['id'] == 'MGR', s['id'].startswith('M'), int(s['id'][1:]) if s['id'][1:].isdigit() else 0))
 entrance = (19,4)
 assert collision.getpixel(entrance) == WHITE
 collision.putpixel(entrance,BLUE)
@@ -162,8 +164,8 @@ manifest_path.write_text(json.dumps(manifest,indent=2)+'\n')
 # Required export invariants.
 red_pixels={(x,y) for y in range(ROWS) for x in range(COLS) if collision.getpixel((x,y))==RED}
 assert red_pixels=={(s['seat']['x'],s['seat']['y']) for s in seats}
-assert len(red_pixels)==len(seats)==18
-assert {s['id'] for s in seats}=={f'D{i}' for i in range(1,17)}|{'M1','M2'}
+assert len(red_pixels)==len(seats)==19
+assert {s['id'] for s in seats}=={f'D{i}' for i in range(1,17)}|{'M1','M2','MGR'}
 assert all(len(s['extras']) in range(2,5) and all((p['x'],p['y']) in visited for p in s['extras']) for s in seats)
 assert set(background.getdata()) <= set(palette)
 assert set(foreground.getchannel('A').getdata()) <= {0,255}

@@ -27,7 +27,7 @@ from agentfleet_node.naming import InvalidAgentId, owner_of, validate_agent_id
 log = logging.getLogger(__name__)
 
 # The real office: D1-D16 in the L-shaped block, M1/M2 in the middle (see docs/office/ASSET-BRIEF.md).
-DESKS = tuple([f"D{i}" for i in range(1, 17)] + ["M1", "M2"])
+DESKS = tuple([f"D{i}" for i in range(1, 17)] + ["M1", "M2", "MGR"])
 SKINS = ("dev-hoodie", "designer", "lead", "shiba", "cat", "penguin", "alien", "robot",
          "mage", "knight", "ranger", "healer", "rogue", "berserker", "slime", "dragon")
 # Agents that never picked a look get one of the first eight, so adding skins never changes an existing default.

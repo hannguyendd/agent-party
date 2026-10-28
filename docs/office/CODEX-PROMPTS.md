@@ -284,7 +284,10 @@ Gather, Stardew Valley, Animal Crossing, League of Legends, Dota, Overwatch or a
 
 ---
 
-## Step 8: A desk seat in the Manager Room
+## Step 8: A desk seat in the Manager Room (not needed: done without new art)
+
+The existing armchair became seat `MGR` directly (see design/office-style/REQUESTS.md). Kept only in case the armchair
+is ever replaced by an office chair.
 
 Attach `dashboard/public/office/map/background.png`, `collision@16x.png`, `seats.json` and
 `design/office-style/C/palette.txt`. Assets and map metadata only: no application code. After delivery the code side

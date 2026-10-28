@@ -45,9 +45,9 @@ All eight are in `manifest.characters48` with the existing 192×360 sheet / 48×
 
 No application code was changed by the asset batch. Add the IDs to any server-side skin validation as needed before exposing them to owners. SHA-256 preservation and visual reviews are in `design/office-style/C/characters48-batch2/`.
 
-## Requested: desk seat in the Manager Room (open)
+## Done: desk seat in the Manager Room (MGR)
 
-Owner request (2026-10-28): the Manager Room should have a desk seat with the same office chair as the open-office
-desks, so the manager can claim it like D1-D16. Art + metadata via Codex: `docs/office/CODEX-PROMPTS.md` Step 8.
-Code follow-up after delivery: add `MGR` to `DESKS` in `node-server/src/agentfleet_node/world.py` and to the fallback
-desk list in `dashboard/src/office/OfficeView.tsx`; labels, the desk picker mini-map and "Go to desk" read seats.json.
+Owner request (2026-10-28): staff can pick the Manager Room as their desk. No new art: the existing green armchair
+behind the large desk is the seat. `seats.json` has a 19th entry `MGR` (seat (51, 21), facing down, extras (50, 21),
+(52, 21), (51, 20)); `collision.png` marks (51, 21) red. `export-map.py` reproduces both. Code: `MGR` in world.py
+`DESKS`. Desk count is now 19.

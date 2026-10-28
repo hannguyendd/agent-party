@@ -433,7 +433,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           })}</div>
           {pickingDesk && deskPill && side === 'agents' && (
             <DeskPicker anchor={deskPill} me={me} desks={desks} busy={busy}
-              deskIds={office?.desk_ids?.length ? office.desk_ids : ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2']}
+              deskIds={office?.desk_ids?.length ? office.desk_ids : ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2','MGR']}
               onPick={id => callbacks.onDeskPick(id)} onClose={() => setPickingDesk(false)} />
           )}
           {looks && mine.some(a => a.agent_id === looks.agentId) && (() => {

@@ -79,7 +79,7 @@ for (const r of [...DESKS.map(d => d.table), ...DIVIDERS, ...FURNITURE]) {
 export const walkable = (x: number, y: number) => Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0 && x < COLS && y < ROWS && !BLOCKED[y][x]
 
 // Map data from the art (public/office/map, see design/office-style/REQUESTS.md). When present it replaces the
-// procedural layout above: collision.png is the authoritative grid and seats.json lists the 18 desks.
+// procedural layout above: collision.png is the authoritative grid and seats.json lists the desks (19 with the Manager Room armchair, MGR).
 export interface SeatRow {
   id: string
   seat: Point
