@@ -12,6 +12,8 @@ Assignment, Party, Present, Recap…) is defined in `CONTEXT.md`; use those word
 - `node-server/`: Python node server, one per device. Runs the agents and speaks A2A. The same package also runs
   the team **world server** (`agentfleet-node world`, `make world`) on the hub machine for the Office.
 - `dashboard/`: React app served by the node server: the Office screen plus Settings.
+- `site/`: the public intro page, published to GitHub Pages by `.github/workflows/pages.yml` (it copies the Office
+  art in from `dashboard/public/office` at build time). Plain HTML + `office.js`, no build step.
 - `docs/`: `GUIDE.md` (how admins and staff run and use the Office), `RELEASE.md` (publishing versions), `NOTES.md` (repo overview), `adr/` (decisions),
   `office/` (art brief and Codex prompts).
 - `design/office-style/`: art sources and export scripts for the Office (owned by the art workflow, see below).
@@ -26,7 +28,7 @@ Each has its own CLAUDE.md. Commands live in the root `Makefile` (`make help`).
 - **API shapes**: the dashboard's `src/api.ts` mirrors the node server's `api.py` routes, `models.py` rows and
   `store.py` events by hand. Change both sides in one commit.
 - **v1 scope** (agreed in the doc): LAN only, plain-http hub, address agents by ID, no offline queue,
-  no standalone MCP server. Deferred items are listed in README "Known gaps".
+  no standalone MCP server. Deferred items are listed in `docs/HOW-IT-WORKS.md` "Known gaps".
 - **Office topology (ADR 0001)**: browsers talk only to their own node (`127.0.0.1:9100`); the node relays to the
   world server. The world server holds positions, presence, desks and skins, **never message content**.
 - **Privacy in the Office**: only the owners in a conversation see its words; everyone else sees typing dots.
