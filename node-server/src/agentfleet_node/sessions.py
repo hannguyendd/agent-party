@@ -9,9 +9,11 @@ timeout.
 
 import asyncio
 import fnmatch
+import hmac
 import json
 import logging
 import re
+import secrets
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any
@@ -332,6 +334,8 @@ class SessionManager:
         self._workers: dict[str, SessionWorker] = {}
         self._approvals: dict[str, asyncio.Future[tuple[bool, str]]] = {}
         self._owner_gates: dict[str, asyncio.Future[OwnerDecision]] = {}
+        # Per-conversation secrets for /api/internal/mesh (mesh tools of runtimes that run them out of process).
+        self._mesh_tokens: dict[str, str] = {}
         # The CLI's plan usage per window (usage.UsageTracker.update).
         self.on_rate_limit: Callable[[Any], None] | None = None
         # Called when an Assignment needs the owner: (conversation_id, approval_id, sender) -> how they were woken.
@@ -348,6 +352,19 @@ class SessionManager:
                 raise KeyError(conv.agent_id)
             w = self._workers[conv_id] = SessionWorker(self, conv_id, agent)
         return w
+
+    def register_mesh_token(self, conv_id: str) -> str:
+        """A fresh secret that lets this conversation's out-of-process mesh tools call the node. Memory only."""
+        token = secrets.token_urlsafe(32)
+        self._mesh_tokens[conv_id] = token
+        return token
+
+    def revoke_mesh_token(self, conv_id: str) -> None:
+        self._mesh_tokens.pop(conv_id, None)
+
+    def check_mesh_token(self, conv_id: str, token: str) -> bool:
+        expected = self._mesh_tokens.get(conv_id)
+        return bool(expected and token) and hmac.compare_digest(expected, token)
 
     async def shutdown(self) -> None:
         for w in list(self._workers.values()):

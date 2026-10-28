@@ -826,6 +826,31 @@ async def start_update(request: Request) -> dict[str, str]:
     return {"status": "updating"}
 
 
+@router.post("/internal/mesh/{conv_id}/{tool}")
+async def internal_mesh_tool(conv_id: str, tool: str, request: Request) -> dict[str, Any]:
+    """A mesh tool call from a runtime that runs its tools out of process (Codex's stdio proxy, mesh_mcp.py).
+    Loopback only, and only with the secret the runtime registered for this conversation. The agent's policy applies
+    here (an ask waits for the owner), whatever the runtime itself asked."""
+    from agentfleet_node.mesh_tools import TOOL_SPECS, _err
+
+    node = _node(request)
+    if (request.client.host if request.client else "") not in ("127.0.0.1", "::1"):
+        raise HTTPException(403, "local only")
+    auth = request.headers.get("authorization", "")
+    if not node.sessions.check_mesh_token(conv_id, auth.removeprefix("Bearer ").strip()):
+        raise HTTPException(403, "bad or missing token")
+    if tool not in TOOL_SPECS:
+        raise HTTPException(404, f"no mesh tool {tool}")
+    args = await request.json() if await request.body() else {}
+    if not isinstance(args, dict):
+        raise HTTPException(422, "arguments must be a JSON object")
+    worker = node.sessions.worker(conv_id)
+    allowed, reason = await worker.decide(f"mcp__mesh__{tool}", args)
+    if not allowed:
+        return _err(reason)
+    return await getattr(node.sessions.mesh_tools_factory.tools(worker.agent, worker), tool)(args)
+
+
 @router.post("/codex/setup")
 async def setup_codex(request: Request) -> dict[str, str]:
     """Codex is here but the node lacks its Codex support: re-run the installer, which adds it on hosts with Codex."""
