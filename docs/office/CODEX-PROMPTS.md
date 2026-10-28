@@ -218,7 +218,7 @@ Write ui.json with name -> pixel rect (and nine-slice insets). Verify sizes and 
 
 ---
 
-## Step 7: Eight more characters (48x72, same cast)
+## Step 7: Eight more characters, a playful fantasy batch (48x72, same cast)
 
 Attach `design/office-style/C/characters48/sheets-review.png`, `poses-review.png`, one existing sheet (for example
 `dashboard/public/office/characters48/dev-hoodie.png`) and `design/office-style/C/palette.txt`. Assets only: no
@@ -232,21 +232,24 @@ shade of the fill (never pure black), light from the top-left, crisp pixels with
 gradients, no dithering and no partial alpha. Assets only: do not edit any application code.
 
 ## The eight characters (ids are file names; keep them exactly)
-- ops: human SRE / ops engineer, dark skin, short locs, olive utility vest with a small tool pouch, holding a
-  closed laptop under one arm.
-- pm: human product manager in a lavender hijab and a cream cardigan, holding a clipboard (no text on it).
-- intern: human junior developer, freckles, cap worn backwards, oversized mint t-shirt, small backpack.
-- data: human data scientist, long silver hair in a low ponytail, navy turtleneck, holding a small tablet that
-  shows a tiny bar chart drawn with 3 bars (no text or numbers).
-- fox: red fox standing on two legs, mustard sweater vest over a white collar, round glasses, bushy tail.
-- panda: panda standing on two legs, big over-ear headset, peach scarf.
-- frog: green frog standing on two legs, beige bucket hat, tiny orange backpack.
-- ghost: friendly round ghost (soft white body with a pale lavender shade) holding a coffee mug; it floats, so its
-  "feet" are the wavy hem of the body, which sits on the same contact line as everyone else's feet.
+A playful "fantasy office" batch: classic fantasy and battle-arena ROLES (mage, tank, ranger, healer...) mixed
+with office life. Each one is an ORIGINAL design built from the role, never a likeness of any existing
+champion, hero or mascot. Keep them cute and funny, office-friendly.
+- mage: tiny wizard with an oversized starry hat that keeps slipping over one eye, robe over a hoodie, a glowing
+  coffee mug instead of an orb (two small floating sparkles around it).
+- knight: chubby armoured knight with the visor up, a lanyard badge hanging on the breastplate, carrying a
+  keyboard like a shield.
+- ranger: hooded archer in a forest-green cape, a quiver full of rolled-up papers and pens instead of arrows.
+- healer: cheerful cleric in white and gold, holding a big band-aid wand; a little heart floats up when waving.
+- rogue: masked ninja-thief in dark purple, sneaking a donut; scarf tails flutter while walking.
+- berserker: small horned-helmet viking with a huge beard, holding a rubber duck (the debugging duck) like a trophy.
+- slime: round mint slime with a tiny crown, bouncing walk (squash on the stride frames), drips a little when typing.
+- dragon: baby dragon standing on two legs, tiny wings, wearing an oversized office cardigan, a small puff of
+  smoke when waving.
 
 Every silhouette must be easy to tell apart from the others AND from the existing eight at a glance (colour,
 shape, headwear, held object). Original designs only: do not copy or closely imitate characters from Pokémon,
-Gather, Stardew Valley, Animal Crossing or any other game or franchise. No text, logos or watermarks in sprites.
+Gather, Stardew Valley, Animal Crossing, League of Legends, Dota, Overwatch or any other game or franchise. No text, logos or watermarks in sprites.
 
 ## Deliverables
 1. dashboard/public/office/characters48/<id>.png for each id: sprite sheet 192x360 px = 4 columns x 5 rows of
