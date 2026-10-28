@@ -300,6 +300,14 @@ async def office_move(body: MoveIn, request: Request) -> dict[str, str]:
     return await _world_send(node, {"op": "move", "agent_id": body.agent_id, "at": body.at})
 
 
+@router.post("/notify/test")
+async def notify_test(request: Request) -> dict[str, bool]:
+    """Fire a test OS notification on this machine (what owners get when no dashboard tab is open)."""
+    from agentfleet_node.notify import os_notify
+
+    return {"shown": os_notify("Agent Mesh", "Test notification: this is how you'll be woken for an assignment.")}
+
+
 @router.post("/office/assign")
 async def office_assign(body: AssignIn, request: Request) -> dict[str, str]:
     """Assignment: our agent hands the owner's task to a peer, whose owner must accept it (CONTEXT.md, ADR 0002).
@@ -316,17 +324,24 @@ async def office_assign(body: AssignIn, request: Request) -> dict[str, str]:
         raise HTTPException(422, str(e)) from None
     s = node.settings
     timeout = s.assignment_accept_timeout_s + s.turn_timeout_s + 60
+    context_id = uuid.uuid4().hex
 
     async def run() -> None:
         try:
-            await node.outbound.send(body.from_agent, body.to_agent, body.text, kind="assignment", timeout_s=timeout)
+            await node.outbound.send(body.from_agent, body.to_agent, body.text, context_id=context_id, kind="assignment", timeout_s=timeout)
         except Exception:
             pass  # OutboundClient already recorded the failure on the conversation
 
     task = asyncio.create_task(run())
     _background.add(task)
     task.add_done_callback(_background.discard)
-    return {"status": "sent"}
+    # The conversation is created right away (before the network call); hand its id back so the UI can open it.
+    for _ in range(40):
+        conv = node.store.find_conversation(body.from_agent, context_id)
+        if conv:
+            return {"status": "sent", "conversation_id": conv.id}
+        await asyncio.sleep(0.05)
+    return {"status": "sent", "conversation_id": ""}
 
 
 # Keep references to fire-and-forget tasks so they are not garbage-collected mid-flight.

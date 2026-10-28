@@ -119,6 +119,8 @@ async def test_assign_api_runs_in_background_and_checks_the_target(node_factory)
         async with httpx.AsyncClient(base_url=a.url) as c:
             r = await c.post("/api/office/assign", json={"from_agent": "han/dev", "to_agent": "bob/qa", "text": "TOOL:Edit do it"})
             assert r.status_code == 200
+            conv_id = r.json()["conversation_id"]
+            assert a.node.store.get_conversation(conv_id).kind == "assignment"  # the UI opens this right away
             r = await c.post("/api/office/assign", json={"from_agent": "han/dev", "to_agent": "zed/none", "text": "x"})
             assert r.status_code == 409
             r = await c.post("/api/office/assign", json={"from_agent": "bob/qa", "to_agent": "han/dev", "text": "x"})

@@ -647,27 +647,31 @@ export class OfficeScene extends Phaser.Scene {
 
   /** Agents standing close together would print their names on top of each other: lift the later one(s). */
   private declutterLabels() {
-    const placed: { x: number; y: number; w: number; h: number }[] = []
+    // Each agent's overlay block is its name tag plus, when shown, the speech bubble above it.
+    const placed: { x: number; top: number; bottom: number; w: number }[] = []
     const list = [...this.sprites.values()].filter((s) => s.label.visible).sort((a, b) => b.feet.y - a.feet.y)
     for (const s of list) {
       const k = s.label.scaleX
-      const w = s.label.width * k
-      const h = s.label.height * k
-      let y = s.hud.y + s.label.y
-      for (let tries = 0; tries < 6; tries++) {
-        const hit = placed.find((p) => Math.abs(p.x - s.hud.x) < (p.w + w) / 2 + 2 && Math.abs(p.y - y) < (p.h + h) / 2 + 1)
+      const bubble = s.bubbleBox.visible ? s.bubbleBox.getBounds() : null
+      const w = Math.max(s.label.width * k, bubble?.width ?? 0)
+      const bottom0 = s.hud.y + s.label.y
+      const height = s.label.height * k + (bubble ? bubble.height + 8 * k : 0)
+      let bottom = bottom0
+      for (let tries = 0; tries < 8; tries++) {
+        const hit = placed.find((p) => Math.abs(p.x - s.hud.x) < (p.w + w) / 2 + 2 && bottom > p.top - 1 && bottom - height < p.bottom + 1)
         if (!hit) break
-        y = hit.y - (hit.h + h) / 2 - 2
+        bottom = hit.top - 3
       }
-      const lift = y - (s.hud.y + s.label.y)
+      const lift = bottom - bottom0
       if (lift) {
         s.label.y += lift
         s.icon.y += lift
         s.bubbleBox.y += lift
       }
-      placed.push({ x: s.hud.x, y, w, h })
+      placed.push({ x: s.hud.x, top: bottom - height, bottom, w })
     }
   }
+
 
   /** Proximity: when the one agent I'm controlling stands still within reach of someone else's agent, offer
    *  the menu for the closest one; close it when they part. Closing it by hand keeps it closed until they part. */

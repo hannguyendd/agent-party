@@ -75,7 +75,7 @@ export function ApprovalsList({ approvals, state, onOpen }: { approvals: Approva
 }
 
 /** Start a private conversation with one of my agents (what the old "Start session" page did). */
-export function MessageAgent({ agentId, onStarted, onError }: { agentId: string; onStarted: (id: string) => void; onError: (msg: string) => void }) {
+export function MessageAgent({ agentId, name, onStarted, onError }: { agentId: string; name?: string; onStarted: (id: string) => void; onError: (msg: string) => void }) {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const start = async () => {
@@ -95,7 +95,7 @@ export function MessageAgent({ agentId, onStarted, onError }: { agentId: string;
       <textarea
         className="input"
         rows={2}
-        placeholder="Ask your agent to do something…"
+        placeholder={`Ask ${name ?? 'your agent'} to do something…`}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {

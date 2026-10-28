@@ -16,7 +16,8 @@ export function PeerMenu(props: {
   onClose: () => void
   onWalk: () => void
   onOpen: (id: string) => void
-  onSent: (msg: string) => void
+  /** After Ask / Assign; convId is the conversation to open so the owner can follow it. */
+  onSent: (msg: string, convId?: string) => void
   onError: (msg: string) => void
   /** Design preview: nothing is sent. */
   preview?: boolean
@@ -40,15 +41,16 @@ export function PeerMenu(props: {
         const prompt =
           `Use mcp__mesh__send_message to ask ${peer.agent_id} the question below, then tell me what they answered.\n\n` +
           `Question: ${text.trim()}`
-        await api.startConversation(asker, prompt)
-        props.onSent(`${asker} is asking ${peer.agent_id}…`)
+        const conv = await api.startConversation(asker, prompt)
+        props.onSent(`${asker} is asking ${peer.agent_id}…`, conv.id)
       } else {
         // Assignment: sent as written; the peer's owner must accept before their agent starts (ADR 0002).
-        await api.assign(asker, peer.agent_id, text.trim())
+        const res = await api.assign(asker, peer.agent_id, text.trim())
         props.onSent(
           props.present
             ? `Assigned to ${peer.agent_id}. Waiting for ${peer.owner} to accept…`
             : `Assigned. ${peer.owner} is away: they've been notified and have up to 15 minutes to accept.`,
+          res.conversation_id || undefined,
         )
       }
     } catch (e) {

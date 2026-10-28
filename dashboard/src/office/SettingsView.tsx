@@ -157,6 +157,14 @@ function MeshSection({ state, setNode }: { state: LiveState; setNode: (n: NodeIn
 
 function NotificationsSection() {
   const [perm, setPerm] = useState(() => (notificationsSupported() ? Notification.permission : 'denied'))
+  const [osResult, setOsResult] = useState<string | null>(null)
+  const testOs = async () => {
+    try {
+      setOsResult((await api.notifyTest()).shown ? 'Sent. If nothing appeared, check System Settings → Notifications for Script Editor / your terminal, and Focus mode.' : 'This machine has no way to show system notifications.')
+    } catch (e) {
+      setOsResult(errMsg(e))
+    }
+  }
   return (
     <div className="settings-stack">
       <div className="o-frame settings-card">
@@ -175,6 +183,14 @@ function NotificationsSection() {
           </button>
         </div>
         <p className="settings-note">macOS Focus / Do Not Disturb can still hide them; also allow notifications for your browser in System Settings.</p>
+      </div>
+      <div className="o-frame settings-card">
+        <h2>System notifications</h2>
+        <p className="settings-note">Used when no Agent Mesh tab is open: the node server on this machine pops a system notification.</p>
+        <div className="settings-actions">
+          <button className="btn" onClick={() => void testOs()}><Icon name="notifications-on" />Send a test system notification</button>
+        </div>
+        {osResult && <p className="settings-note">{osResult}</p>}
       </div>
     </div>
   )

@@ -230,7 +230,8 @@ export const api = {
   setSkin: (agent_id: string, skin: string) => req<{ status: string }>('POST', '/api/office/skin', { agent_id, skin }),
   move: (agent_id: string, at: OfficeTarget) => req<{ status: string }>('POST', '/api/office/move', { agent_id, at }),
   assign: (from_agent: string, to_agent: string, text: string) =>
-    req<{ status: string }>('POST', '/api/office/assign', { from_agent, to_agent, text }),
+    req<{ status: string; conversation_id: string }>('POST', '/api/office/assign', { from_agent, to_agent, text }),
+  notifyTest: () => req<{ shown: boolean }>('POST', '/api/notify/test'),
 
   approvals: () => req<Approval[]>('GET', '/api/approvals'),
   decide: (id: string, allow: boolean, reason = '') =>
