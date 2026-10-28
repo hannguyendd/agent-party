@@ -5,23 +5,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Conversation, Message } from '../api'
 import { Json, clockTime } from '../components/ui'
 import type { LiveState } from '../useLiveState'
+import { who, type Who } from './people'
 import { SKIN_BY_ID, ownerCss } from './skins'
-
-export interface Who {
-  id: string
-  name: string
-  owner: string
-  skin?: string
-}
-
-/** Display name, owner and skin for an agent ID, from the Office and this node's agents. */
-export function who(state: LiveState, agentId: string | null | undefined): Who {
-  const id = agentId ?? 'unknown'
-  const inOffice = state.office?.agents.find((a) => a.agent_id === id)
-  const local = state.agents[id]
-  const [owner, short] = id.includes('/') ? id.split('/') : ['', id]
-  return { id, name: inOffice?.name || local?.name || short, owner: inOffice?.owner ?? owner, skin: inOffice?.skin }
-}
 
 export function Avatar({ w, size = 28 }: { w: Who | 'me'; size?: number }) {
   if (w === 'me') return <span className="o-avatar o-avatar-me" style={{ width: size, height: size }}>you</span>
@@ -37,6 +22,44 @@ export function Avatar({ w, size = 28 }: { w: Who | 'me'; size?: number }) {
       {(SKIN_BY_ID[w.skin ?? '']?.emoji ?? w.name[0] ?? '?').toUpperCase()}
     </span>
   )
+}
+
+/** Mesh tools read as what the agent did ("asked API agent"), not as raw tool calls. */
+function MeshEvent({ state, use, result }: { state: LiveState; use: Message; result?: Message }) {
+  const input = (use.data.input ?? {}) as Record<string, unknown>
+  const tool = use.content.replace(/^mcp__mesh__/, '')
+  let parsed: Record<string, unknown> | null = null
+  try {
+    parsed = result && !result.data.is_error ? (JSON.parse(result.content) as Record<string, unknown>) : null
+  } catch {
+    parsed = null
+  }
+  if (tool === 'list_agents') {
+    const n = Array.isArray(parsed) ? parsed.length : null
+    return <div className="o-event">🔎 {result ? `Looked through ${n ?? 'the'} agent${n === 1 ? '' : 's'} on the mesh` : 'Looking for the right person…'}</div>
+  }
+  if (tool === 'needs_input') return <div className="o-event">❓ Asked a follow-up question</div>
+  if (tool === 'send_message' || tool === 'share_file') {
+    const to = who(state, String(input.to ?? ''))
+    const reply = parsed && typeof parsed.reply === 'string' ? parsed.reply : null
+    const failed = result?.data.is_error === true
+    return (
+      <div className="o-exchange">
+        <div className="o-exchange-head">
+          <Avatar w={to} size={22} />
+          <span>
+            {tool === 'share_file' ? `Sent ${String(input.path ?? 'a file')} to` : 'Asked'} <strong>{to.name}</strong>
+            {to.owner && <small> · {to.owner}</small>}
+          </span>
+        </div>
+        {typeof input.text === 'string' && input.text && <div className="o-exchange-q">{input.text}</div>}
+        {!result && <div className="o-exchange-wait"><span className="o-dots"><i /><i /><i /></span> waiting for {to.name}</div>}
+        {failed && <div className="o-exchange-err">{result?.content}</div>}
+        {reply && <div className="o-exchange-a"><strong>{to.name}:</strong> {reply}</div>}
+      </div>
+    )
+  }
+  return null
 }
 
 function ToolLine({ use, result }: { use: Message; result?: Message }) {
@@ -73,6 +96,28 @@ export function OfficeChat({ state, conv, messages, partial }: { state: LiveStat
     return map
   }, [messages])
 
+  // Long runs of consecutive status notes (take over / hand back…) collapse to the last two.
+  const [showAllNotes, setShowAllNotes] = useState(false)
+  const noteRuns = useMemo(() => {
+    const out = new Map<string, 'hidden' | number>()
+    if (showAllNotes || !messages) return out
+    const isNote = (m: Message) => m.role === 'system' || m.kind === 'status'
+    let run: Message[] = []
+    const flush = () => {
+      if (run.length > 2) {
+        run.slice(0, -2).forEach((m) => out.set(m.id, 'hidden'))
+        out.set(run[run.length - 2].id, run.length - 2)
+      }
+      run = []
+    }
+    for (const m of messages) {
+      if (isNote(m)) run.push(m)
+      else if (m.kind !== 'tool_result') flush()
+    }
+    flush()
+    return out
+  }, [messages, showAllNotes])
+
   useEffect(() => {
     stick.current = true
   }, [conv.id])
@@ -95,11 +140,22 @@ export function OfficeChat({ state, conv, messages, partial }: { state: LiveStat
       {messages?.length === 0 && !partial && <div className="o-chat-empty">No messages yet. Say something below.</div>}
       {messages?.map((m) => {
         if (m.kind === 'tool_result') return null
-        if (m.kind === 'tool_use') return <ToolLine key={m.id} use={m} result={results.get(String(m.data.tool_use_id))} />
+        if (m.kind === 'tool_use') {
+          const result = results.get(String(m.data.tool_use_id))
+          if (m.content.startsWith('mcp__mesh__')) return <MeshEvent key={m.id} state={state} use={m} result={result} />
+          return <ToolLine key={m.id} use={m} result={result} />
+        }
         if (m.role === 'system' || m.kind === 'status') {
           lastSender = ''
+          const run = noteRuns.get(m.id)
+          if (run === 'hidden') return null
           return (
             <div key={m.id} className="o-chat-note">
+              {typeof run === 'number' && (
+                <button className="o-chat-more" onClick={() => setShowAllNotes(true)}>
+                  +{run} earlier update{run > 1 ? 's' : ''}
+                </button>
+              )}
               <span>{m.content}</span>
             </div>
           )

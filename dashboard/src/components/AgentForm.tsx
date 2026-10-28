@@ -16,6 +16,7 @@ function blank(owner: string): AgentIn {
     denied_tools: [],
     system_prompt: '',
     model: null,
+    contact_policy: 'auto',
   }
 }
 
@@ -210,6 +211,12 @@ export function AgentForm({ owner, agent, onSaved, onDeleted, onStart }: Props) 
           </Field>
           <Field label="Model" hint="optional; blank = Claude Code default">
             <input className="input w-64 font-mono" value={f.model ?? ''} onChange={(e) => set('model', e.target.value)} placeholder="e.g. sonnet" />
+          </Field>
+          <Field label="Before it messages other agents" hint="when it decides on its own to ask a colleague's agent">
+            <select className="input w-64" value={f.contact_policy ?? 'auto'} onChange={(e) => set('contact_policy', e.target.value as 'auto' | 'ask')}>
+              <option value="auto">Go ahead (it finds the right person and asks)</option>
+              <option value="ask">Ask me first (approve each message)</option>
+            </select>
           </Field>
         </section>
 

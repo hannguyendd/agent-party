@@ -39,6 +39,15 @@ def test_accepted_assignment_allows_file_edits_only():
     assert policy_decision(agent, "Edit", {}, accepted_assignment=True) == "deny"
 
 
+def test_contact_policy_ask_needs_approval_to_message_other_agents():
+    agent = Agent(id="bob/qa", name="qa", working_dir="/tmp")
+    assert policy_decision(agent, "mcp__mesh__send_message", {}) == "allow"
+    agent.contact_policy = "ask"
+    assert policy_decision(agent, "mcp__mesh__send_message", {}) == "ask"
+    assert policy_decision(agent, "mcp__mesh__share_file", {}) == "ask"
+    assert policy_decision(agent, "mcp__mesh__list_agents", {}) == "allow"
+
+
 def test_old_databases_get_new_columns(tmp_path):
     db = tmp_path / "node.db"
     con = sqlite3.connect(db)

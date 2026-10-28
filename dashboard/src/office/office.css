@@ -163,7 +163,8 @@
   gap: 14px;
   padding: 14px 18px 12px;
   container-type: size;
-  --side-min: 300px;
+  /* Side column: roomy enough to read a conversation; the map takes the rest. */
+  --side-min: clamp(360px, 30cqw, 520px);
 }
 .office-stage-wrap {
   /* As tall as the workspace allows, never squeezing the side column below --side-min. */
@@ -295,7 +296,7 @@
   box-shadow: 0 4px 0 var(--o-shadow);
 }
 
-@media (max-width: 900px) { .office-workspace { --side-min: 230px; } }
+@media (max-width: 900px) { .office-workspace { --side-min: 280px; } }
 @media (max-width: 640px) {
   .office-toolbar { align-items: flex-start; flex-direction: column; gap: 8px; }
   .office-workspace { flex-direction: column; padding: 10px; }
@@ -411,7 +412,7 @@
 .office-help summary { font-family: var(--o-pixel); font-size: 15px; font-weight: 600; color: var(--o-ink); cursor: pointer; list-style: none; }
 .office-help summary::before { content: '▸ '; }
 .office-help[open] summary::before { content: '▾ '; }
-.office-workspace.is-wide { --side-min: min(560px, 45cqw); }
+.office-workspace.is-wide { --side-min: clamp(480px, 48cqw, 820px); }
 
 /* Settings screen */
 .office-settings { min-height: 100%; height: 100%; }
@@ -633,3 +634,38 @@
 .o-conv-head > .o-conv-sub { grid-area: sub; }
 .o-go { display: grid; grid-template-columns: auto repeat(3, 1fr); }
 .o-go button { justify-content: center; padding: 5px 6px; }
+
+/* @mentions */
+.o-mention { position: relative; flex: 1; min-width: 0; display: flex; }
+.o-mention textarea { flex: 1; min-height: 40px; resize: none; font-size: 14px; line-height: 1.4; padding: 9px 10px; }
+.o-mention-list {
+  position: absolute; left: 0; right: 0; bottom: calc(100% + 6px); z-index: 40; padding: 6px;
+  background: var(--o-panel); border: 2px solid var(--o-line); border-radius: 8px; box-shadow: 0 4px 0 var(--o-shadow);
+}
+.o-mention-hint { padding: 0 6px 4px; font-size: 11px; font-weight: 700; color: var(--o-muted); }
+.o-mention-list button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 5px 6px; text-align: left; border-radius: 6px; cursor: pointer; }
+.o-mention-list button.is-active, .o-mention-list button:hover { background: var(--o-lav); }
+.o-mention-list strong { display: block; font-size: 13px; font-weight: 800; }
+.o-mention-list small { display: block; font-size: 11px; color: var(--o-muted); font-family: ui-monospace, monospace; }
+.office-message-agent .o-mention textarea { min-height: 44px; }
+.o-composer-row .o-mention textarea { max-height: 160px; }
+
+/* contact policy switch */
+.o-policy { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; }
+.o-policy span { flex: 1 1 100%; font-weight: 800; color: var(--o-muted); font-size: 11px; }
+.o-policy button { flex: 1; padding: 5px 8px; font-weight: 700; border: 1.5px solid var(--o-soft-line); border-radius: 6px; background: var(--o-panel); cursor: pointer; }
+.o-policy button.is-active { background: var(--o-mint); border-color: var(--o-line); color: #1f3b2f; }
+
+/* what the agent did over the mesh, in the chat */
+.o-event { align-self: center; margin: 6px 0; font-size: 12px; color: var(--o-muted); }
+.o-exchange {
+  align-self: stretch; margin: 8px 36px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
+  background: var(--o-panel); border: 1.5px dashed var(--o-line); border-radius: 10px;
+}
+.o-exchange-head { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.o-exchange-head small { color: var(--o-muted); }
+.o-exchange-q { font-size: 13px; padding: 6px 10px; background: #e3f3ea; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.o-exchange-a { font-size: 13px; padding: 6px 10px; background: var(--o-panel-2); border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.o-exchange-wait { font-size: 12px; color: var(--o-muted); display: flex; align-items: center; gap: 8px; }
+.o-exchange-err { font-size: 12px; color: #a54a2a; }
+.o-chat-more { margin-right: 8px; font-weight: 800; color: var(--o-mint-ink); cursor: pointer; }

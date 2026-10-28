@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { Conversation, OfficeAgent } from '../api'
 import { Icon } from './Icon'
+import type { Who } from './people'
 import { MessageAgent } from './SideLists'
 import { SKINS } from './skins'
 
@@ -19,6 +20,11 @@ interface Props {
   onGo: (where: 'desk' | 'pantry' | 'meeting') => void
   onSkin: (skin: string) => void
   onSettings: () => void
+  /** Other people's agents, offered when typing @. */
+  candidates: Who[]
+  /** "auto": goes ahead and messages others; "ask": asks me first. Undefined in preview. */
+  contactPolicy?: 'auto' | 'ask'
+  onContactPolicy?: (p: 'auto' | 'ask') => void
 }
 
 const ACTIVE = ['running', 'awaiting_approval', 'awaiting_owner']
@@ -43,7 +49,19 @@ export function AgentCard(p: Props) {
         </div>
       </div>
 
-      {!p.preview && <MessageAgent agentId={a.agent_id} name={a.name} onStarted={p.onStarted} onError={p.onError} />}
+      {!p.preview && <MessageAgent agentId={a.agent_id} name={a.name} candidates={p.candidates} onStarted={p.onStarted} onError={p.onError} />}
+
+      {p.contactPolicy && (
+        <div className="o-policy" role="radiogroup" aria-label="Before contacting other agents">
+          <span>Before it messages others</span>
+          <button role="radio" aria-checked={p.contactPolicy === 'auto'} className={p.contactPolicy === 'auto' ? 'is-active' : ''} onClick={() => p.onContactPolicy?.('auto')} title="It finds the right person and asks right away">
+            Go ahead
+          </button>
+          <button role="radio" aria-checked={p.contactPolicy === 'ask'} className={p.contactPolicy === 'ask' ? 'is-active' : ''} onClick={() => p.onContactPolicy?.('ask')} title="You approve each message it wants to send">
+            Ask me first
+          </button>
+        </div>
+      )}
 
       {last && (
         <button className="o-last-chat" onClick={() => p.onOpenChat(last.id)}>

@@ -18,6 +18,8 @@ export interface AgentIn {
   denied_tools: string[]
   system_prompt: string
   model: string | null
+  /** Before messaging another agent on its own: go ahead, or ask the owner first. */
+  contact_policy?: 'auto' | 'ask'
 }
 
 export interface Agent extends AgentIn {

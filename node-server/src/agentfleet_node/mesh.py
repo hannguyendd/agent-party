@@ -123,7 +123,7 @@ class MeshDirectory:
         seen: dict[str, dict] = {}
         for a in self.store.list_agents():
             if a.enabled:
-                seen[a.id] = {"agent_id": a.id, "name": a.name, "description": a.description, "location": "local", "online": True}
+                seen[a.id] = {"agent_id": a.id, "name": a.name, "description": a.description, "skills": a.skills, "location": "local", "online": True}
         for owner, base in self.settings.static_peers.items():
             for row in await self._static_peer_agents(owner, base):
                 seen.setdefault(row["agent_id"], row)

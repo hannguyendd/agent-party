@@ -7,6 +7,8 @@ import { ApprovalCard } from '../components/ApprovalCard'
 import { StatusBadge, errMsg, timeAgo } from '../components/ui'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
+import { MentionInput } from './MentionInput'
+import type { Who } from './people'
 
 const ACTIVE = ['running', 'awaiting_approval', 'awaiting_owner']
 const isActive = (c: Conversation) => ACTIVE.includes(c.status)
@@ -75,11 +77,13 @@ export function ApprovalsList({ approvals, state, onOpen }: { approvals: Approva
 }
 
 /** Start a private conversation with one of my agents (what the old "Start session" page did). */
-export function MessageAgent({ agentId, name, onStarted, onError }: { agentId: string; name?: string; onStarted: (id: string) => void; onError: (msg: string) => void }) {
+export function MessageAgent({ agentId, name, candidates, onStarted, onError }: {
+  agentId: string; name?: string; candidates: Who[]; onStarted: (id: string) => void; onError: (msg: string) => void
+}) {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const start = async () => {
-    if (!text.trim()) return
+    if (!text.trim() || busy) return
     setBusy(true)
     try {
       onStarted((await api.startConversation(agentId, text.trim())).id)
@@ -92,18 +96,12 @@ export function MessageAgent({ agentId, name, onStarted, onError }: { agentId: s
   }
   return (
     <div className="office-message-agent">
-      <textarea
-        className="input"
-        rows={2}
-        placeholder={`Ask ${name ?? 'your agent'} to do something…`}
+      <MentionInput
         value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-            e.preventDefault()
-            void start()
-          }
-        }}
+        onChange={setText}
+        onSubmit={() => void start()}
+        candidates={candidates}
+        placeholder={`Ask ${name ?? 'your agent'} anything · @ to pick a colleague's agent`}
       />
       <button className="btn-primary" disabled={busy || !text.trim()} onClick={start} aria-label="Send to agent">
         <Icon name="send" />

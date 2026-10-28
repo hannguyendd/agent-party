@@ -12,6 +12,10 @@ export function ApprovalCard({ approval, context }: { approval: Approval; contex
   const assignment = approval.tool_name === 'Assignment'
   const from = String(approval.tool_input.from ?? 'unknown')
   const task = String(approval.tool_input.task ?? '')
+  // "Ask me first" contact approvals: my agent wants to message someone.
+  const contact = approval.tool_name === 'mcp__mesh__send_message' || approval.tool_name === 'mcp__mesh__share_file'
+  const contactTo = String(approval.tool_input.to ?? 'another agent')
+  const contactText = String(approval.tool_input.text ?? approval.tool_input.path ?? '')
 
   const decide = async (allow: boolean) => {
     setBusy(true)
@@ -36,12 +40,12 @@ export function ApprovalCard({ approval, context }: { approval: Approval; contex
         <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
           {assignment ? (pending ? 'Assignment' : approval.status === 'allowed' ? 'Accepted' : approval.status === 'timed_out' ? 'Expired' : 'Declined') : pending ? 'Approval needed' : approval.status.replace('_', ' ')}
         </span>
-        <span className="font-mono text-[12.5px] font-semibold">{assignment ? `from ${from}` : approval.tool_name}</span>
+        <span className="font-mono text-[12.5px] font-semibold">{assignment ? `from ${from}` : contact ? `wants to message ${contactTo}` : approval.tool_name}</span>
         <span className="ml-auto text-[11px] text-muted">{timeAgo(approval.created_at)}</span>
       </div>
       {context && <div className="mb-1.5 text-xs text-muted">{context}</div>}
-      {assignment ? (
-        <div className="whitespace-pre-wrap rounded bg-panel-2 p-2 text-[12.5px]">{task}</div>
+      {assignment || contact ? (
+        <div className="whitespace-pre-wrap rounded bg-panel-2 p-2 text-[12.5px]">{assignment ? task : contactText}</div>
       ) : (
         <Json value={approval.tool_input} />
       )}

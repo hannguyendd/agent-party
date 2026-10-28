@@ -10,7 +10,7 @@ import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
 import { ConversationPanel } from './ConversationPanel'
-import { who } from './OfficeChat'
+import { who } from './people'
 import { ApprovalsList, ChatsList } from './SideLists'
 import { PeerMenu } from './PeerMenu'
 import { ApprovalCard } from '../components/ApprovalCard'
@@ -53,12 +53,15 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
         type: Phaser.AUTO, parent: host.current, width: host.current.clientWidth, height: host.current.clientHeight,
         backgroundColor: '#e6ddd8', pixelArt: true, roundPixels: true, antialias: false,
         scene: [scene], render: { pixelArt: true, antialias: false, roundPixels: true },
-        scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
+        // We size the canvas ourselves from the host (ResizeObserver below); RESIZE mode kept the old size when
+        // only the host changed (e.g. widening the side column).
+        scale: { mode: Phaser.Scale.NONE },
         input: { keyboard: { target: host.current } },
         audio: { noAudio: true },
       })
       observer = new ResizeObserver(() => {
-        if (host.current?.clientWidth && host.current?.clientHeight) game?.scale.resize(host.current.clientWidth, host.current.clientHeight)
+        const w = host.current?.clientWidth, h = host.current?.clientHeight
+        if (w && h && game && (game.scale.width !== w || game.scale.height !== h)) game.scale.resize(w, h)
       })
       observer.observe(host.current)
     }).catch(e => latest.current.onError(errMsg(e)))
@@ -276,6 +279,9 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           onGo={where => where === 'desk' ? sceneRef.current?.sendSelectedHome() : sceneRef.current?.moveSelectedTo(where === 'pantry' ? { x: 43, y: 10 } : { x: 41, y: 20 })}
           onSkin={skin => isPreview ? setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin } : a)) : void perform(() => api.setSkin(picked.agent_id, skin))}
           onSettings={() => go({ kind: 'settings', section: 'agents', agentId: picked.agent_id })}
+          candidates={agents.filter(a => a.owner !== me).map(a => who(state, a.agent_id))}
+          contactPolicy={isPreview ? undefined : (state.agents[picked.agent_id]?.contact_policy ?? 'auto')}
+          onContactPolicy={policy => { const full = state.agents[picked.agent_id]; if (full) void perform(() => api.saveAgent({ ...full, contact_policy: policy })) }}
         />}
 
         {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2'].filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}

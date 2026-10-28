@@ -1,12 +1,14 @@
 // A conversation in the Office side column: the map stays visible while the owner reads and steers.
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { api, type Approval, type Conversation, type ConversationStatus, type Message } from '../api'
 import { ApprovalCard } from '../components/ApprovalCard'
 import { errMsg } from '../components/ui'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
-import { Avatar, OfficeChat, who } from './OfficeChat'
+import { MentionInput } from './MentionInput'
+import { Avatar, OfficeChat } from './OfficeChat'
+import { who } from './people'
 
 interface Props {
   state: LiveState
@@ -36,7 +38,6 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [menu, setMenu] = useState(false)
-  const input = useRef<HTMLTextAreaElement>(null)
   const pending = approvals.filter((a) => a.status === 'pending')
   const mine = who(state, conv.agent_id)
   const peer = conv.peer_agent_id ? who(state, conv.peer_agent_id) : null
@@ -48,13 +49,6 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
       ? { mode: 'inject', to: `To ${mine.name} · only you see this`, placeholder: active ? `Add something while ${mine.name} works…` : `Message ${mine.name}…` }
       : { mode: 'off', to: 'You took over', placeholder: `Waiting for ${peer?.name ?? 'the peer'}. Hand back to let ${mine.name} answer.` }
 
-  // Grow the box with its text, up to a limit.
-  useEffect(() => {
-    const el = input.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(160, el.scrollHeight)}px`
-  }, [text])
 
   const run = async (fn: () => Promise<unknown>) => {
     setBusy(true)
@@ -76,7 +70,9 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
       setText('')
     })
   }
-  const canTakeOver = conv.direction !== 'local'
+  // Taking over only makes sense when someone is waiting on my agent's answer.
+  const canTakeOver = conv.direction === 'inbound'
+  const candidates = (state.office?.agents ?? []).filter((a) => !a.agent_id.startsWith(conv.agent_id.split('/')[0] + '/')).map((a) => who(state, a.agent_id))
 
   return (
     <div className="o-frame office-conv">
@@ -161,20 +157,13 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
         <div className="o-composer-to">{composer.to}</div>
         {error && <div className="office-conv-error">{error}</div>}
         <div className="o-composer-row">
-          <textarea
-            ref={input}
-            className="input"
-            rows={1}
+          <MentionInput
             value={text}
+            onChange={setText}
+            onSubmit={send}
+            candidates={composer.mode === 'inject' ? candidates : []}
             disabled={composer.mode === 'off'}
             placeholder={composer.placeholder}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                e.preventDefault()
-                send()
-              }
-            }}
           />
           <button className="btn-primary" disabled={busy || !text.trim() || composer.mode === 'off'} onClick={send}>
             <Icon name="send" />Send

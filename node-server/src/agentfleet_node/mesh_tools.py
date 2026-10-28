@@ -48,7 +48,11 @@ def make_mesh_tools_factory(settings: Settings, directory: MeshDirectory, outbou
                 "hint": "Pass context_id (and task_id when state is input_required) to continue this conversation.",
             })
 
-        @tool("list_agents", "List agents reachable on the mesh with their ID and description.", {})
+        @tool(
+            "list_agents",
+            "List agents reachable on the mesh: ID, name, description and skills. Use it to pick who can answer a question.",
+            {},
+        )
         async def list_agents(args: dict[str, Any]) -> dict[str, Any]:
             rows = [r for r in await directory.list_agents() if r["agent_id"] != agent.id]
             return _ok(rows or "No other agents are online.")

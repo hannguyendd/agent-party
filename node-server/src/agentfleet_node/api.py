@@ -3,7 +3,7 @@
 import asyncio
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Request, WebSocket
 from pydantic import BaseModel, Field
@@ -38,6 +38,7 @@ class AgentIn(BaseModel):
     denied_tools: list[str] = Field(default_factory=list)
     system_prompt: str = ""
     model: str | None = None
+    contact_policy: Literal["auto", "ask"] = "auto"
 
 
 class TextIn(BaseModel):
@@ -112,7 +113,7 @@ async def directory(request: Request) -> list[dict[str, Any]]:
 def public_agents(request: Request) -> list[dict[str, Any]]:
     """Published card fields only (used by static-peer dev setups)."""
     return [
-        {"agent_id": a.id, "name": a.name, "description": a.description}
+        {"agent_id": a.id, "name": a.name, "description": a.description, "skills": a.skills}
         for a in _node(request).store.list_agents()
         if a.enabled
     ]

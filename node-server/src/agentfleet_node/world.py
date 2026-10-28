@@ -174,7 +174,7 @@ class WorldState:
 
     def activity(self, owner: str, agent_id: str, peer: str | None, status: str, direction: str) -> list[dict]:
         """A conversation of one of the owner's agents changed status. Roaming: an agent that started the
-        conversation walks to its peer while it is active and back to its desk afterwards, unless steered."""
+        conversation walks to its peer while it is active (taking over from steering) and back to its desk after."""
         self._check_owner(owner, agent_id)
         a = self.agents.get(agent_id)
         if a is None:
@@ -185,9 +185,14 @@ class WorldState:
                 peer = validate_agent_id(peer)
             except InvalidAgentId:
                 peer = None
+        was = a.activity
         a.activity = {"peer": peer, "status": status, "direction": direction} if active else None
-        if not a.steered and direction == "outbound" and peer and peer in self.agents:
-            a.at = {"kind": "near", "agent_id": peer} if active else {"kind": "desk"}
+        if direction == "outbound" and peer and peer in self.agents:
+            if active:
+                # It decided to talk to someone: it walks over, even if its owner had parked it somewhere.
+                a.at, a.steered = {"kind": "near", "agent_id": peer}, False
+            elif was is not None and not a.steered:
+                a.at = {"kind": "desk"}
         return [{"type": "agent", "agent": asdict(a)}]
 
     # helpers

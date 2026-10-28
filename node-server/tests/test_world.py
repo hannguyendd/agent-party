@@ -67,13 +67,20 @@ def test_roaming_walks_the_caller_to_its_peer_and_back():
     assert w.agents["han/dev"].at == {"kind": "desk"} and w.agents["han/dev"].activity is None
 
 
-def test_steered_agents_do_not_roam_until_sent_back_to_their_desk():
+def test_talking_takes_over_from_steering():
     w = world_with("han/dev", "bob/qa")
     w.move("han", "han/dev", {"kind": "tile", "x": 4, "y": 5})
     w.activity("han", "han/dev", "bob/qa", "running", "outbound")
+    assert w.agents["han/dev"].at == {"kind": "near", "agent_id": "bob/qa"} and not w.agents["han/dev"].steered
+    w.activity("han", "han/dev", "bob/qa", "idle", "outbound")
+    assert w.agents["han/dev"].at == {"kind": "desk"}
+
+
+def test_status_without_a_live_conversation_does_not_move_a_parked_agent():
+    w = world_with("han/dev", "bob/qa")
+    w.move("han", "han/dev", {"kind": "tile", "x": 4, "y": 5})
+    w.activity("han", "han/dev", "bob/qa", "idle", "outbound")  # e.g. resync after reconnect
     assert w.agents["han/dev"].at == {"kind": "tile", "x": 4, "y": 5}
-    w.move("han", "han/dev", {"kind": "desk"})
-    assert not w.agents["han/dev"].steered
 
 
 def test_leaving_agent_sends_walkers_home():

@@ -66,6 +66,8 @@ class Agent(SQLModel, table=True):
     denied_tools: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     system_prompt: str = ""
     model: str | None = None
+    # Before this agent messages another agent on its own: "auto" (go ahead) or "ask" (owner approves each one).
+    contact_policy: str = "auto"
     enabled: bool = True
     created_at: datetime = Field(default_factory=utcnow)
 
