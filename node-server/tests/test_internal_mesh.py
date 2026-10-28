@@ -118,7 +118,10 @@ async def test_mesh_mcp_lists_tool_specs(node_factory):
         await add_agent(n, "han/dev")
         conv = conversation(n, "han/dev")
         token = n.node.sessions.register_mesh_token(conv.id)
-        env = {**os.environ, "AGENTFLEET_MESH_URL": f"{n.url}/api/internal/mesh/{conv.id}", "AGENTFLEET_MESH_TOKEN": token}
+        # A proxy in the environment must not receive the loopback call (or its bearer token).
+        dead_proxy = "http://127.0.0.1:9"
+        env = {**os.environ, "AGENTFLEET_MESH_URL": f"{n.url}/api/internal/mesh/{conv.id}", "AGENTFLEET_MESH_TOKEN": token,
+               "HTTP_PROXY": dead_proxy, "HTTPS_PROXY": dead_proxy, "ALL_PROXY": dead_proxy, "NO_PROXY": ""}
         params = StdioServerParameters(command=sys.executable, args=["-m", "agentfleet_node.mesh_mcp"], env=env)
         async with stdio_client(params) as (read, write), ClientSession(read, write) as session:
             await session.initialize()

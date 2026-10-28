@@ -60,6 +60,10 @@ class AgentRuntime(Protocol):
     @property
     def started(self) -> bool: ...
 
+    # True when input sent mid-turn joins the running turn and never produces a result of its own (Codex steer);
+    # False when it may (Claude), so the worker waits INJECT_GRACE_S for a possible second result.
+    folds_injects: bool
+
     async def start(self, resume_id: str | None) -> None: ...
 
     async def send(self, prompt: str) -> None:

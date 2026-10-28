@@ -279,7 +279,8 @@ class SessionWorker:
             paths = ", ".join(f["path"] for f in files)
             prompt = (text + "\n\n" if text else "") + f"Your owner attached files, saved in your working directory: {paths}. Read them as needed."
         if self.turn_active and self.started:
-            self._pending += 1
+            if not self.runtime.folds_injects:
+                self._pending += 1
             await self.runtime.send(prompt)
         else:
             asyncio.create_task(self._local_turn(prompt))
@@ -294,6 +295,10 @@ class SessionWorker:
         if self.started and self.turn_active:
             self._interrupted = True
             self.store.add_message(self.conv_id, "system", f"Turn interrupted ({reason}).", kind="status")
+            # Answer this turn's open cards first: Codex can't take the interrupt while its approval handler waits.
+            for appr in self.store.list_approvals(self.conv_id, pending_only=True):
+                if appr.tool_name != "Assignment":
+                    self.m.decide(appr.id, False, f"Turn interrupted ({reason}).")
             await self.runtime.interrupt()
 
     async def close(self) -> None:
@@ -370,6 +375,13 @@ class SessionManager:
     def check_mesh_token(self, conv_id: str, token: str) -> bool:
         expected = self._mesh_tokens.get(conv_id)
         return bool(expected and token) and hmac.compare_digest(expected, token)
+
+    async def close_agent(self, agent_id: str) -> None:
+        """The agent was deleted: stop its sessions (and their processes and mesh tokens)."""
+        for conv_id, w in list(self._workers.items()):
+            if w.agent.id == agent_id:
+                await w.close()
+                self._workers.pop(conv_id, None)
 
     async def shutdown(self) -> None:
         for w in list(self._workers.values()):

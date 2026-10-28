@@ -78,6 +78,42 @@ async def test_runtime_cannot_change(node_factory, monkeypatch):
         assert r.json()["runtime"] == "claude"
 
 
+async def test_deleted_agent_id_can_be_recreated_on_other_runtime(node_factory, monkeypatch):
+    codex_here(monkeypatch)
+    async with node_factory("han") as n:
+        assert (await post_agent(n, "han/dev", allowed_tools=["Bash(make*)"])).status_code == 200
+        async with httpx.AsyncClient(base_url=n.url) as c:
+            assert (await c.delete("/api/agents/han/dev")).status_code == 200
+        r = await post_agent(n, "han/dev", runtime="codex")
+        assert r.status_code == 200, r.text
+        assert r.json()["runtime"] == "codex"
+        assert r.json()["allowed_tools"] == list(CODEX_DEFAULT_ALLOWED_TOOLS)
+        codex_here(monkeypatch, logged_in=False, usable=False)
+        async with httpx.AsyncClient(base_url=n.url) as c:
+            assert (await c.delete("/api/agents/han/dev")).status_code == 200
+        assert (await post_agent(n, "han/dev", runtime="codex")).status_code == 422
+
+
+async def test_setup_does_not_block_the_event_loop(node_factory, monkeypatch):
+    import asyncio
+    import time
+
+    def slow_status():
+        time.sleep(1.0)
+        return dict(USABLE)
+
+    monkeypatch.setattr("agentfleet_node.api.codex_status", slow_status)
+    async with node_factory("han") as n:
+        async with httpx.AsyncClient(base_url=n.url, timeout=10) as c:
+            # The node shares this event loop: a blocking call there freezes this test too, so time from before it.
+            t0 = time.monotonic()
+            setup = asyncio.create_task(post_agent(n, "han/cx", runtime="codex"))
+            await asyncio.sleep(0.2)
+            assert (await c.get("/api/agents")).status_code == 200
+            assert time.monotonic() - t0 < 0.8
+            assert (await setup).status_code == 200
+
+
 async def test_unknown_runtime_option_rejected(node_factory, monkeypatch):
     codex_here(monkeypatch)
     async with node_factory("han") as n:

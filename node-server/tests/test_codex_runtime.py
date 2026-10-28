@@ -2,6 +2,7 @@
 
 import asyncio
 
+import httpx
 import pytest
 
 from agentfleet_node.models import ConversationStatus, Direction
@@ -150,13 +151,14 @@ async def test_codex_crash_then_resume(node_factory):
 
 
 async def test_codex_inject_mid_turn_steers_once(node_factory):
-    async with node_factory("han") as n:
+    # turn_timeout_s small: a grace timer cancelled by Codex's later thread notifications would hang to it.
+    async with node_factory("han", turn_timeout_s=8) as n:
         await codex_agent(n)
         w, _ = local_conv(n)
         turn = asyncio.create_task(w.run_turn("SLOW"))
         await wait_for(lambda: FakeCodex.instances and FakeCodex.instances[-1].turns)
         await w.inject("wrap it up")
-        result = await asyncio.wait_for(turn, 10)
+        result = await asyncio.wait_for(turn, 5)
         assert result.text == "steered: wrap it up"
         assert FakeCodex.instances[-1].steers == ["wrap it up"]
         assert len(FakeCodex.instances[-1].turns) == 1
@@ -172,6 +174,63 @@ async def test_codex_interrupt(node_factory):
         result = await asyncio.wait_for(turn, 10)
         assert result.interrupted
         assert n.node.store.get_conversation(conv.id).status == ConversationStatus.INTERRUPTED
+
+
+async def test_codex_interrupt_during_pending_approval(node_factory):
+    """The SDK's reader thread is busy in the approval handler, so turn/interrupt would wait for the card; the
+    interrupt answers this conversation's open cards first."""
+    async with node_factory("han", os_notifications=False, approval_timeout_s=60) as n:
+        await codex_agent(n)
+        w, conv = local_conv(n)
+        turn = asyncio.create_task(w.run_turn("TOOL:touch x"))
+        await wait_for(lambda: pending(n))
+        await asyncio.wait_for(w.interrupt(), 5)
+        result = await asyncio.wait_for(turn, 5)
+        assert result.text == "tool touch x denied"
+        assert not pending(n)
+
+
+async def test_codex_edit_card_shows_files(node_factory):
+    async with node_factory("han", os_notifications=False) as n:
+        await codex_agent(n)
+        w, _ = local_conv(n)
+        turn = asyncio.create_task(w.run_turn("EDIT"))
+        [appr] = await wait_for(lambda: pending(n))
+        assert appr.tool_input == {"files": ["notes.md"]}
+        n.node.sessions.decide(appr.id, False)
+        await asyncio.wait_for(turn, 5)
+
+
+async def test_codex_reader_uses_no_pool_threads(node_factory, monkeypatch):
+    """Polling Codex through asyncio.to_thread would hold a default-executor thread per conversation forever."""
+    calls = []
+    real = asyncio.to_thread
+
+    async def counting(func, *args, **kw):
+        calls.append(getattr(func, "__name__", ""))
+        return await real(func, *args, **kw)
+
+    monkeypatch.setattr("agentfleet_node.runtimes.codex.asyncio.to_thread", counting)
+    async with node_factory("han") as n:
+        await codex_agent(n)
+        w, _ = local_conv(n)
+        await w.run_turn("hello")
+        calls.clear()
+        await asyncio.sleep(1.5)
+        assert "next_notification" not in calls
+
+
+async def test_deleting_agent_closes_its_codex_sessions(node_factory):
+    async with node_factory("han") as n:
+        await codex_agent(n)
+        w, conv = local_conv(n)
+        await w.run_turn("hello")
+        fake = FakeCodex.instances[-1]
+        token = fake.mesh_env()["AGENTFLEET_MESH_TOKEN"]
+        async with httpx.AsyncClient(base_url=n.url) as c:
+            assert (await c.delete("/api/agents/han/cx")).status_code == 200
+        assert fake.closed
+        assert not n.node.sessions.check_mesh_token(conv.id, token)
 
 
 async def test_codex_ask_sets_needs_input(node_factory):

@@ -288,12 +288,20 @@ async def upsert_agent(body: AgentIn, request: Request) -> dict[str, Any]:
     if not wd.is_dir():
         raise HTTPException(422, f"working directory does not exist: {wd}")
     stored = node.store.get_agent(body.id)
+    reused = stored is not None and not stored.enabled  # a deleted agent's ID: a new agent, maybe on another runtime
+    if reused:
+        if body.runtime and body.runtime != stored.runtime:
+            # Its old conversations hold the other runtime's session ids; never resume those on this one.
+            for conv in node.store.list_conversations(body.id):
+                if conv.session_id:
+                    node.store.update_conversation(conv.id, session_id=None)
+        stored = None
     runtime = body.runtime or (stored.runtime if stored else "claude")
     if stored and runtime != stored.runtime:
         raise HTTPException(422, f"runtime can't change ({stored.runtime}); create a new agent to use {runtime}")
     options: dict[str, Any] = {}
     if runtime == "codex":
-        if not stored and not codex_status()["usable"]:
+        if not stored and not (await asyncio.to_thread(codex_status))["usable"]:
             raise HTTPException(422, "Codex isn't set up on this computer (installed, signed in, Codex support installed)")
         try:
             options = runtime_options(body.runtime_options if body.runtime_options is not None else (stored.runtime_options if stored else None))
@@ -322,6 +330,7 @@ async def delete_agent(agent_id: str, request: Request) -> dict[str, str]:
     if node.store.get_agent(agent_id) is None:
         raise HTTPException(404, "no such agent")
     node.store.delete_agent(agent_id)
+    await node.sessions.close_agent(agent_id)
     node.store.audit("agent_deleted", agent_id=agent_id)
     node.gateway.invalidate(agent_id)
     node.directory.sync_node_config()
@@ -856,7 +865,7 @@ async def setup_codex(request: Request) -> dict[str, str]:
     """Codex is here but the node lacks its Codex support: re-run the installer, which adds it on hosts with Codex."""
     from agentfleet_node import service
 
-    if not codex_status()["installed"]:
+    if not (await asyncio.to_thread(codex_status))["installed"]:
         raise HTTPException(409, "Codex isn't installed on this computer")
     if not service.installed():
         raise HTTPException(409, "this node runs from a repo checkout; run `uv sync --extra codex`")

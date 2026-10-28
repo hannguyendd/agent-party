@@ -239,6 +239,8 @@ class SdkCodexSession:
 class CodexRuntime:
     """AgentRuntime over a CodexSession: one app-server process and one thread per conversation."""
 
+    folds_injects = True  # turn/steer joins the running turn: still one turn/completed
+
     def __init__(self, ctx: RuntimeContext, events: RuntimeEvents):
         self.ctx = ctx
         self.events = events
@@ -246,10 +248,12 @@ class CodexRuntime:
         self.thread_id: str | None = None
         self.turn_id: str | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
-        self._pump: asyncio.Task | None = None
         self._last_text = ""
         self._last_error: dict[str, Any] | None = None
-        self._files: dict[str, list[str]] = {}  # fileChange item id -> paths (approvals carry only the item id)
+        # fileChange item id -> paths. Approvals carry only the item id and arrive on the SDK's reader thread, often
+        # before the loop has handled the item's own notification: they wait on this condition for it.
+        self._files: dict[str, list[str]] = {}
+        self._files_seen = threading.Condition()
 
     @property
     def started(self) -> bool:
@@ -309,7 +313,10 @@ class CodexRuntime:
             await self.close()
             raise
         self.events.session_id(self.thread_id)
-        self._pump = asyncio.create_task(self._read_loop(), name=f"codex-reader-{self.ctx.conv_id}")
+        # Its own thread, not asyncio.to_thread: polling through the default executor would hold one of its few
+        # threads per conversation for as long as the session lives.
+        threading.Thread(target=self._reader, args=(self.session,), name=f"codex-reader-{self.ctx.conv_id}",
+                         daemon=True).start()
 
     async def send(self, prompt: str) -> None:
         assert self.session is not None and self.thread_id is not None
@@ -325,9 +332,6 @@ class CodexRuntime:
             await asyncio.to_thread(self.session.interrupt, self.thread_id, self.turn_id)
 
     async def close(self) -> None:
-        if self._pump:
-            self._pump.cancel()
-            self._pump = None
         self.ctx.manager.revoke_mesh_token(self.ctx.conv_id)
         session, self.session, self.turn_id = self.session, None, None
         if session is not None:
@@ -338,20 +342,36 @@ class CodexRuntime:
 
     # notifications
 
-    async def _read_loop(self) -> None:
-        session = self.session
+    def _reader(self, session: CodexSession) -> None:
+        """Reader thread: hands each notification to the event loop until this session is closed or replaced."""
+        assert self._loop is not None
         try:
-            while session is not None and self.session is session:
-                note = await asyncio.to_thread(session.next_notification, 0.5)
+            while self.session is session:
+                try:
+                    note = session.next_notification(0.5)
+                except Exception as e:  # app-server died or protocol error
+                    self._loop.call_soon_threadsafe(self._session_failed, session, e)
+                    return
                 if note is not None:
-                    self._on_notification(*note)
-        except asyncio.CancelledError:
-            raise
-        except Exception as e:  # app-server died or protocol error
-            log.exception("codex session failed for %s", self.ctx.conv_id)
-            self.session, self.turn_id = None, None
-            self.ctx.manager.revoke_mesh_token(self.ctx.conv_id)
-            self.events.failed(str(e) or "Codex stopped")
+                    method, data = note
+                    if method == "item/started" and (data.get("item") or {}).get("type") == "fileChange":
+                        self._remember_files(data["item"])
+                    self._loop.call_soon_threadsafe(self._on_notification, method, data)
+        except RuntimeError:  # the event loop closed under us (node shutting down)
+            return
+
+    def _session_failed(self, session: CodexSession, error: Exception) -> None:
+        if self.session is not session:
+            return  # closed or replaced already
+        log.error("codex session failed for %s: %s", self.ctx.conv_id, error)
+        self.session, self.turn_id = None, None
+        self.ctx.manager.revoke_mesh_token(self.ctx.conv_id)
+        self.events.failed(str(error) or "Codex stopped")
+
+    def _remember_files(self, item: dict[str, Any]) -> None:
+        with self._files_seen:
+            self._files[item["id"]] = [c.get("path", "") for c in item.get("changes") or []]
+            self._files_seen.notify_all()
 
     def _on_notification(self, method: str, data: dict[str, Any]) -> None:
         ev = self.events
@@ -367,7 +387,7 @@ class CodexRuntime:
             if kind == "commandExecution":
                 ev.tool_use(item["id"], "Bash", {"command": command_for_policy(item.get("command", ""))})
             elif kind == "fileChange":
-                self._files[item["id"]] = [c.get("path", "") for c in item.get("changes") or []]
+                self._remember_files(item)
                 ev.tool_use(item["id"], "Edit", {"files": self._files[item["id"]]})
             elif kind == "mcpToolCall":
                 ev.tool_use(item["id"], f"mcp__{item.get('server')}__{item.get('tool')}", item.get("arguments") or {})
@@ -424,7 +444,10 @@ class CodexRuntime:
             if method == "item/fileChange/requestApproval":
                 if p.get("grantRoot"):
                     return _DECLINE
-                ok = self._decide("Edit", {"files": self._files.get(p.get("itemId", ""), [])})
+                item_id = p.get("itemId", "")
+                with self._files_seen:  # the item's own notification is already queued: show its paths on the card
+                    self._files_seen.wait_for(lambda: item_id in self._files, timeout=2)
+                ok = self._decide("Edit", {"files": self._files.get(item_id, [])})
                 return {"decision": "accept" if ok else "decline"}
             if method == "mcpServer/elicitation/request":
                 meta = p.get("_meta") or {}

@@ -25,7 +25,8 @@ def build_server(url: str, token: str) -> Server:
 
     async def call_tool(ctx, params: types.CallToolRequestParams) -> types.CallToolResult:
         # No client timeout: Codex's per-tool timeout governs, and send_message waits for a whole peer turn.
-        async with httpx.AsyncClient(timeout=None) as hc:
+        # trust_env=False: a proxy from the environment must never see this loopback call or its token.
+        async with httpx.AsyncClient(timeout=None, trust_env=False) as hc:
             try:
                 r = await hc.post(f"{url}/{params.name}", json=params.arguments or {},
                                   headers={"Authorization": f"Bearer {token}"})

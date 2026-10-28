@@ -29,8 +29,9 @@ export interface AgentIn {
 export type AgentRuntime = 'claude' | 'codex'
 
 export interface CodexOptions {
-  /** A hard limit: an approval never lets a command leave it. An accepted Assignment raises read_only to
-   * workspace_write for that conversation only. */
+  /** What the agent may write without your approval. Not a hard limit: a command you approve can still write
+   * outside it (known issue, ADR 0004); only the network setting holds for approved commands. An accepted
+   * Assignment raises read_only to workspace_write for that conversation only. */
   sandbox: 'read_only' | 'workspace_write'
   network: boolean
   web_search: boolean

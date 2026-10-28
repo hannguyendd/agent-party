@@ -28,6 +28,8 @@ log = logging.getLogger(__name__)
 
 
 class ClaudeRuntime:
+    folds_injects = False  # the CLI may answer an injected prompt with its own result
+
     def __init__(self, ctx: RuntimeContext, events: RuntimeEvents):
         self.ctx = ctx
         self.events = events

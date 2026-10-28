@@ -114,6 +114,8 @@ class FakeCodex:
         self.closed = False
         self._wake = threading.Event()
         self._steered: str | None = None
+        # Like the SDK: the approval handler runs on the only reader thread, so requests wait while it's pending.
+        self._reader = threading.Lock()
         FakeCodex.instances.append(self)
 
     def start_thread(self, params):
@@ -133,12 +135,18 @@ class FakeCodex:
         return turn_id
 
     def steer(self, thread_id, turn_id, text):
-        self.steers.append(text)
-        self._steered = text
-        self._wake.set()
+        with self._reader:
+            self.steers.append(text)
+            self._steered = text
+            self._wake.set()
 
     def interrupt(self, thread_id, turn_id):
-        self._wake.set()
+        with self._reader:
+            self._wake.set()
+
+    def _ask(self, method, params):
+        with self._reader:
+            return self.handler(method, params)
 
     def next_notification(self, timeout):
         try:
@@ -159,6 +167,8 @@ class FakeCodex:
         if text:
             self._put("item/completed", item={"type": "agentMessage", "id": f"msg-{turn_id}", "phase": "final_answer", "text": text})
         self._put("turn/completed", threadId=thread_id, turn={"id": turn_id, "status": status, "error": error})
+        # Codex keeps sending thread-level notifications after a turn (status, rate limits).
+        self._put("thread/status/changed", threadId=thread_id, status={"type": "idle"})
 
     def mesh_env(self) -> dict[str, str]:
         joined = " ".join(self.config_overrides)
@@ -177,7 +187,7 @@ class FakeCodex:
                       "availableDecisions": ["accept", {"acceptWithExecpolicyAmendment": {"execpolicy_amendment": cmd.split()}}, "cancel"]}
             if "ESCALATE" in text:
                 params["additionalPermissions"] = {"fileSystem": {"write": ["/"]}}
-            res = self.handler("item/commandExecution/requestApproval", params)
+            res = self._ask("item/commandExecution/requestApproval", params)
             ok = res.get("decision") == "accept"
             self._put("item/completed", item={"type": "commandExecution", "id": item_id, "status": "completed" if ok else "declined",
                                               "exitCode": 0 if ok else None, "aggregatedOutput": "ok" if ok else None})
@@ -186,7 +196,7 @@ class FakeCodex:
         if "EDIT" in text:
             item_id = f"edit-{turn_id}"
             self._put("item/started", item={"type": "fileChange", "id": item_id, "changes": [{"path": "notes.md", "kind": {"type": "update"}}]})
-            res = self.handler("item/fileChange/requestApproval", {"itemId": item_id})
+            res = self._ask("item/fileChange/requestApproval", {"itemId": item_id})
             ok = res.get("decision") == "accept"
             self._put("item/completed", item={"type": "fileChange", "id": item_id, "status": "completed" if ok else "declined",
                                               "changes": [{"path": "notes.md", "kind": {"type": "update"}}]})
