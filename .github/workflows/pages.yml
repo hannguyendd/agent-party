@@ -1,0 +1,41 @@
+# Publishes the Party Agent intro page (site/) to GitHub Pages: https://hannguyendd.github.io/agent-party/
+# The page uses the Office art, so the art is copied in from dashboard/public/office at build time.
+name: Pages
+
+on:
+  push:
+    branches: [develop]
+    paths: ["site/**", "dashboard/public/office/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/office
+          cp -R site/. _site/
+          for d in map characters characters48 ui; do cp -R "dashboard/public/office/$d" _site/office/; done
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
