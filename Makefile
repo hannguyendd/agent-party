@@ -193,7 +193,7 @@ world: ## Run the Office world server (one per team, on the hub machine; port WO
 codegraph: ## Refresh the codegraph index (.codegraph/, local only)
 	codegraph sync .
 
-site: ## Preview the public intro page (site/) as GitHub Pages will serve it, at http://localhost:8090
+site: ## Preview the public intro page (site/) as GitHub Pages will serve it, at http://localhost:8090 (OFFICE_3D_DIR=<dir> for another 3D copy)
 	./scripts/build-site.sh dist/site
 	@echo "Open http://localhost:8090 (Ctrl+C to stop)"
 	cd dist/site && python3 -m http.server 8090

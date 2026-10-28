@@ -323,6 +323,7 @@
       return {
         sim: sim,
         view: function (el, opts) { var v = new mapView(sim, el, opts); views.push(v); v.draw(0); return v; },
+        addView: function (v) { views.push(v); }, // any object with draw(t), e.g. the 3D view in office3d.js
         controls: function (view) { controls(sim, view); },
         run: function () {
           var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;

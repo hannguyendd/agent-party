@@ -18,7 +18,12 @@ product: nothing here talks to a node, the mesh or the world server, and every a
   (nicknames like Segfault, Flexbox, Root, with a role each) seated at real seats from `seats.json`; they walk to
   each other with A* over `collision.png`, talk in typing dots, take coffee breaks, and go back. The visitor's
   character (`You`) spawns at the door on the first WASD key or floor click; `E` says hi to the agent in reach.
-  `mapView` draws the map and sprites with DOM elements (2D, or a CSS tilt for "3D").
+  `mapView` draws the map and sprites with DOM elements. `addView()` lets another renderer follow the same sim.
+- `office3d.js`: the real 3D view (ES module, three.js r160 from jsDelivr through the import map in `index.html`),
+  loaded on first use of the 3D switch. It reads `office/3d/layout3d.json` and `models.json`, instances every
+  repeated model (floor tiles, walls, desk sets), lowers the walls on the camera's side, and gives each simulated
+  agent its 3D character with the clips `walk / type / sit-idle / talk / idle / wave`; name tags and typing dots
+  are DOM labels projected from the 3D positions. Clicking the floor walks you there.
 
 ## Rules
 
@@ -34,8 +39,12 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 - **The map always fits between the chip bar and the bottom bar**: the page script `layout()` sizes the left
   column from the height (ResizeObserver on the main area and both bars); CSS (`.mapfit`, container units) does
   the rest. Don't size the map anywhere else.
-- **3D is a placeholder**: a CSS `rotateX` tilt of the 2D map. The real 3D office (three.js models under
-  `dashboard/public/office/3d`) replaces it later; keep the 2D/3D switch and its `party-agent-view` storage key.
+- **3D needs the 3D office art.** `scripts/build-site.sh` copies `dashboard/public/office/3d` when it exists and
+  writes `office/3d/models.json` (which folder each model is in). Without it, or if WebGL or a model fails, the
+  3D switch falls back to tilting the 2D map (`setTilt`). So the page works before and after the 3D art lands; when
+  it is merged into `develop`, Pages republishes with real 3D by itself. The asset contract (1 unit = 1 tile,
+  front = +Z, clip names) is in `design/office-style/3d/README.md`; if it changes, update `office3d.js`.
+- Models load 6 at a time with one retry (a burst of 100+ requests resets simple local servers).
 - **Links**: Play now goes to the README's `#install`; GitHub and Star to the repo. If the repo moves, change
   `REPO` and the links in `index.html` (and the URL in `.github/workflows/pages.yml`, the README and here).
 - English copy, playful but plain. Reduced motion: every animation has a static fallback; keep it that way.
@@ -44,9 +53,11 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 
 ```sh
 make site                  # assembles dist/site like the workflow does and serves it at http://localhost:8090
+OFFICE_3D_DIR=../internal-agent-fleet-3d/dashboard/public/office/3d make site   # with 3D art from another worktree
 ```
 
-Check desktop and phone width: the intro, Come in, walking with WASD and saying hi with E, 2D/3D.
+Check desktop and phone width: the intro, Come in, walking with WASD and saying hi with E, 2D/3D (with and
+without the 3D art).
 
 Publishing is automatic: a push to `develop` that touches `site/`, `dashboard/public/office/` or
 `scripts/build-site.sh` runs `.github/workflows/pages.yml`. One-time repo setup (an admin): **Settings → Pages →

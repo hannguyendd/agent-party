@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Party Agent</title>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
 <link rel="icon" type="image/png" href="office/ui/logo@2x.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,6 +78,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 .fit { display: contents; }
 .mapbox { container-type: size; min-height: 0; display: grid; place-items: center; }
 /* the map always fits the space left between the bars; 9px margin leaves room for its frame */
+.mapfit.real3d #office { visibility: hidden; }
 .mapfit { position: relative; width: min(100cqw - 18px, (100cqh - 18px) * 1.5556); margin: 9px; }
 
 /* toasts on the map: the invitation sits in the middle, the rest at the bottom */
@@ -433,15 +435,33 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 
     AgentParty.start().then(function (office) {
       var sim = office.sim;
-      var view = office.view(document.getElementById('office'), { tilt: saved === '3d' });
+      var view = office.view(document.getElementById('office'));
       onReveal.push(function () { office.controls(view); }); // the keys belong to the intro until then
 
-      // 2D / 3D
-      var b2 = document.getElementById('v2d'), b3 = document.getElementById('v3d');
-      function set(mode) {
-        view.setTilt(mode === '3d');
-        b2.setAttribute('aria-pressed', mode === '2d'); b3.setAttribute('aria-pressed', mode === '3d');
-        try { localStorage.setItem(KEY, mode); } catch (e) {}
+      // 2D / 3D. With the 3D office art (office/3d/, copied in by scripts/build-site.sh) 3D is the real diorama in
+      // office3d.js, loaded on first use; without it, or if WebGL fails, 3D falls back to tilting the 2D map.
+      var b2 = document.getElementById('v2d'), b3 = document.getElementById('v3d'), mapfit = document.querySelector('.mapfit');
+      var has3d = fetch('office/3d/layout3d.json', { method: 'HEAD' }).then(function (r) { return r.ok; }, function () { return false; });
+      var view3d = null, loading3d = null, mode = '2d';
+      function load3d() {
+        if (!loading3d) {
+          loading3d = has3d.then(function (ok) {
+            if (!ok) return null;
+            return import('./office3d.js').then(function (m) { return m.mount(mapfit, office); });
+          }).then(function (v) { view3d = v; return v; }, function (err) { console.warn('3D office unavailable, tilting the map instead', err); return null; });
+        }
+        return loading3d;
+      }
+      function set(m) {
+        mode = m;
+        b2.setAttribute('aria-pressed', m === '2d'); b3.setAttribute('aria-pressed', m === '3d');
+        try { localStorage.setItem(KEY, m); } catch (e) {}
+        if (m === '2d') { view.setTilt(false); mapfit.classList.remove('real3d'); if (view3d) view3d.setActive(false); return; }
+        load3d().then(function (v) {
+          if (mode !== '3d') return;
+          if (v) { v.setActive(true); view.setTilt(false); mapfit.classList.add('real3d'); }
+          else view.setTilt(true);
+        });
       }
       set(saved === '3d' ? '3d' : '2d');
       b2.addEventListener('click', function () { set('2d'); });
