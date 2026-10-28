@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-/* Theme tokens: light by default, dark via prefers-color-scheme. */
+/* Theme tokens. The Office is light only (its pixel art is drawn for a light palette); the dark tokens below
+   apply only under data-theme="dark", kept for a future dark art set. */
 :root {
   --bg: #f7f7f8;
   --panel: #ffffff;
@@ -14,8 +15,8 @@
   --owner: #fef3c7;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
+@media all {
+  :root[data-theme='dark'] {
     --bg: #0e0e11;
     --panel: #16161a;
     --panel-2: #1e1e23;

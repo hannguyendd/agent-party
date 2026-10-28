@@ -6,7 +6,8 @@ import { ApprovalCard } from '../components/ApprovalCard'
 import { timeAgo } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { Avatar } from './OfficeChat'
-import { who, type Who } from './people'
+import { agentNames, who, type Who } from './people'
+import { plainPreview } from './render-md'
 import { useSeen } from './seen'
 import { NEEDS_YOU, STATUS } from './status'
 import { Icon } from './Icon'
@@ -149,6 +150,7 @@ function ChatRow({ c, mine, peer, state, unread, talks, onOpen }: Row & { state:
   const hosting = c.kind === 'party'
   const faces = hosting && party ? [party.host, ...party.members].slice(0, 3).map((id) => who(state, id)) : [mine, ...(peer ? [peer] : [])]
   const sender = c.last_role === 'peer' ? peer?.name : c.last_role === 'owner' ? 'You' : mine.name
+  const nameOf = agentNames(state)
   const meta = [
     c.party_id && !hosting ? 'Party' : '',
     hosting ? (party ? `${party.members.length + 1} agents` : 'ended') : '',
@@ -163,7 +165,7 @@ function ChatRow({ c, mine, peer, state, unread, talks, onOpen }: Row & { state:
       <span className="o-crow-main">
         <span className="o-crow-top">
           <strong>
-            {hosting ? <>🎉 {c.title || 'Party'}</> : <>{mine.name}{peer && <em> {c.direction === 'inbound' ? '←' : '→'} {peer.name}</em>}</>}
+            {hosting ? <>🎉 {plainPreview(c.title, nameOf) || 'Party'}</> : <>{mine.name}{peer && <em> {c.direction === 'inbound' ? '←' : '→'} {peer.name}</em>}</>}
           </strong>
           {loud && <span className={`o-crow-state is-${st.tone}`}>{st.label}</span>}
           <time>{timeAgo(c.updated_at)}</time>
@@ -171,7 +173,7 @@ function ChatRow({ c, mine, peer, state, unread, talks, onOpen }: Row & { state:
         </span>
         <span className="o-crow-preview">
           {meta.length > 0 && <span className="o-crow-meta">{meta.join(' · ')}</span>}
-          {c.last_preview ? <><b>{sender}:</b> {c.last_preview}</> : c.title || 'No messages yet'}
+          {c.last_preview ? <><b>{sender}:</b> {plainPreview(c.last_preview, nameOf)}</> : plainPreview(c.title, nameOf) || 'No messages yet'}
         </span>
       </span>
     </button>
@@ -194,11 +196,12 @@ export function ApprovalsList({ approvals, state, onOpen }: { approvals: Approva
           <ApprovalCard
             key={a.id}
             approval={a}
+            nameOf={(id) => who(state, id).name}
             context={
               c && (
                 <button className="office-link" onClick={() => onOpen(c.id)}>
-                  <span className="font-mono">{c.agent_id}</span>
-                  {c.peer_agent_id && <span className="font-mono"> ↔ {c.peer_agent_id}</span>} · open chat →
+                  <strong>{who(state, c.agent_id).name}</strong>
+                  {c.peer_agent_id && <span> ↔ {who(state, c.peer_agent_id).name}</span>} · open chat →
                 </button>
               )
             }

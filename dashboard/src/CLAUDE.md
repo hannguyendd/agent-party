@@ -11,7 +11,11 @@
   (`errMsg`, `timeAgo`, `clockTime`) live in `components/format.ts` so `ui.tsx` only exports components (fast refresh).
   Reuse them before adding new ones. Same rule everywhere: a `.tsx` file exports components only.
 - Styling: colours come from the theme tokens in `index.css` (`bg-panel`, `text-muted`, `border-line`,
-  `bg-agent`, …), which switch with `prefers-color-scheme`. Use tokens, so dark mode keeps working.
+  `bg-agent`, …). The UI is **light only** (the pixel art is drawn for a light palette); dark rules exist but only
+  apply under `data-theme="dark"`, which nothing sets yet. Use tokens so a dark theme stays possible.
+- Chat text is Markdown (`Markdown.tsx` → `render-md.ts`: marked + DOMPurify, since peer text is untrusted).
+  Agent IDs in text (`@han/be`, `han/be`) render as names; list previews use `plainPreview`. Ordinary tool calls
+  fold into one "Used N tools" line; `ToolSearch` is hidden; mesh tools render as exchanges.
 - `office/`: the Office.
   - `OfficeScene.ts`: the Phaser scene. Loads the map plate, `collision.png` (black = blocked, red = seat,
     blue = entrance) and `seats.json` from the manifest (`layout.ts` is only the fallback when the map is missing).

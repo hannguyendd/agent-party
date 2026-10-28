@@ -154,7 +154,7 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
       {pending.length > 0 && (
         <div className="office-conv-approvals">
           {pending.map((a) => (
-            <ApprovalCard key={a.id} approval={a} />
+            <ApprovalCard key={a.id} approval={a} nameOf={(id) => who(state, id).name} />
           ))}
         </div>
       )}

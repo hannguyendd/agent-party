@@ -6,6 +6,7 @@ import { api, type Recap } from '../api'
 import { errMsg, timeAgo } from '../components/format'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
+import { Markdown } from './Markdown'
 
 export function RecapList({ state, convId, onRetry }: { state: LiveState; convId: string; onRetry: () => void }) {
   const [loaded, setLoaded] = useState<Recap[]>([])
@@ -37,7 +38,7 @@ export function RecapList({ state, convId, onRetry }: { state: LiveState; convId
             )}
             {expanded && r.status !== 'working' && (
               <div className="o-recap-body">
-                <pre>{r.body}</pre>
+                <Markdown text={r.body} state={state} />
                 {r.status === 'done' && (
                   <div className="o-recap-actions">
                     <a className="o-mini-btn" href={api.recapFileUrl(r.id)} download>Download .md</a>

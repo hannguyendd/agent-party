@@ -240,7 +240,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           <div className="office-incoming">
             {incoming.map(a => {
               const c = state.conversations[a.conversation_id]
-              return <ApprovalCard key={a.id} approval={a} context={c ? <>for <span className="font-mono">{c.agent_id}</span></> : undefined} />
+              return <ApprovalCard key={a.id} approval={a} nameOf={id => who(state, id).name} context={c ? <>for <strong>{who(state, c.agent_id).name}</strong></> : undefined} />
             })}
           </div>
         )}

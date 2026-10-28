@@ -10,6 +10,7 @@ import { who, type Who } from './people'
 import { SKIN_BY_ID, ownerCss } from './skins'
 import { Icon } from './Icon'
 import { useTrimmed } from './trim'
+import { Markdown } from './Markdown'
 
 export function Avatar({ w, size = 28 }: { w: Who | 'me'; size?: number }) {
   if (w === 'me') return <span className="o-avatar o-avatar-me" style={{ width: size, height: size }}>you</span>
@@ -79,14 +80,40 @@ function MeshEvent({ state, use, result }: { state: LiveState; use: Message; res
             {to.owner && <small> · {to.owner}</small>}
           </span>
         </div>
-        {typeof input.text === 'string' && input.text && <div className="o-exchange-q">{input.text}</div>}
+        {typeof input.text === 'string' && input.text && <Markdown className="o-exchange-q" text={input.text} state={state} />}
         {!result && <div className="o-exchange-wait"><span className="o-dots"><i /><i /><i /></span> waiting for {to.name}</div>}
         {failed && <div className="o-exchange-err">{result?.content}</div>}
-        {reply && <div className="o-exchange-a"><strong>{to.name}:</strong> {reply}</div>}
+        {reply && <div className="o-exchange-a"><strong>{to.name}</strong><Markdown text={reply} state={state} /></div>}
       </div>
     )
   }
   return null
+}
+
+// Tool discovery is plumbing, not something the agent did for the owner: never shown.
+const HIDDEN_TOOLS = new Set(['ToolSearch'])
+
+/** A run of ordinary tool calls (Read, Bash…) reads as one quiet line; open it for the details. */
+function ToolGroup({ uses, results }: { uses: Message[]; results: Map<string, Message> }) {
+  const [open, setOpen] = useState(false)
+  const done = uses.filter((u) => results.has(String(u.data.tool_use_id)))
+  const failed = done.filter((u) => results.get(String(u.data.tool_use_id))?.data.is_error === true).length
+  const running = done.length < uses.length
+  const names = [...new Set(uses.map((u) => u.content))]
+  return (
+    <div className="o-toolgroup">
+      <button onClick={() => setOpen(!open)} aria-expanded={open}>
+        <span className={`o-tool-state ${running ? 'is-run' : failed ? 'is-err' : 'is-ok'}`}>{running ? '…' : failed ? '!' : '✓'}</span>
+        <span>
+          {running ? 'Working with' : 'Used'} {uses.length === 1 ? names[0] : `${uses.length} tools`}
+          {uses.length > 1 && <small> · {names.slice(0, 3).join(', ')}{names.length > 3 ? '…' : ''}</small>}
+          {failed > 0 && <small className="is-err"> · {failed} failed</small>}
+        </span>
+        <span className="o-tool-caret">{open ? '▾' : '▸'}</span>
+      </button>
+      {open && uses.map((u) => <ToolLine key={u.id} use={u} result={results.get(String(u.data.tool_use_id))} />)}
+    </div>
+  )
 }
 
 function ToolLine({ use, result }: { use: Message; result?: Message }) {
@@ -121,6 +148,27 @@ export function OfficeChat({ state, conv, messages, partial }: { state: LiveStat
     const map = new Map<string, Message>()
     for (const m of messages ?? []) if (m.kind === 'tool_result' && typeof m.data.tool_use_id === 'string') map.set(m.data.tool_use_id, m)
     return map
+  }, [messages])
+
+  // Consecutive ordinary tool calls collapse into one group, shown where the run starts.
+  const toolGroups = useMemo(() => {
+    const groups = new Map<string, Message[]>() // first message id -> the run
+    const member = new Set<string>()
+    let run: Message[] = []
+    const flush = () => {
+      if (run.length) groups.set(run[0].id, run)
+      run.forEach((m) => member.add(m.id))
+      run = []
+    }
+    for (const m of messages ?? []) {
+      if (m.kind === 'tool_result') continue
+      const plain = m.kind === 'tool_use' && !m.content.startsWith('mcp__mesh__')
+      if (plain && HIDDEN_TOOLS.has(m.content)) continue
+      if (plain) run.push(m)
+      else flush()
+    }
+    flush()
+    return { groups, member }
   }, [messages])
 
   // Long runs of consecutive status notes (take over / hand back…) collapse to the last two.
@@ -170,7 +218,8 @@ export function OfficeChat({ state, conv, messages, partial }: { state: LiveStat
         if (m.kind === 'tool_use') {
           const result = results.get(String(m.data.tool_use_id))
           if (m.content.startsWith('mcp__mesh__')) return <MeshEvent key={m.id} state={state} use={m} result={result} />
-          return <ToolLine key={m.id} use={m} result={result} />
+          const group = toolGroups.groups.get(m.id)
+          return group ? <ToolGroup key={m.id} uses={group} results={results} /> : null
         }
         if (m.role === 'system' || m.kind === 'status') {
           lastSender = ''
@@ -206,7 +255,7 @@ export function OfficeChat({ state, conv, messages, partial }: { state: LiveStat
                   <time>{clockTime(m.created_at)}</time>
                 </div>
               )}
-              {(m.content || !Array.isArray(m.data.files)) && <div className="o-msg-bubble">{m.content}</div>}
+              {(m.content || !Array.isArray(m.data.files)) && <div className="o-msg-bubble"><Markdown text={m.content} state={state} /></div>}
               <Attachments files={m.data.files} />
               {Array.isArray(m.data.rejected_files) && m.data.rejected_files.length > 0 && (
                 <span className="o-msg-state is-rejected">Not accepted: {(m.data.rejected_files as string[]).join('; ')}</span>
@@ -230,7 +279,7 @@ export function OfficeChat({ state, conv, messages, partial }: { state: LiveStat
               <strong>{w.name}</strong>
               <span>{partial ? 'typing' : 'working'}</span>
             </div>
-            <div className="o-msg-bubble">{partial || <span className="o-dots"><i /><i /><i /></span>}</div>
+            <div className="o-msg-bubble">{partial ? <Markdown text={partial} state={state} /> : <span className="o-dots"><i /><i /><i /></span>}</div>
           </div>
         </div>
         )
