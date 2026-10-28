@@ -47,7 +47,8 @@ into it unless asked.
 
 ## Releases
 
-Staff get versions through `make release` (`scripts/release.sh`: bump, tag, push) and the GitHub Actions workflow
+Staff get versions through `make release` (`scripts/release.sh`: bumps the version on a `release/vX.Y.Z` branch,
+merges it into `develop` through a pull request with `gh`, since `develop` only accepts pull requests, then tags it) and the GitHub Actions workflow
 that publishes the package + installers to a GitHub Release; the office server serves the same version
 (`git pull && make server`, built with bun or downloaded from the release). Never bump versions or push tags by hand.
 Details and the agent checklist: `docs/RELEASE.md`.

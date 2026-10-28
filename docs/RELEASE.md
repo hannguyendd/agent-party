@@ -13,14 +13,20 @@ Then, on the office server: Ctrl+C, `git pull`, `make server`. Every open Office
 Release from **`develop`** (the project's main branch): merge the work into `develop`, then run the command there.
 The script stops on any other branch unless you add `--any-branch`.
 
+You need the GitHub CLI, logged in once (`gh auth login`): `develop` only accepts pull requests, so the script
+merges the version bump through one.
+
 ## What happens
 
 1. **`scripts/release.sh`** (what `make release` runs), on your machine:
-   - refuses if there are uncommitted changes, if the tag already exists (locally or on GitHub), or if the new
-     version isn't newer;
+   - refuses if there are uncommitted changes, if your `develop` differs from GitHub's (pull or push first), if the
+     tag already exists (locally or on GitHub), or if the new version isn't newer;
    - shows `0.4.1 -> 0.4.2` and asks to confirm (`--yes` skips the question, `--dry-run` only prints);
-   - bumps the version in `node-server/pyproject.toml` (+ `uv.lock`) and `dashboard/package.json`;
-   - commits `chore(release): v0.4.2`, tags `v0.4.2`, pushes the branch and the tag.
+   - bumps the version in `node-server/pyproject.toml` (+ `uv.lock`) and `dashboard/package.json` on a branch
+     `release/v0.4.2`, commits `chore(release): v0.4.2`;
+   - merges it into `develop` through a pull request (`develop` only accepts pull requests; no approval needed), using
+     the GitHub CLI (`gh`, logged in with `gh auth login`);
+   - tags the merged commit on `develop` `v0.4.2` and pushes the tag.
 2. **GitHub Actions** (`.github/workflows/release.yml`) starts on the tag:
    - checks the tag matches the version in `pyproject.toml`;
    - runs the node-server tests and the dashboard lint;
@@ -39,7 +45,8 @@ The script stops on any other branch unless you add `--any-branch`.
 
 ## For an agent asked to "release"
 
-1. Make sure the work is committed and merged into `develop`, you are on `develop`, and `make test` + `make build` pass.
+1. Make sure the work is committed and merged into `develop`, you are on an up-to-date `develop` (`git pull`),
+   `gh auth status` shows you logged in, and `make test` + `make build` pass.
 2. `make release BUMP=patch` (use `./scripts/release.sh patch --yes` when there is no terminal to answer).
 3. Report the version and the Actions link the script printed. Watch the run with `gh run watch` if `gh` is set up.
 4. Tell the admin to run `git pull && make server` on the office server.
@@ -82,6 +89,9 @@ AGENTMESH_AUTOSTART=off bash install.sh --server <server>:7500`.
 |---|---|
 | `release.sh`: "commit or stash your changes first" | Commit (or stash) and run it again. |
 | `release.sh`: "tag vX already exists" | That version is out; release the next one. |
+| `release.sh`: "the GitHub CLI is needed" | Install `gh` (https://cli.github.com), run `gh auth login`, try again. |
+| `release.sh`: "develop is not the same as origin/develop" | `git pull` (or push your merged work), then run it again. |
+| `release.sh`: "could not merge the release pull request" | Merge the `chore(release): vX` pull request on GitHub, then run the commands the script printed (checkout `develop`, pull, tag, push the tag). |
 | Actions run failed (tests, lint) | Fix on the branch and release the next patch version. The failed tag has no Release; leave it. |
 | `make server` without bun: "No GitHub release vX yet" | Release that version first, or install bun on the server to build it there. |
 | Staff: "Could not download the node package" | Open the server address (or the GitHub link) in that computer's browser; if it fails there too, it's the network (guest Wi-Fi, VPN, firewall). |
