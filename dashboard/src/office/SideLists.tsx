@@ -47,7 +47,7 @@ export function ChatsList({ state, me, onOpen }: { state: LiveState; me: string;
               const loud = st.tone === 'run' || st.tone === 'wait' || st.tone === 'err'
               const kind = c.kind === 'assignment' ? { icon: '📋', label: 'Assignment' } : c.kind === 'inquiry' ? { icon: '🔎', label: 'Question' } : !peer ? { icon: '🔒', label: 'Private chat with your agent' } : { icon: '💬', label: 'Conversation' }
               return (
-                <button key={c.id} className={`o-chat-row ${unread ? 'is-unread' : ''}`} onClick={() => onOpen(c.id)}>
+                <button key={c.id} className={`o-chat-row is-${st.tone} ${unread ? 'is-unread' : ''}`} onClick={() => onOpen(c.id)}>
                   <span className={`o-chat-faces ${peer ? 'is-pair' : ''}`}>
                     <Avatar w={mine} size={30} />
                     {peer && <Avatar w={peer} size={30} />}

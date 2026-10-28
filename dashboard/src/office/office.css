@@ -733,3 +733,22 @@ a.o-file:hover { border-color: var(--o-line); }
 
 .o-chat-top time { flex-shrink: 0; white-space: nowrap; }
 .o-chat-top .o-unread { position: static; flex-shrink: 0; width: 8px; height: 8px; box-shadow: none; }
+
+/* each conversation is its own card, with a status stripe on the left */
+.o-chat-group { display: flex; flex-direction: column; gap: 6px; }
+.o-chat-group + .o-chat-group { margin-top: 12px; }
+.o-chat-row {
+  position: relative; padding: 9px 10px 9px 12px; background: var(--o-panel);
+  border: 1.5px solid var(--o-soft-line); border-radius: 10px; box-shadow: 0 2px 0 var(--o-soft-line);
+  transition: border-color 120ms ease, transform 80ms ease;
+}
+.o-chat-row::before {
+  content: ''; position: absolute; left: -1.5px; top: 8px; bottom: 8px; width: 4px; border-radius: 0 3px 3px 0;
+  background: var(--o-soft-line);
+}
+.o-chat-row.is-run::before { background: #3f9a67; }
+.o-chat-row.is-wait::before { background: #e0a43a; }
+.o-chat-row.is-err::before { background: #c4583a; }
+.o-chat-row:hover { background: var(--o-panel); border-color: var(--o-line); transform: translateY(-1px); }
+.o-chat-row.is-unread { background: #fffdf8; border-color: #e7cfb6; }
+.o-chat-row.is-wait { background: #fff8ea; }
