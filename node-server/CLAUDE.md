@@ -17,6 +17,22 @@ Settings are `AGENTFLEET_*` env vars or `.env` (`src/agentfleet_node/config.py`)
   `init` SystemMessage before naming tools in defaults or prompts.
 - `agentmesh-node` reads its `services` only at startup: after agents change, the node must be restarted
   (the dashboard banner tracks `config_dirty`).
+- **SQLite schema changes**: `SQLModel.metadata.create_all` never alters existing tables. `db._add_missing_columns`
+  adds new columns (with their scalar default) at startup, so a new model field just works on old databases.
+  Renames, type changes or drops need a real migration.
+- **The dashboard WebSocket must read**: `/api/ws` runs a send loop and a receive loop; without reading, a closed tab
+  is never noticed (the subscriber leaks, the owner stays "present", shutdown hangs).
+- `notify.os_notify` pops a system notification (osascript / notify-send / PowerShell). Tests set
+  `os_notifications=False` so the suite never pops notifications on the developer's machine.
+
+## Office world server
+
+`world.py` (`agentfleet-node world`, default port 7500) is one per team. Nodes connect with
+`AGENTFLEET_WORLD_URL=ws://<hub>:7500/world/ws`; without it the Office is disabled for that node. `WorldState` holds
+the rules (pure, unit-tested); `WorldHub` is the socket fan-out. Only desk claims and skins persist (`world.json`);
+positions reset to desks on restart. A node may only act on its own owner's agents (the owner name is a claim on the
+LAN; there is no auth yet). Roaming: an agent with an active outbound conversation walks to its peer (taking over
+from steering) and goes back to its desk when the conversation ends.
 
 ## Real-stack smoke (for mesh, A2A or session changes)
 
