@@ -5,10 +5,11 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Request, WebSocket
 from pydantic import BaseModel, Field
 
 from agentfleet_node.models import DEFAULT_ALLOWED_TOOLS, Agent, Direction
+from agentfleet_node.mesh import AgentOffline
 from agentfleet_node.naming import InvalidAgentId, owner_of, validate_agent_id
 from agentfleet_node.store import dump
 
@@ -45,6 +46,26 @@ class TextIn(BaseModel):
 
 class StartIn(BaseModel):
     agent_id: str
+    text: str = Field(min_length=1)
+
+
+class DeskIn(BaseModel):
+    desk: str
+
+
+class SkinIn(BaseModel):
+    agent_id: str
+    skin: str
+
+
+class MoveIn(BaseModel):
+    agent_id: str
+    at: dict[str, Any]
+
+
+class AssignIn(BaseModel):
+    from_agent: str
+    to_agent: str
     text: str = Field(min_length=1)
 
 
@@ -238,6 +259,80 @@ def decide(approval_id: str, body: DecisionIn, request: Request) -> dict[str, st
     return {"status": "allowed" if body.allow else "denied"}
 
 
+# office (world server relay, ADR 0001)
+
+
+@router.get("/office")
+def office(request: Request) -> dict[str, Any]:
+    return _node(request).world.view()
+
+
+async def _world_send(node, op: dict[str, Any]) -> dict[str, str]:
+    try:
+        await node.world.send(op)
+    except ConnectionError as e:
+        raise HTTPException(409, str(e)) from None
+    return {"status": "sent"}
+
+
+def _own_agent(node, agent_id: str) -> None:
+    agent = node.store.get_agent(agent_id)
+    if agent is None or not agent.enabled:
+        raise HTTPException(404, "no such agent on this node")
+
+
+@router.post("/office/desk")
+async def office_desk(body: DeskIn, request: Request) -> dict[str, str]:
+    return await _world_send(_node(request), {"op": "claim_desk", "desk": body.desk})
+
+
+@router.post("/office/skin")
+async def office_skin(body: SkinIn, request: Request) -> dict[str, str]:
+    node = _node(request)
+    _own_agent(node, body.agent_id)
+    return await _world_send(node, {"op": "set_skin", "agent_id": body.agent_id, "skin": body.skin})
+
+
+@router.post("/office/move")
+async def office_move(body: MoveIn, request: Request) -> dict[str, str]:
+    node = _node(request)
+    _own_agent(node, body.agent_id)
+    return await _world_send(node, {"op": "move", "agent_id": body.agent_id, "at": body.at})
+
+
+@router.post("/office/assign")
+async def office_assign(body: AssignIn, request: Request) -> dict[str, str]:
+    """Assignment: our agent hands the owner's task to a peer, whose owner must accept it (CONTEXT.md, ADR 0002).
+    Runs in the background: acceptance plus the peer's turn can take many minutes."""
+    node = _node(request)
+    _own_agent(node, body.from_agent)
+    if body.to_agent == body.from_agent:
+        raise HTTPException(422, "an agent cannot assign work to itself")
+    try:
+        await node.directory.resolve(body.to_agent)
+    except AgentOffline as e:
+        raise HTTPException(409, f"agent offline: {e}") from None
+    except InvalidAgentId as e:
+        raise HTTPException(422, str(e)) from None
+    s = node.settings
+    timeout = s.assignment_accept_timeout_s + s.turn_timeout_s + 60
+
+    async def run() -> None:
+        try:
+            await node.outbound.send(body.from_agent, body.to_agent, body.text, kind="assignment", timeout_s=timeout)
+        except Exception:
+            pass  # OutboundClient already recorded the failure on the conversation
+
+    task = asyncio.create_task(run())
+    _background.add(task)
+    task.add_done_callback(_background.discard)
+    return {"status": "sent"}
+
+
+# Keep references to fire-and-forget tasks so they are not garbage-collected mid-flight.
+_background: set[asyncio.Task] = set()
+
+
 # live events
 
 
@@ -246,12 +341,26 @@ async def events(ws: WebSocket) -> None:
     node = ws.app.state.node
     await ws.accept()
     q = node.bus.subscribe()
-    try:
+    node.world.dashboard_joined()  # an open dashboard means the owner is present
+
+    async def pump() -> None:
         await ws.send_json({"type": "hello", "owner": node.settings.owner})
         while True:
-            event = await q.get()
-            await ws.send_json(event)
-    except (WebSocketDisconnect, asyncio.CancelledError):
+            await ws.send_json(await q.get())
+
+    async def watch_close() -> None:
+        # The dashboard never sends anything; reading is how we notice it went away.
+        while True:
+            await ws.receive_text()
+
+    tasks = [asyncio.create_task(pump()), asyncio.create_task(watch_close())]
+    try:
+        await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+    except asyncio.CancelledError:
         pass
     finally:
+        for t in tasks:
+            t.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
         node.bus.unsubscribe(q)
+        node.world.dashboard_left()

@@ -86,6 +86,8 @@ so keep it self-contained and concise.
 
 # Tools every mesh session may use without asking (tool discovery, not actions).
 ALWAYS_ALLOWED = ("ToolSearch",)
+# What an accepted Assignment opens up (ADR 0002): file edits only. Bash outside the allow-list still asks.
+ASSIGNMENT_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 # A Bash pattern like "Bash(ls*)" must not also approve "ls; rm -rf ~".
 _SHELL_CHAINING = re.compile(r"[;&|`<>\n]|\$\(")
 
@@ -103,11 +105,14 @@ def tool_matches(tool_name: str, tool_input: dict[str, Any], patterns: list[str]
     return False
 
 
-def policy_decision(agent: Agent, tool_name: str, tool_input: dict[str, Any]) -> str:
-    """allow | deny | ask (owner approval)."""
+def policy_decision(agent: Agent, tool_name: str, tool_input: dict[str, Any], accepted_assignment: bool = False) -> str:
+    """allow | deny | ask (owner approval). `accepted_assignment`: the conversation is an Assignment its
+    owner accepted, so file edits are allowed too (ADR 0002)."""
     if tool_matches(tool_name, tool_input, agent.denied_tools):
         return "deny"
     if tool_name.startswith(MESH_TOOL_PREFIX) or tool_name in ALWAYS_ALLOWED or tool_matches(tool_name, tool_input, agent.allowed_tools):
+        return "allow"
+    if accepted_assignment and tool_name in ASSIGNMENT_TOOLS:
         return "allow"
     return "ask"
 
@@ -297,15 +302,19 @@ class SessionWorker:
 
     # permissions
 
+    def _accepted(self) -> bool:
+        conv = self.store.get_conversation(self.conv_id)
+        return bool(conv and conv.accepted)
+
     async def _pre_tool_use(self, hook_input, tool_use_id, context) -> dict[str, Any]:
-        decision = policy_decision(self.agent, hook_input["tool_name"], hook_input.get("tool_input") or {})
+        decision = policy_decision(self.agent, hook_input["tool_name"], hook_input.get("tool_input") or {}, self._accepted())
         out: dict[str, Any] = {"hookEventName": "PreToolUse", "permissionDecision": decision}
         if decision == "deny":
             out["permissionDecisionReason"] = f"Not allowed for mesh sessions of {self.agent.id}."
         return {"hookSpecificOutput": out}
 
     async def _can_use_tool(self, tool_name: str, tool_input: dict[str, Any], ctx: ToolPermissionContext):
-        decision = policy_decision(self.agent, tool_name, tool_input)
+        decision = policy_decision(self.agent, tool_name, tool_input, self._accepted())
         if decision == "allow":
             return PermissionResultAllow(updated_input=tool_input)
         if decision == "deny":
@@ -328,6 +337,8 @@ class SessionManager:
         self._workers: dict[str, SessionWorker] = {}
         self._approvals: dict[str, asyncio.Future[tuple[bool, str]]] = {}
         self._owner_gates: dict[str, asyncio.Future[OwnerDecision]] = {}
+        # Called when an Assignment needs the owner: (conversation_id, approval_id, sender) -> how they were woken.
+        self.wake_owner: Callable[[str, str, str | None], str] | None = None
 
     def worker(self, conv_id: str) -> SessionWorker:
         w = self._workers.get(conv_id)
@@ -431,6 +442,30 @@ class SessionManager:
         if allow:
             return PermissionResultAllow(updated_input=tool_input)
         return PermissionResultDeny(message=reason or f"Owner denied {tool_name}.")
+
+    async def request_acceptance(self, conv_id: str, sender: str | None, task: str, status_hook: StatusHook | None) -> tuple[bool, str]:
+        """An Assignment arrived: wait for the owner to accept it (CONTEXT.md). Declined on timeout."""
+        appr = self.store.create_approval(conv_id, "Assignment", {"from": sender or "unknown", "task": task[:4000]})
+        self.store.set_status(conv_id, ConversationStatus.AWAITING_OWNER)
+        woken = self.wake_owner(conv_id, appr.id, sender) if self.wake_owner else "none"
+        self.store.add_message(conv_id, "system", f"Assignment waiting for the owner to accept (notified: {woken}).", kind="status")
+        if status_hook:
+            await status_hook(f"waiting for the owner to accept this assignment (notified: {woken})")
+        fut = self._approvals[appr.id] = asyncio.get_running_loop().create_future()
+        try:
+            allow, reason = await asyncio.wait_for(fut, self.settings.assignment_accept_timeout_s)
+        except TimeoutError:
+            self.store.decide_approval(appr.id, ApprovalStatus.TIMED_OUT, "no decision before timeout")
+            allow, reason = False, "The owner did not accept the assignment in time."
+        finally:
+            self._approvals.pop(appr.id, None)
+        if allow:
+            self.store.update_conversation(conv_id, accepted=True, status=ConversationStatus.RUNNING)
+            self.store.add_message(conv_id, "system", "Owner accepted the assignment; file edits are allowed in this conversation.", kind="status")
+        else:
+            self.store.set_status(conv_id, ConversationStatus.IDLE)
+            self.store.add_message(conv_id, "system", f"Assignment declined: {reason or 'owner declined'}", kind="status")
+        return allow, reason or ("" if allow else "The owner declined the assignment.")
 
     def decide(self, approval_id: str, allow: bool, reason: str = "") -> bool:
         fut = self._approvals.get(approval_id)

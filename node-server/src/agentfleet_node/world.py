@@ -1,0 +1,304 @@
+"""World server for the Office: one per team, next to the hub (ADR 0001).
+
+It holds only Office state: which owners are present, who claimed which Desk, each agent's Skin and where it is
+heading, and which agents are currently talking (status only). It never sees message content.
+
+Clients are node servers, never browsers. Each node connects to ``/world/ws``, says which owner it speaks for,
+and may only act on that owner's agents. The owner claim is not verified (same trust level as the rest of v1 LAN).
+
+Positions are symbolic targets that every browser resolves against the same map:
+``{"kind": "desk"}`` (the owner's desk), ``{"kind": "tile", "x": .., "y": ..}`` or
+``{"kind": "near", "agent_id": ..}`` (next to another agent).
+"""
+
+import json
+import logging
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+
+from agentfleet_node.naming import InvalidAgentId, owner_of, validate_agent_id
+
+log = logging.getLogger(__name__)
+
+# The real office: D1-D16 in the L-shaped block, M1/M2 in the middle (see docs/office/ASSET-BRIEF.md).
+DESKS = tuple([f"D{i}" for i in range(1, 17)] + ["M1", "M2"])
+SKINS = ("dev-hoodie", "designer", "lead", "shiba", "cat", "penguin", "alien", "robot")
+# Conversation statuses that mean "these two agents are talking right now".
+ACTIVE_STATUSES = {"running", "awaiting_approval", "awaiting_owner"}
+MAX_TILE = 500
+
+
+@dataclass
+class AgentState:
+    agent_id: str
+    owner: str
+    name: str
+    skin: str
+    at: dict[str, Any] = field(default_factory=lambda: {"kind": "desk"})
+    steered: bool = False
+    # Status-only view of what the agent is doing: {"peer": .., "status": .., "direction": ..} or None.
+    activity: dict[str, Any] | None = None
+
+
+class WorldState:
+    """Pure state + rules, so it can be tested without sockets."""
+
+    def __init__(self, data_path: Path | None = None):
+        self.data_path = data_path
+        self.desks: dict[str, str] = {}  # desk -> owner
+        self.skins: dict[str, str] = {}  # agent_id -> skin
+        self.agents: dict[str, AgentState] = {}
+        self.present: dict[str, int] = {}  # owner -> nodes reporting the owner present
+        self.connected: dict[str, int] = {}  # owner -> connected nodes
+        self._load()
+
+    # persistence: only desk claims and skins survive a restart
+
+    def _load(self) -> None:
+        if self.data_path and self.data_path.exists():
+            try:
+                raw = json.loads(self.data_path.read_text())
+                self.desks = {d: o for d, o in raw.get("desks", {}).items() if d in DESKS}
+                self.skins = {a: s for a, s in raw.get("skins", {}).items() if s in SKINS}
+            except (ValueError, OSError):
+                log.warning("could not read %s; starting empty", self.data_path)
+
+    def _save(self) -> None:
+        if self.data_path:
+            self.data_path.parent.mkdir(parents=True, exist_ok=True)
+            self.data_path.write_text(json.dumps({"desks": self.desks, "skins": self.skins}, indent=2))
+
+    # views
+
+    def owners_view(self) -> dict[str, dict[str, bool]]:
+        names = set(self.connected) | set(self.present) | set(self.desks.values())
+        return {o: {"connected": self.connected.get(o, 0) > 0, "present": self.present.get(o, 0) > 0} for o in sorted(names)}
+
+    def snapshot(self) -> dict[str, Any]:
+        return {
+            "type": "snapshot",
+            "desks": self.desks,
+            "owners": self.owners_view(),
+            "agents": [asdict(a) for a in self.agents.values()],
+            "desk_ids": list(DESKS),
+            "skins": list(SKINS),
+        }
+
+    def default_skin(self, agent_id: str) -> str:
+        return self.skins.get(agent_id) or SKINS[sum(map(ord, agent_id)) % len(SKINS)]
+
+    # mutations: each returns the events to broadcast
+
+    def owner_connected(self, owner: str, delta: int) -> list[dict]:
+        self.connected[owner] = max(0, self.connected.get(owner, 0) + delta)
+        return [{"type": "owners", "owners": self.owners_view()}]
+
+    def set_present(self, owner: str, before: bool, now: bool) -> list[dict]:
+        if before == now:
+            return []
+        self.present[owner] = max(0, self.present.get(owner, 0) + (1 if now else -1))
+        return [{"type": "owners", "owners": self.owners_view()}]
+
+    def sync_agents(self, owner: str, rows: list[dict], owned: set[str]) -> tuple[list[dict], set[str]]:
+        """Replace the set of agents one node publishes. Returns events and the node's new agent set."""
+        events: list[dict] = []
+        new: set[str] = set()
+        for row in rows:
+            try:
+                agent_id = validate_agent_id(str(row.get("agent_id", "")))
+            except InvalidAgentId:
+                continue
+            if owner_of(agent_id) != owner:
+                continue
+            new.add(agent_id)
+            name = str(row.get("name") or agent_id)[:60]
+            cur = self.agents.get(agent_id)
+            if cur is None:
+                cur = self.agents[agent_id] = AgentState(agent_id, owner, name, self.default_skin(agent_id))
+                events.append({"type": "agent", "agent": asdict(cur), "entered": True})
+            elif cur.name != name:
+                cur.name = name
+                events.append({"type": "agent", "agent": asdict(cur)})
+        for gone in owned - new:
+            events += self.remove_agent(gone)
+        return events, new
+
+    def remove_agent(self, agent_id: str) -> list[dict]:
+        if self.agents.pop(agent_id, None) is None:
+            return []
+        events: list[dict] = [{"type": "agent_left", "agent_id": agent_id}]
+        # Anyone walking towards it goes back to their desk.
+        for a in self.agents.values():
+            if a.at.get("kind") == "near" and a.at.get("agent_id") == agent_id:
+                a.at, a.steered = {"kind": "desk"}, False
+                events.append({"type": "agent", "agent": asdict(a)})
+        return events
+
+    def claim_desk(self, owner: str, desk: str) -> list[dict]:
+        if desk not in DESKS:
+            raise ValueError(f"no desk {desk!r}")
+        holder = self.desks.get(desk)
+        if holder and holder != owner:
+            raise ValueError(f"desk {desk} belongs to {holder}")
+        for d, o in list(self.desks.items()):
+            if o == owner:
+                del self.desks[d]
+        self.desks[desk] = owner
+        self._save()
+        return [{"type": "desks", "desks": self.desks}]
+
+    def set_skin(self, owner: str, agent_id: str, skin: str) -> list[dict]:
+        self._check_owner(owner, agent_id)
+        if skin not in SKINS:
+            raise ValueError(f"no skin {skin!r}")
+        self.skins[agent_id] = skin
+        self._save()
+        a = self.agents.get(agent_id)
+        if a is None:
+            return []
+        a.skin = skin
+        return [{"type": "agent", "agent": asdict(a)}]
+
+    def move(self, owner: str, agent_id: str, at: dict[str, Any]) -> list[dict]:
+        """Steering: the owner sends their agent somewhere. Sending it to its desk ends steering."""
+        self._check_owner(owner, agent_id)
+        a = self.agents.get(agent_id)
+        if a is None:
+            raise ValueError(f"agent {agent_id} is not in the Office")
+        a.at = self._clean_target(at, agent_id)
+        a.steered = a.at["kind"] != "desk"
+        return [{"type": "agent", "agent": asdict(a)}]
+
+    def activity(self, owner: str, agent_id: str, peer: str | None, status: str, direction: str) -> list[dict]:
+        """A conversation of one of the owner's agents changed status. Roaming: an agent that started the
+        conversation walks to its peer while it is active and back to its desk afterwards, unless steered."""
+        self._check_owner(owner, agent_id)
+        a = self.agents.get(agent_id)
+        if a is None:
+            return []
+        active = status in ACTIVE_STATUSES
+        if peer is not None:
+            try:
+                peer = validate_agent_id(peer)
+            except InvalidAgentId:
+                peer = None
+        a.activity = {"peer": peer, "status": status, "direction": direction} if active else None
+        if not a.steered and direction == "outbound" and peer and peer in self.agents:
+            a.at = {"kind": "near", "agent_id": peer} if active else {"kind": "desk"}
+        return [{"type": "agent", "agent": asdict(a)}]
+
+    # helpers
+
+    @staticmethod
+    def _check_owner(owner: str, agent_id: str) -> None:
+        try:
+            if owner_of(agent_id) != owner:
+                raise PermissionError(f"{owner} cannot act on {agent_id}")
+        except InvalidAgentId as e:
+            raise ValueError(str(e)) from None
+
+    def _clean_target(self, at: dict[str, Any], agent_id: str) -> dict[str, Any]:
+        kind = at.get("kind")
+        if kind == "desk":
+            return {"kind": "desk"}
+        if kind == "tile":
+            x, y = int(at.get("x", -1)), int(at.get("y", -1))
+            if not (0 <= x < MAX_TILE and 0 <= y < MAX_TILE):
+                raise ValueError("tile out of range")
+            return {"kind": "tile", "x": x, "y": y}
+        if kind == "near":
+            target = str(at.get("agent_id", ""))
+            if target == agent_id or target not in self.agents:
+                raise ValueError(f"cannot walk to {target!r}")
+            return {"kind": "near", "agent_id": target}
+        raise ValueError(f"unknown target {kind!r}")
+
+
+class WorldHub:
+    """WebSocket fan-out around WorldState."""
+
+    def __init__(self, state: WorldState):
+        self.state = state
+        self.clients: set[WebSocket] = set()
+
+    async def broadcast(self, events: list[dict]) -> None:
+        for ev in events:
+            for ws in list(self.clients):
+                try:
+                    await ws.send_json(ev)
+                except Exception:
+                    self.clients.discard(ws)
+
+    async def serve(self, ws: WebSocket) -> None:
+        await ws.accept()
+        try:
+            hello = await ws.receive_json()
+        except (WebSocketDisconnect, ValueError):
+            return
+        owner = str(hello.get("owner", "")) if hello.get("op") == "hello" else ""
+        if not owner or "/" in owner or "." in owner:
+            await ws.send_json({"type": "error", "message": "first message must be {op: hello, owner}"})
+            await ws.close()
+            return
+
+        owned: set[str] = set()
+        present = False
+        self.clients.add(ws)
+        await self.broadcast(self.state.owner_connected(owner, +1))
+        await ws.send_json(self.state.snapshot())
+        try:
+            while True:
+                msg = await ws.receive_json()
+                op = msg.get("op")
+                try:
+                    if op == "presence":
+                        now = bool(msg.get("present"))
+                        events = self.state.set_present(owner, present, now)
+                        present = now
+                    elif op == "agents":
+                        events, owned = self.state.sync_agents(owner, list(msg.get("agents") or []), owned)
+                    elif op == "claim_desk":
+                        events = self.state.claim_desk(owner, str(msg.get("desk", "")))
+                    elif op == "set_skin":
+                        events = self.state.set_skin(owner, str(msg.get("agent_id", "")), str(msg.get("skin", "")))
+                    elif op == "move":
+                        events = self.state.move(owner, str(msg.get("agent_id", "")), dict(msg.get("at") or {}))
+                    elif op == "activity":
+                        events = self.state.activity(
+                            owner, str(msg.get("agent_id", "")), msg.get("peer"),
+                            str(msg.get("status", "")), str(msg.get("direction", "")),
+                        )
+                    else:
+                        raise ValueError(f"unknown op {op!r}")
+                except (ValueError, PermissionError, TypeError) as e:
+                    await ws.send_json({"type": "error", "op": op, "message": str(e)})
+                    continue
+                await self.broadcast(events)
+        except (WebSocketDisconnect, ValueError):
+            pass
+        finally:
+            self.clients.discard(ws)
+            events = self.state.set_present(owner, present, False)
+            for agent_id in owned:
+                events += self.state.remove_agent(agent_id)
+            events += self.state.owner_connected(owner, -1)
+            await self.broadcast(events)
+
+
+def create_world_app(data_path: Path | None = None) -> FastAPI:
+    hub = WorldHub(WorldState(data_path))
+    app = FastAPI(title="agentfleet world")
+    app.state.hub = hub
+
+    @app.get("/healthz")
+    def healthz() -> dict[str, Any]:
+        return {"ok": True, "nodes": len(hub.clients), "agents": len(hub.state.agents)}
+
+    @app.websocket("/world/ws")
+    async def world_ws(ws: WebSocket) -> None:
+        await hub.serve(ws)
+
+    return app

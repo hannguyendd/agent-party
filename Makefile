@@ -12,10 +12,11 @@ HUB_HOST ?=
 HUB_PORT ?= 7400
 HUB_URL  ?= http://$(if $(HUB_HOST),$(HUB_HOST),127.0.0.1):$(HUB_PORT)
 DEVICE   ?=
+WORLD_PORT ?= 7500
 
 .DEFAULT_GOAL := help
 .PHONY: help install install-node install-dashboard test build serve dev dev-server dev-dashboard \
-        mesh-node mesh-config hub hub-token env codegraph clean
+        mesh-node mesh-config hub hub-token world env codegraph clean
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -76,6 +77,9 @@ hub: ## Run the hub (HUB_HOST=<fixed LAN IP or hostname>)
 hub-token: ## Mint a single-use join token for a device (DEVICE="han laptop")
 	@test -n "$(DEVICE)" || { echo 'usage: make hub-token DEVICE="han laptop"'; exit 1; }
 	cd $(HUB_DIR) && HUB_PORT=$(HUB_PORT) ./mint-token.sh "$(DEVICE)"
+
+world: ## Run the Office world server (one per team, on the hub machine; port WORLD_PORT, default 7500)
+	cd $(NODE_DIR) && uv run agentfleet-node world --port $(WORLD_PORT)
 
 codegraph: ## Refresh the codegraph index (.codegraph/, local only)
 	codegraph sync .

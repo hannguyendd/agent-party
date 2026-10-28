@@ -38,7 +38,7 @@ from starlette.responses import JSONResponse
 from agentfleet_node.config import Settings
 from agentfleet_node.files import FileRejected, save_to_inbox
 from agentfleet_node.mesh import MeshDirectory, local_a2a_url
-from agentfleet_node.models import Agent, ConversationStatus, Direction
+from agentfleet_node.models import Agent, ConversationKind, ConversationStatus, Direction
 from agentfleet_node.naming import InvalidAgentId, from_service_name, validate_agent_id
 from agentfleet_node.sessions import SessionManager, TurnTimeout
 from agentfleet_node.store import Store
@@ -46,6 +46,9 @@ from agentfleet_node.store import Store
 log = logging.getLogger(__name__)
 
 SENDER_KEY = "agentfleet.from_agent"
+# "inquiry" | "assignment" (CONTEXT.md). A sender claim like SENDER_KEY: only the receiving owner's acceptance
+# widens permissions, so a wrong label gains nothing (ADR 0002).
+KIND_KEY = "agentfleet.kind"
 
 
 def build_card(settings: Settings, agent: Agent) -> AgentCard:
@@ -111,10 +114,15 @@ class MeshAgentExecutor(AgentExecutor):
         except InvalidAgentId:
             sender = None
         text = get_message_text(msg)
+        kind = meta.get(KIND_KEY) if meta.get(KIND_KEY) in (ConversationKind.INQUIRY, ConversationKind.ASSIGNMENT) else ""
 
-        conv = self.store.find_conversation(self.agent_id, task.context_id) or self.store.create_conversation(
-            agent_id=self.agent_id, context_id=task.context_id, direction=Direction.INBOUND, peer_agent_id=sender, title=text[:80]
-        )
+        conv = self.store.find_conversation(self.agent_id, task.context_id)
+        if conv is None:
+            conv = self.store.create_conversation(
+                agent_id=self.agent_id, context_id=task.context_id, direction=Direction.INBOUND, peer_agent_id=sender, title=text[:80]
+            )
+            if kind:
+                conv = self.store.update_conversation(conv.id, kind=kind)
         self.store.audit("inbound_message", agent_id=self.agent_id, peer_agent_id=sender, context_id=task.context_id, task_id=task.id, chars=len(text))
         if conv.turn_count >= self.settings.max_turns_per_context:
             self.store.add_message(conv.id, "system", "Turn limit reached; message rejected.", kind="status")
@@ -140,6 +148,14 @@ class MeshAgentExecutor(AgentExecutor):
 
         async def status_hook(note: str) -> None:
             await up.update_status(TaskState.TASK_STATE_WORKING, up.new_agent_message([Part(text=note)]))
+
+        if conv.kind == ConversationKind.ASSIGNMENT and not conv.accepted:
+            accepted, reason = await self.sessions.request_acceptance(conv.id, sender, text, status_hook)
+            self.store.audit("assignment_decided", agent_id=self.agent_id, peer_agent_id=sender, context_id=task.context_id,
+                             task_id=task.id, accepted=accepted)
+            if not accepted:
+                await up.reject(up.new_agent_message([Part(text=reason)]))
+                return
 
         try:
             result = await self.sessions.handle_inbound(conv.id, format_prompt(sender, text, saved, rejected), status_hook)
@@ -237,6 +253,8 @@ class OutboundClient:
         context_id: str | None = None,
         task_id: str | None = None,
         files: list[tuple[str, bytes, str]] | None = None,
+        kind: str = "",
+        timeout_s: float | None = None,
     ) -> OutboundResult:
         validate_agent_id(to_agent)
         endpoint = await self.directory.resolve(to_agent)  # raises AgentOffline
@@ -245,6 +263,8 @@ class OutboundClient:
         conv = self.store.find_conversation(from_agent, context_id) or self.store.create_conversation(
             agent_id=from_agent, context_id=context_id, direction=Direction.OUTBOUND, peer_agent_id=to_agent, title=text[:80]
         )
+        if kind and not conv.kind:
+            conv = self.store.update_conversation(conv.id, kind=kind)
         if conv.turn_count >= self.settings.max_turns_per_context:
             raise RuntimeError(f"turn limit ({self.settings.max_turns_per_context}) reached for context {context_id}")
         self.store.update_conversation(conv.id, turn_count=conv.turn_count + 1, status=ConversationStatus.RUNNING)
@@ -256,11 +276,11 @@ class OutboundClient:
         msg = Message(message_id=uuid.uuid4().hex, role=Role.ROLE_USER, parts=parts, context_id=context_id)
         if task_id:
             msg.task_id = task_id
-        msg.metadata.update({SENDER_KEY: from_agent})
+        msg.metadata.update({SENDER_KEY: from_agent, **({KIND_KEY: kind} if kind else {})})
 
         headers = self.directory.mesh_headers() if endpoint.via_mesh else {}
         try:
-            async with httpx.AsyncClient(headers=headers, timeout=httpx.Timeout(self.settings.outbound_timeout_s, connect=10)) as hc:
+            async with httpx.AsyncClient(headers=headers, timeout=httpx.Timeout(timeout_s or self.settings.outbound_timeout_s, connect=10)) as hc:
                 client = await ClientFactory(ClientConfig(httpx_client=hc, streaming=False)).create_from_url(endpoint.url)
                 last = None
                 async for ev in client.send_message(SendMessageRequest(message=msg)):

@@ -35,6 +35,12 @@ class ConversationStatus(StrEnum):
     ERROR = "error"
 
 
+class ConversationKind(StrEnum):
+    PLAIN = ""  # dashboard / mesh-tool conversations
+    INQUIRY = "inquiry"
+    ASSIGNMENT = "assignment"  # needs the receiving owner's acceptance (CONTEXT.md, ADR 0002)
+
+
 class Mode(StrEnum):
     AUTO = "auto"
     MANUAL = "manual"
@@ -78,6 +84,9 @@ class Conversation(SQLModel, table=True):
     mode: Mode = Mode.AUTO
     turn_count: int = 0
     title: str = ""
+    kind: str = ConversationKind.PLAIN
+    # Set when the receiving owner accepted an Assignment: file edits run without asking (ADR 0002).
+    accepted: bool = False
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
 

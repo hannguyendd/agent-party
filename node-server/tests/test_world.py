@@ -1,0 +1,172 @@
+"""World server rules (unit) and two nodes sharing one Office through it (integration)."""
+
+import asyncio
+import json
+
+import httpx
+import pytest
+import uvicorn
+from websockets.asyncio.client import connect
+
+from agentfleet_node.world import WorldState, create_world_app
+
+from conftest import free_port
+from test_two_nodes import add_agent, wait_for
+
+# unit: WorldState
+
+
+def world_with(*agent_ids: str) -> WorldState:
+    w = WorldState()
+    owners: dict[str, set[str]] = {}
+    for a in agent_ids:
+        owner = a.split("/")[0]
+        _, owners[owner] = w.sync_agents(owner, [{"agent_id": a, "name": a}], owners.get(owner, set()) | set())
+        owners[owner] |= {a}
+    return w
+
+
+def test_nodes_can_only_publish_and_move_their_own_agents():
+    w = WorldState()
+    _, owned = w.sync_agents("han", [{"agent_id": "han/dev"}, {"agent_id": "bob/qa"}], set())
+    assert owned == {"han/dev"} and list(w.agents) == ["han/dev"]
+    with pytest.raises(PermissionError):
+        w.move("bob", "han/dev", {"kind": "tile", "x": 1, "y": 1})
+
+
+def test_desk_claims_are_exclusive_and_one_per_owner():
+    w = WorldState()
+    w.claim_desk("han", "D1")
+    with pytest.raises(ValueError, match="belongs to han"):
+        w.claim_desk("bob", "D1")
+    w.claim_desk("han", "M2")  # moving desks releases the old one
+    assert w.desks == {"M2": "han"}
+    with pytest.raises(ValueError):
+        w.claim_desk("bob", "Z9")
+
+
+def test_desks_and_skins_survive_a_restart(tmp_path):
+    path = tmp_path / "world.json"
+    w = WorldState(path)
+    w.sync_agents("han", [{"agent_id": "han/dev"}], set())
+    w.claim_desk("han", "D3")
+    w.set_skin("han", "han/dev", "alien")
+    again = WorldState(path)
+    assert again.desks == {"D3": "han"} and again.skins == {"han/dev": "alien"}
+    assert again.default_skin("han/dev") == "alien"
+
+
+def test_roaming_walks_the_caller_to_its_peer_and_back():
+    w = world_with("han/dev", "bob/qa")
+    w.activity("han", "han/dev", "bob/qa", "running", "outbound")
+    assert w.agents["han/dev"].at == {"kind": "near", "agent_id": "bob/qa"}
+    assert w.agents["han/dev"].activity == {"peer": "bob/qa", "status": "running", "direction": "outbound"}
+    w.activity("bob", "bob/qa", "han/dev", "running", "inbound")
+    assert w.agents["bob/qa"].at == {"kind": "desk"}  # the callee stays put
+    w.activity("han", "han/dev", "bob/qa", "idle", "outbound")
+    assert w.agents["han/dev"].at == {"kind": "desk"} and w.agents["han/dev"].activity is None
+
+
+def test_steered_agents_do_not_roam_until_sent_back_to_their_desk():
+    w = world_with("han/dev", "bob/qa")
+    w.move("han", "han/dev", {"kind": "tile", "x": 4, "y": 5})
+    w.activity("han", "han/dev", "bob/qa", "running", "outbound")
+    assert w.agents["han/dev"].at == {"kind": "tile", "x": 4, "y": 5}
+    w.move("han", "han/dev", {"kind": "desk"})
+    assert not w.agents["han/dev"].steered
+
+
+def test_leaving_agent_sends_walkers_home():
+    w = world_with("han/dev", "bob/qa")
+    w.move("han", "han/dev", {"kind": "near", "agent_id": "bob/qa"})
+    events = w.remove_agent("bob/qa")
+    assert events[0] == {"type": "agent_left", "agent_id": "bob/qa"}
+    assert w.agents["han/dev"].at == {"kind": "desk"}
+
+
+def test_bad_targets_are_rejected():
+    w = world_with("han/dev")
+    for at in ({"kind": "near", "agent_id": "han/dev"}, {"kind": "tile", "x": -1, "y": 0}, {"kind": "fly"}):
+        with pytest.raises(ValueError):
+            w.move("han", "han/dev", at)
+
+
+# integration: world server + two nodes
+
+
+class RunningWorld:
+    def __init__(self, tmp_path):
+        self.port = free_port()
+        self.app = create_world_app(tmp_path / "world.json")
+        self.hub = self.app.state.hub
+        self.url = f"ws://127.0.0.1:{self.port}/world/ws"
+        self.sent: list[dict] = []
+        original = self.hub.broadcast
+
+        async def spy(events):
+            self.sent += events
+            await original(events)
+
+        self.hub.broadcast = spy
+
+    async def __aenter__(self):
+        self.server = uvicorn.Server(uvicorn.Config(self.app, host="127.0.0.1", port=self.port, log_level="warning"))
+        self.task = asyncio.create_task(self.server.serve())
+        while not self.server.started:
+            await asyncio.sleep(0.05)
+        return self
+
+    async def __aexit__(self, *exc):
+        self.server.should_exit = True
+        await self.task
+
+
+async def test_two_nodes_share_one_office(node_factory, tmp_path):
+    async with RunningWorld(tmp_path) as world:
+        a = node_factory("han", world_url=world.url)
+        b = node_factory("bob", world_url=world.url)
+        a.settings.static_peers = {"bob": b.url}
+        b.settings.static_peers = {"han": a.url}
+        async with a, b:
+            await add_agent(a, "han/dev")
+            await add_agent(b, "bob/qa")
+            # Both nodes see both agents.
+            await wait_for(lambda: {"han/dev", "bob/qa"} <= set(a.node.world.mirror["agents"]))
+            await wait_for(lambda: {"han/dev", "bob/qa"} <= set(b.node.world.mirror["agents"]))
+
+            async with httpx.AsyncClient(base_url=a.url) as c:
+                assert (await c.post("/api/office/desk", json={"desk": "D1"})).status_code == 200
+                assert (await c.post("/api/office/skin", json={"agent_id": "han/dev", "skin": "cat"})).status_code == 200
+                # Han cannot steer Bob's agent through his own node.
+                r = await c.post("/api/office/move", json={"agent_id": "bob/qa", "at": {"kind": "desk"}})
+                assert r.status_code == 404
+            await wait_for(lambda: b.node.world.mirror["desks"].get("D1") == "han")
+            await wait_for(lambda: b.node.world.mirror["agents"]["han/dev"]["skin"] == "cat")
+
+            # A real exchange makes han/dev roam to bob/qa and back; no content reaches the world server.
+            await a.node.outbound.send("han/dev", "bob/qa", "secret patient detail")
+            walked = lambda: any(  # noqa: E731
+                e.get("type") == "agent" and e["agent"]["agent_id"] == "han/dev" and e["agent"]["at"].get("agent_id") == "bob/qa"
+                for e in world.sent
+            )
+            await wait_for(walked)
+            await wait_for(lambda: a.node.world.mirror["agents"]["han/dev"]["at"] == {"kind": "desk"})
+            assert "secret" not in json.dumps(world.sent)
+
+
+async def test_open_dashboard_marks_owner_present(node_factory, tmp_path):
+    async with RunningWorld(tmp_path) as world:
+        a = node_factory("han", world_url=world.url)
+        async with a:
+            await wait_for(lambda: a.node.world.connected)
+            assert not a.node.world.mirror["owners"].get("han", {}).get("present")
+            async with connect(f"ws://127.0.0.1:{a.port}/api/ws"):
+                await wait_for(lambda: a.node.world.mirror["owners"].get("han", {}).get("present"))
+            await wait_for(lambda: not a.node.world.mirror["owners"]["han"]["present"])
+
+
+async def test_office_disabled_without_world_url(node_factory):
+    async with node_factory("han") as a:
+        async with httpx.AsyncClient(base_url=a.url) as c:
+            assert (await c.get("/api/office")).json()["enabled"] is False
+            assert (await c.post("/api/office/desk", json={"desk": "D1"})).status_code == 409

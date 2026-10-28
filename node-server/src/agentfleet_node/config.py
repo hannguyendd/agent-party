@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     mesh_api_token_path: Path | None = None
     # Where we write the generated agentmesh-node.yaml (services = our agents).
     mesh_node_config_path: Path = Path("./data/agentmesh-node.yaml")
+    # Team world server for the Office view, e.g. ws://192.168.1.10:7500/world/ws (unset: Office disabled).
+    world_url: str | None = None
     # Dev/test only: skip discovery and call peers directly, {"owner": "http://host:port"}.
     static_peers: dict[str, str] = Field(default_factory=dict)
 
@@ -32,6 +34,10 @@ class Settings(BaseSettings):
     approval_timeout_s: float = 300
     manual_reply_timeout_s: float = 900
     outbound_timeout_s: float = 900
+    # How long an Assignment waits for the receiving owner to accept before it is declined.
+    assignment_accept_timeout_s: float = 900
+    # Pop an OS notification when an Assignment arrives and no dashboard tab is open.
+    os_notifications: bool = True
 
     # File sharing.
     max_inline_file_bytes: int = 5 * 1024 * 1024
