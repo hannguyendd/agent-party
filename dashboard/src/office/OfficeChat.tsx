@@ -9,19 +9,23 @@ import type { LiveState } from '../useLiveState'
 import { who, type Who } from './people'
 import { SKIN_BY_ID, ownerCss } from './skins'
 import { Icon } from './Icon'
+import { useTrimmed } from './trim'
 
 export function Avatar({ w, size = 28 }: { w: Who | 'me'; size?: number }) {
   if (w === 'me') return <span className="o-avatar o-avatar-me" style={{ width: size, height: size }}>you</span>
-  if (w.skin) {
-    return (
-      <span className="o-avatar" style={{ width: size, height: size, borderColor: ownerCss(w.owner) }}>
-        <img src={`office/characters/${w.skin}-portrait.png`} alt="" />
-      </span>
-    )
-  }
+  if (w.skin) return <SkinAvatar skin={w.skin} owner={w.owner} size={size} />
   return (
     <span className="o-avatar o-avatar-letter" style={{ width: size, height: size, background: ownerCss(w.owner || w.id) }}>
       {(SKIN_BY_ID[w.skin ?? '']?.emoji ?? w.name[0] ?? '?').toUpperCase()}
+    </span>
+  )
+}
+
+function SkinAvatar({ skin, owner, size }: { skin: string; owner: string; size: number }) {
+  const src = useTrimmed(`office/characters/${skin}-portrait.png`)
+  return (
+    <span className="o-avatar" style={{ width: size, height: size, borderColor: ownerCss(owner) }}>
+      <img src={src} alt="" />
     </span>
   )
 }

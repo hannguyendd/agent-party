@@ -665,7 +665,9 @@ export class OfficeScene extends Phaser.Scene {
     this.declutterLabels()
   }
 
-  /** Agents standing close together would print their names on top of each other: lift the later one(s). */
+  /** Agents standing close together would print their names on top of each other. A sideways overlap is
+   *  fixed by sliding the later tag aside; a near-total one lifts it above the other block, at most twice, so a tag never
+   *  climbs a whole stack of neighbours and floats far from its character. */
   private declutterLabels() {
     // Each agent's overlay block is its name tag plus, when shown, the speech bubble above it.
     const placed: { x: number; top: number; bottom: number; w: number }[] = []
@@ -676,22 +678,33 @@ export class OfficeScene extends Phaser.Scene {
       const w = Math.max(s.label.width * k, bubble?.width ?? 0)
       const bottom0 = s.hud.y + s.label.y
       const height = s.label.height * k + (bubble ? bubble.height + 8 * k : 0)
+      const gap = 3 * k
       let bottom = bottom0
-      for (let tries = 0; tries < 8; tries++) {
-        const hit = placed.find((p) => Math.abs(p.x - s.hud.x) < (p.w + w) / 2 + 2 && bottom > p.top - 1 && bottom - height < p.bottom + 1)
+      let dx = 0
+      let lifts = 0
+      for (let tries = 0; tries < 6; tries++) {
+        const x = s.hud.x + dx
+        const hit = placed.find((p) => Math.abs(p.x - x) < (p.w + w) / 2 + gap && bottom > p.top - 1 && bottom - height < p.bottom + 1)
         if (!hit) break
-        bottom = hit.top - 3
+        const overlapX = (hit.w + w) / 2 + gap - Math.abs(hit.x - x)
+        // Lifting near the top wall would push the tag off the map: slide it aside instead.
+        const roomAbove = hit.top - gap - height > 0
+        if (overlapX < w * 0.8 || !roomAbove) dx += (x >= hit.x ? 1 : -1) * overlapX
+        else if (lifts < 2) { bottom = hit.top - gap; lifts++ }
+        else break // crowded: accept a little overlap rather than drifting away
       }
       const lift = bottom - bottom0
+      s.label.x += dx
+      s.icon.x += dx
+      s.bubbleBox.x += dx
       if (lift) {
         s.label.y += lift
         s.icon.y += lift
         s.bubbleBox.y += lift
       }
-      placed.push({ x: s.hud.x, top: bottom - height, bottom, w })
+      placed.push({ x: s.hud.x + dx, top: bottom - height, bottom, w })
     }
   }
-
 
   /** Proximity: when the one agent I'm controlling stands still within reach of someone else's agent, offer
    *  the menu for the closest one; close it when they part. Closing it by hand keeps it closed until they part. */
@@ -784,9 +797,9 @@ export class OfficeScene extends Phaser.Scene {
   private scaleOverlay(s: AgentSprite) {
     const k = 1 / this.cameras.main.zoom
     const head = -(CHAR_FRAME.height - 2) * CHAR_SCALE
-    s.label.setScale(k).setY(head)
+    s.label.setScale(k).setPosition(0, head)
     s.icon.setScale(k).setPosition(14, head - 2)
-    s.bubbleBox.setScale(k).setY(head - s.label.height * k - 8)
+    s.bubbleBox.setScale(k).setPosition(0, head - s.label.height * k - 8)
   }
 
   /** Velocity towards the next waypoint, slowing down on the last one. Replans when stuck. */
