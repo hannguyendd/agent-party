@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,9 +19,10 @@ class Settings(BaseSettings):
     # Local agentmesh-node API (see Agent Mesh node API reference).
     mesh_node_url: str = "http://127.0.0.1:8080"
     mesh_api_token: str | None = None
+    # Both default into data_dir, where scripts/start-mesh-node.sh reads and writes them.
     mesh_api_token_path: Path | None = None
     # Where we write the generated agentmesh-node.yaml (services = our agents).
-    mesh_node_config_path: Path = Path("./data/agentmesh-node.yaml")
+    mesh_node_config_path: Path | None = None
     # Dev/test only: skip discovery and call peers directly, {"owner": "http://host:port"}.
     static_peers: dict[str, str] = Field(default_factory=dict)
 
@@ -41,6 +42,14 @@ class Settings(BaseSettings):
 
     # Claude CLI path override (default: whatever the SDK finds).
     claude_cli_path: str | None = None
+
+    @model_validator(mode="after")
+    def _default_paths(self) -> "Settings":
+        if self.mesh_node_config_path is None:
+            self.mesh_node_config_path = self.data_dir / "agentmesh-node.yaml"
+        if self.mesh_api_token_path is None:
+            self.mesh_api_token_path = self.data_dir / "mesh-api-token"
+        return self
 
     @property
     def db_path(self) -> Path:

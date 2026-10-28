@@ -33,7 +33,7 @@ install-dashboard: ## Install dashboard deps (bun)
 env: ## Create node-server/.env for this device (OWNER=<name>)
 	@test -n "$(OWNER)" || { echo "usage: make env OWNER=<your name>"; exit 1; }
 	@test ! -f $(NODE_DIR)/.env || { echo "$(NODE_DIR)/.env already exists"; exit 1; }
-	@printf 'AGENTFLEET_OWNER=%s\nAGENTFLEET_MESH_API_TOKEN_PATH=./data/mesh-api-token\n' "$(OWNER)" > $(NODE_DIR)/.env
+	@printf 'AGENTFLEET_OWNER=%s\n' "$(OWNER)" > $(NODE_DIR)/.env
 	@echo "wrote $(NODE_DIR)/.env"
 
 # checks
