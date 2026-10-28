@@ -17,11 +17,14 @@
     blue = entrance) and `seats.json` from the manifest (`layout.ts` is only the fallback when the map is missing).
     Arcade-physics movement (keyboard driving, smoothed click-to-walk), proximity menu, desk tags, bubbles. It
     reports through `SceneCallbacks` and **never calls the API**; React pushes data in with `setSceneData`.
-  - React side: `OfficeView.tsx` (screen + side column), `AppBar.tsx` (shared with Settings), `SideLists.tsx`
-    (Chats, Approvals, MessageAgent), `AgentCard.tsx`, `ConversationPanel.tsx` + `OfficeChat.tsx` (transcript with
-    avatars, mesh events and attachments), `PeerMenu.tsx` (Ask / Assign), `MentionInput.tsx` (@agent picker, paste),
-    `attachments.ts` + `AttachBar.tsx` (pick / drop / paste files, checked against `node.files` limits, sent base64),
-    `SettingsView.tsx`, `people.ts` (`who()`: display name / owner / skin for an agent ID).
+  - React side: `OfficeView.tsx` (screen, side column, status bar), `AppBar.tsx` (shared with Settings),
+    `AgentCard.tsx` (selected agent: Message, Continue, Go to, contact-policy switch, look), `SideLists.tsx`
+    (Chats with groups / search / unread, Approvals), `ConversationPanel.tsx` + `OfficeChat.tsx` (transcript with
+    avatars, mesh events and attachments), `NewChatPanel.tsx` (private chat before its first message),
+    `Composer.tsx` (the one message box: `MentionInput` @picker + `AttachBar` + Send), `PeerMenu.tsx` (Ask / Assign),
+    `attachments.ts` (pick / drop / paste, checked against `node.files`, sent base64), `status.ts` (status labels and
+    tones), `seen.ts` (per-browser "seen" marks for unread dots), `people.ts` (`who()`: display name / owner / skin),
+    `SettingsView.tsx`.
   - Art comes from `public/office/manifest.json` (Codex; see `docs/office/`). Don't hard-code art; add a manifest key.
   - `office.css` scopes the pastel theme to `.office-view` and maps the shared tokens (`--panel`, `--muted`, …) so
     shared components (`ApprovalCard`, `AgentForm`, `Directory`) match it without their own restyle.
