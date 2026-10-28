@@ -29,3 +29,17 @@ async def test_conversations_and_approvals_leave_notifications(node_factory):
             assert (await c.post("/api/notifications/read", json={"ids": None})).status_code == 200
             await asyncio.sleep(0.05)
             assert all(n["read"] for n in (await c.get("/api/notifications")).json())
+
+
+async def test_history_search_finds_chat_text(node_factory):
+    a, b = await pair(node_factory)
+    async with a, b:
+        await add_agent(a, "han/dev")
+        await add_agent(b, "bob/qa")
+        conv = await a.node.outbound.send("han/dev", "bob/qa", "Which Postgres replica serves the ORDERS table?")
+        await wait_for(lambda: a.node.store.search_messages("orders"))
+        async with httpx.AsyncClient(base_url=a.url) as c:
+            hits = (await c.get("/api/conversations/search", params={"q": "postgres REPLICA"})).json()
+            assert hits and "replica" in hits[0]["snippet"].lower()
+            assert (await c.get("/api/conversations/search", params={"q": "  "})).json() == []
+        assert conv is not None

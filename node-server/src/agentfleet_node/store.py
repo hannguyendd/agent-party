@@ -175,6 +175,37 @@ class Store:
         with self.db.session() as s:
             return list(s.exec(select(Message).where(Message.conversation_id == conv_id).order_by(Message.created_at)))
 
+    def search_messages(self, q: str, limit: int = 200) -> list[dict[str, Any]]:
+        """Conversations whose chat text contains `q` (case-insensitive), newest hit first, with a short snippet.
+        Local only: this node's own SQLite, for the History page."""
+        q = q.strip()
+        if not q:
+            return []
+        needle = q.lower()
+        pattern = f"%{q.replace('%', '').replace('_', '')}%"
+        with self.db.session() as s:
+            rows = s.exec(
+                select(Message)
+                .where(col(Message.kind) == "text", col(Message.role).in_(["peer", "agent", "owner"]),
+                       col(Message.content).ilike(pattern))
+                .order_by(col(Message.created_at).desc())
+                .limit(limit * 5)
+            )
+            out: dict[str, dict[str, Any]] = {}
+            for m in rows:
+                if m.conversation_id in out:
+                    out[m.conversation_id]["hits"] += 1
+                    continue
+                if len(out) >= limit:
+                    continue
+                text = " ".join(m.content.split())
+                i = text.lower().find(needle)
+                start = max(0, i - 50) if i >= 0 else 0
+                out[m.conversation_id] = {"conversation_id": m.conversation_id, "message_id": m.id, "role": m.role,
+                                          "snippet": ("…" if start else "") + text[start:start + 160],
+                                          "created_at": m.created_at, "hits": 1}
+            return list(out.values())
+
     def stream_delta(self, conv_id: str, text: str) -> None:
         """Partial assistant text; live only, never stored."""
         self.bus.publish({"type": "delta", "conversation_id": conv_id, "text": text})

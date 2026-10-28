@@ -316,6 +316,12 @@ def list_conversations(request: Request, agent_id: str | None = None) -> list[di
     ]
 
 
+@router.get("/conversations/search")
+def search_conversations(request: Request, q: str = "", limit: int = 200) -> list[dict[str, Any]]:
+    """Full-text search over this node's own chat text (History page). Never leaves this machine."""
+    return _node(request).store.search_messages(q, max(1, min(limit, 500)))
+
+
 @router.post("/conversations")
 async def start_conversation(body: StartIn, request: Request) -> dict[str, Any]:
     """Owner starts a local session with one of their agents (e.g. 'ask bob/qa-agent about X')."""
