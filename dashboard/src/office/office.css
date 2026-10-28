@@ -752,3 +752,16 @@ a.o-file:hover { border-color: var(--o-line); }
 .o-chat-row:hover { background: var(--o-panel); border-color: var(--o-line); transform: translateY(-1px); }
 .o-chat-row.is-unread { background: #fffdf8; border-color: #e7cfb6; }
 .o-chat-row.is-wait { background: #fff8ea; }
+
+/* Chats tabs: Private / Outgoing / Incoming */
+.o-chat-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 3px; margin-bottom: 10px; background: var(--o-panel-2); border-radius: 8px; }
+.o-chat-tabs button {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px;
+  font-size: 12.5px; font-weight: 700; color: var(--o-muted); border: 1.5px solid transparent; border-radius: 6px; cursor: pointer;
+}
+.o-chat-tabs button:hover { color: var(--o-ink); }
+.o-chat-tabs button.is-active { background: var(--o-panel); color: var(--o-ink); border-color: var(--o-line); box-shadow: 0 2px 0 var(--o-shadow); }
+.o-chat-tab-n { font-size: 11px; font-weight: 800; padding: 0 5px; border-radius: 999px; background: var(--o-panel-2); }
+.o-chat-tabs button.is-active .o-chat-tab-n { background: var(--o-lav); }
+.o-chat-tabs i { position: absolute; top: 3px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--o-coral); }
+.o-chat-tabs i.is-alert { background: #e0a43a; box-shadow: 0 0 0 2px #fdf0d5; }
