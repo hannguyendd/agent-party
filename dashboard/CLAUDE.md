@@ -4,10 +4,11 @@ React 19 + Vite + TypeScript + Tailwind v4, packages via **bun**. `bun dev` prox
 `/api/ws` WebSocket) to `VITE_NODE_URL` (default `http://127.0.0.1:9100`); `bun run build` writes `dist/`, which
 the node server serves at `/`. Done means `bun run build` passes (it runs `tsc -b`); `bun run lint` is oxlint.
 
-Two screens, chosen by plain React state (`View` in `src/App.tsx`, no router): the **Office** (`src/office/OfficeView.tsx`,
-the only working screen: map + side column with Agents / Chats / Approvals tabs and the conversation panel) and
-**Settings** (`src/office/SettingsView.tsx`: agents, mesh, notifications). Don't add separate pages for daily work;
-put it in the Office side column. UI copy is English. `?preview` in the URL shows sample agents (design work only).
+Three screens, chosen by plain React state (`View` in `src/App.tsx`, no router; `conv` in a View opens that
+conversation): the **Office** (`src/office/OfficeView.tsx`, the working screen: map + dock under it + side column with
+Agents / Chats / Approvals tabs and the conversation panel), **History** (`src/office/HistoryView.tsx`: every
+conversation, searchable, full transcript and export) and **Settings** (`src/office/SettingsView.tsx`: agents, mesh,
+notifications). Daily work stays in the Office side column; History is for looking things up afterwards. UI copy is English. `?preview` in the URL shows sample agents (design work only).
 Code layout and state conventions: `src/CLAUDE.md`.
 
 ## Phaser / Office gotchas (all found the hard way)

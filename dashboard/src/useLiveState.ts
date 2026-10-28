@@ -1,7 +1,7 @@
 // Live dashboard state: REST snapshot + /api/ws event stream folded through one reducer.
 
 import { useCallback, useEffect, useReducer, useRef } from 'react'
-import { api, wsUrl, type Agent, type Approval, type Conversation, type LiveEvent, type Message, type NodeInfo, type OfficeState, type PlanUsage, type Recap, type WorldEvent } from './api'
+import { api, wsUrl, type Agent, type Approval, type Conversation, type LiveEvent, type Message, type NodeInfo, type AppNotification, type OfficeState, type PlanUsage, type Recap, type WorldEvent } from './api'
 
 export interface LiveState {
   connected: boolean
@@ -23,6 +23,8 @@ export interface LiveState {
   usage: PlanUsage | null
   /** The owner is online (agents in the Office) or went offline; null until fetched. */
   online: boolean | null
+  /** The bell's history, newest first. */
+  notifications: AppNotification[]
 }
 
 type Action =
@@ -32,6 +34,7 @@ type Action =
   | { type: 'detail'; conversation: Conversation; messages: Message[]; approvals: Approval[] }
   | { type: 'event'; event: LiveEvent }
   | { type: 'office'; office: OfficeState }
+  | { type: 'notifications'; rows: AppNotification[] }
 
 const initial: LiveState = {
   connected: false,
@@ -46,6 +49,7 @@ const initial: LiveState = {
   recaps: {},
   usage: null,
   online: null,
+  notifications: [],
 }
 
 const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]))
@@ -67,6 +71,8 @@ function reducer(s: LiveState, a: Action): LiveState {
   switch (a.type) {
     case 'connected':
       return { ...s, connected: a.value }
+    case 'notifications':
+      return { ...s, notifications: a.rows }
     case 'node':
       return { ...s, node: a.node }
     case 'snapshot': {
@@ -130,6 +136,10 @@ function applyEvent(s: LiveState, e: LiveEvent): LiveState {
       return { ...s, usage: e.usage }
     case 'presence':
       return { ...s, online: e.online }
+    case 'notification':
+      return { ...s, notifications: [e.notification, ...s.notifications.filter((n) => n.id !== e.notification.id)].slice(0, 300) }
+    case 'notifications_read':
+      return { ...s, notifications: s.notifications.map((n) => (e.ids === null || e.ids.includes(n.id) ? { ...n, read: true } : n)) }
   }
 }
 
@@ -154,8 +164,11 @@ function applyWorld(s: LiveState, e: WorldEvent): LiveState {
       return { ...s, office: { ...o, desks: e.desks } }
     case 'owners':
       return { ...s, office: { ...o, owners: e.owners } }
-    case 'agent':
-      return { ...s, office: { ...o, agents: [...o.agents.filter((a) => a.agent_id !== e.agent.agent_id), e.agent] } }
+    case 'agent': {
+      // Update in place: a new look or status must not move the agent to the end of every list.
+      const known = o.agents.some((a) => a.agent_id === e.agent.agent_id)
+      return { ...s, office: { ...o, agents: known ? o.agents.map((a) => (a.agent_id === e.agent.agent_id ? e.agent : a)) : [...o.agents, e.agent] } }
+    }
     case 'agent_left':
       return { ...s, office: { ...o, agents: o.agents.filter((a) => a.agent_id !== e.agent_id) } }
     case 'link':
@@ -190,6 +203,7 @@ export function useLiveState(openConversationId: string | null) {
     api.office().then((office) => dispatch({ type: 'office', office })).catch(() => {})
     api.usage().then((u) => dispatch({ type: 'event', event: { type: 'usage', usage: u.usage } })).catch(() => {})
     api.presence().then((p) => dispatch({ type: 'event', event: { type: 'presence', online: p.online } })).catch(() => {})
+    api.notifications().then((rows) => dispatch({ type: 'notifications', rows })).catch(() => {})
     if (openRef.current) await loadConversation(openRef.current).catch(() => {})
   }, [loadConversation, refreshNode])
 

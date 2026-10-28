@@ -1,6 +1,9 @@
 // Who an agent ID is, for display: name, owner and skin from the Office and this node's agents.
 
+import { useMemo } from 'react'
+import type { AppNotification } from '../api'
 import type { LiveState } from '../useLiveState'
+import { plainPreview } from './render-md'
 
 export interface Who {
   id: string
@@ -38,4 +41,13 @@ export function withMentionIds(text: string, candidates: Who[]): string {
     out = out.replace(new RegExp(`(^|\\s)@${escaped}(?=$|[\\s.,:;!?)])`, 'gi'), `$1@${c.id}`)
   }
   return out
+}
+
+/** A notification's title with agent IDs shown as names. */
+export function useNotificationText(state: LiveState): (n: AppNotification) => string {
+  const { office, agents } = state
+  return useMemo(() => {
+    const nameOf = agentNames({ office, agents } as LiveState)
+    return (n: AppNotification) => plainPreview(n.title, nameOf)
+  }, [office, agents])
 }

@@ -7,6 +7,8 @@ import { goOffline } from '../offline'
 import type { View } from '../App'
 import type { LiveState } from '../useLiveState'
 import { Icon } from './Icon'
+import { NotificationBell } from './NotificationBell'
+import { notificationTarget } from './nav'
 import { ownerCss } from './skins'
 
 /** "Taggle Office" when the admin named the organization on the server, else the product name. */
@@ -109,7 +111,6 @@ function AccountMenu({ owner, active, onSettings }: { owner: string; active: boo
 }
 
 export function AppBar({ state, view, go, onApprovals }: { state: LiveState; view: View; go: (v: View) => void; onApprovals?: () => void }) {
-  const pending = Object.values(state.approvals).filter((a) => a.status === 'pending').length
   const mesh = state.node?.mesh
   const owner = state.node?.owner ?? ''
   const office = state.office
@@ -134,6 +135,9 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
         <button className={view.kind === 'office' ? 'is-active' : ''} aria-current={view.kind === 'office' ? 'page' : undefined} onClick={() => go({ kind: 'office' })}>
           <Icon name="office" />Office
         </button>
+        <button className={view.kind === 'history' ? 'is-active' : ''} aria-current={view.kind === 'history' ? 'page' : undefined} onClick={() => go({ kind: 'history' })}>
+          <Icon name="clock" />History
+        </button>
       </div>
       <div className="office-right">
         <UpdateButton />
@@ -145,10 +149,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
           <i />
           {healthy ? 'Online' : !core ? (state.connected ? 'Office offline' : 'Reconnecting') : mesh?.config_dirty ? 'Restart mesh' : 'Mesh offline'}
         </button>
-        <button className="office-bell" onClick={onApprovals ?? (() => go({ kind: 'office', side: 'approvals' }))} title={pending ? `${pending} waiting for you` : 'Nothing waiting'} aria-label={`Approvals, ${pending} waiting`}>
-          <Icon name={pending ? 'approvals-pending' : 'approvals'} />
-          {pending > 0 && <span className="o-count">{pending}</span>}
-        </button>
+        <NotificationBell state={state} onOpen={(n) => go(notificationTarget(n))} onApprovals={onApprovals ?? (() => go({ kind: 'office', side: 'approvals' }))} />
         <AccountMenu owner={owner} active={view.kind === 'settings'} onSettings={() => go({ kind: 'settings' })} />
       </div>
     </nav>

@@ -153,6 +153,16 @@ export interface Approval {
   decided_at: string | null
 }
 
+/** A conversation whose chat text matched a History search (this node only). */
+export interface SearchHit {
+  conversation_id: string
+  message_id: string
+  role: string
+  snippet: string
+  created_at: string
+  hits: number
+}
+
 export interface ConversationDetail {
   conversation: Conversation
   messages: Message[]
@@ -209,6 +219,18 @@ export interface Party {
   kind: 'inquiry' | 'assignment'
 }
 
+/** Something that pinged the owner (the bell keeps the history). Titles carry agent IDs; show names. */
+export interface AppNotification {
+  id: string
+  kind: 'approval' | 'assignment' | 'inbound' | 'reply' | 'waiting' | 'error' | 'party' | 'recap'
+  title: string
+  body: string
+  conversation_id: string | null
+  agent_id: string | null
+  read: boolean
+  created_at: string
+}
+
 /** CONTEXT.md "Recap": written in the background; `body` is Markdown. */
 export interface Recap {
   id: string
@@ -249,6 +271,8 @@ export type LiveEvent =
   | { type: 'recap'; recap: Recap }
   | { type: 'usage'; usage: PlanUsage }
   | { type: 'presence'; online: boolean }
+  | { type: 'notification'; notification: AppNotification }
+  | { type: 'notifications_read'; ids: string[] | null }
 
 export class ApiError extends Error {
   status: number
@@ -309,6 +333,7 @@ export const api = {
   startConversation: (agent_id: string, text: string, files: FileIn[] = [], title = '') =>
     req<Conversation>('POST', '/api/conversations', { agent_id, text, files, title }),
   conversation: (id: string) => req<ConversationDetail>('GET', `/api/conversations/${enc(id)}`),
+  searchConversations: (q: string) => req<SearchHit[]>('GET', `/api/conversations/search?q=${enc(q)}`),
   inject: (id: string, text: string, files: FileIn[] = []) =>
     req<{ status: string }>('POST', `/api/conversations/${enc(id)}/inject`, { text, files }),
   fileUrl: (id: string) => `/api/files/${enc(id)}`,
@@ -344,6 +369,8 @@ export const api = {
   usage: () => req<{ usage: PlanUsage }>('GET', '/api/usage'),
   service: () => req<{ installed: boolean; autostart: boolean }>('GET', '/api/service'),
   serviceAutostart: (on: boolean) => req<{ autostart: boolean }>('POST', '/api/service/autostart', { on }),
+  notifications: () => req<AppNotification[]>('GET', '/api/notifications?limit=150'),
+  readNotifications: (ids: string[] | null) => req<{ ok: boolean }>('POST', '/api/notifications/read', { ids }),
   presence: () => req<{ online: boolean }>('GET', '/api/presence'),
   setPresence: (online: boolean) => req<{ online: boolean }>('POST', '/api/presence', { online }),
   updateInfo: () => req<{ installed: boolean; build: string; latest: string | null; available: boolean }>('GET', '/api/update'),

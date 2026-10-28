@@ -1,8 +1,9 @@
-// Browser notifications for things that need the owner (CONTEXT.md "Woken"): new Assignments and tool approvals.
-// Best effort: needs the owner's permission and an open tab; the node falls back to an OS notification otherwise.
+// Browser notifications (CONTEXT.md "Woken"): every new notification (approvals, assignments, replies, questions
+// from colleagues...) pops up while the tab is in the background. Best effort: needs the owner's permission and an
+// open tab; the node falls back to an OS notification for Assignments otherwise.
 
-import { useEffect, useRef } from 'react'
-import type { Approval } from './api'
+import { useEffect, useRef, useState } from 'react'
+import type { AppNotification } from './api'
 
 export const notificationsSupported = () => typeof window !== 'undefined' && 'Notification' in window
 
@@ -13,31 +14,25 @@ export async function enableNotifications(): Promise<NotificationPermission> {
   return p
 }
 
-export function useApprovalNotifications(approvals: Record<string, Approval>, onOpen: (a: Approval) => void) {
-  const seen = useRef<Set<string> | null>(null)
+/** `format` turns a notification's title (agent IDs) into display text. */
+export function useBrowserNotifications(rows: AppNotification[], format: (n: AppNotification) => string, onOpen: (n: AppNotification) => void) {
+  const seen = useRef(new Set<string>())
+  // Only what happens after the page opened pops up; the rest is history in the bell.
+  const [opened] = useState(() => Date.now() - 2000)
   useEffect(() => {
-    const pending = Object.values(approvals).filter((a) => a.status === 'pending')
-    if (seen.current === null) {
-      // First snapshot: don't replay what was already waiting before the page loaded.
-      seen.current = new Set(pending.map((a) => a.id))
-      return
-    }
-    for (const a of pending) {
-      if (seen.current.has(a.id)) continue
-      seen.current.add(a.id)
-      if (!notificationsSupported() || Notification.permission !== 'granted') continue
-      if (!document.hidden && document.hasFocus()) continue // the page itself shows it
-      const assignment = a.tool_name === 'Assignment'
-      const n = new Notification(assignment ? `${a.tool_input.from ?? 'Someone'} wants to assign work` : `Approval needed: ${a.tool_name}`, {
-        body: assignment ? String(a.tool_input.task ?? '').slice(0, 140) : 'One of your agents is waiting for your permission.',
-        tag: a.id,
-        requireInteraction: assignment,
-      })
-      n.onclick = () => {
+    for (const n of rows) {
+      if (seen.current.has(n.id)) continue
+      seen.current.add(n.id)
+      if (Date.parse(n.created_at) < opened) continue
+      if (n.read || !notificationsSupported() || Notification.permission !== 'granted') continue
+      if (!document.hidden && document.hasFocus()) continue // the page shows its own toast
+      const urgent = n.kind === 'assignment' || n.kind === 'approval' || n.kind === 'waiting'
+      const pop = new Notification(format(n), { body: n.body.slice(0, 140), tag: n.id, requireInteraction: n.kind === 'assignment' && urgent })
+      pop.onclick = () => {
         window.focus()
-        onOpen(a)
-        n.close()
+        onOpen(n)
+        pop.close()
       }
     }
-  }, [approvals, onOpen])
+  }, [rows, format, onOpen, opened])
 }

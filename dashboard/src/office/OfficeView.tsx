@@ -4,11 +4,14 @@ import { api, type OfficeAgent, type OfficeTarget } from '../api'
 import type { LiveState } from '../useLiveState'
 import type { SideTab, View } from '../App'
 import { errMsg } from '../components/format'
-import { ownerCss } from './skins'
 import type { OfficeScene, PeerClick, SceneCallbacks, SceneData } from './OfficeScene'
 import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
+import { OfficeDock } from './OfficeDock'
+import { SkinPicker } from './SkinPicker'
+import { DeskPicker } from './DeskPicker'
+import { notificationTarget } from './nav'
 import { ConversationPanel } from './ConversationPanel'
 import { NewChatPanel } from './NewChatPanel'
 import { PartyPanel } from './PartyPanel'
@@ -93,6 +96,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   const [demoDesks, setDemoDesks] = useState<Record<string, string>>({ D2: 'preview' })
   const [selected, setSelected] = useState<string[]>([])
   const [pickingDesk, setPickingDesk] = useState(false)
+  // The Desk pill: the desk picker popup opens under it.
+  const [deskPill, setDeskPill] = useState<HTMLButtonElement | null>(null)
   const [peer, setPeer] = useState<PeerClick | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -120,7 +125,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   const me = isPreview ? 'preview' : office?.owner ?? state.node?.owner ?? ''
   const desks = isPreview ? demoDesks : office?.desks ?? EMPTY_DESKS
   const canAct = isPreview || !!office?.connected
-  const mine = agents.filter(a => a.owner === me)
+  const mine = agents.filter(a => a.owner === me).sort((a, b) => a.name.localeCompare(b.name))
   const picked = agents.find(a => a.agent_id === selected[0])
   // Newest conversation per agent of mine (active ones first), for "open chat".
   const latestConv = (agentId: string) => {
@@ -137,6 +142,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
   // First-run guide. Its step follows real state, so it resumes where the person left off.
   const [onboarded, setOnboarded] = useState(readFlag)
   const [quickAgent, setQuickAgent] = useState(false)
+  // The 👕 button whose look picker is open (the popup sits under it).
+  const [looks, setLooks] = useState<{ agentId: string; anchor: HTMLElement } | null>(null)
   const [notifySkipped, setNotifySkipped] = useState(false)
   const finishOnboarding = () => { writeFlag(); setOnboarded(true) }
   const hasAgents = Object.keys(state.agents).length > 0
@@ -229,6 +236,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
     <AppBar state={state} view={view} go={go} onApprovals={() => { setOpenConv(null); setSide('approvals') }} />
 
     <div className={`office-workspace ${wide && conv ? 'is-wide' : ''}`}>
+      <div className="office-left">
       <div className="office-stage-wrap">
       <div className="office-stage">
         <OfficeCanvas data={sceneData} callbacks={callbacks} sceneRef={sceneRef} onReady={() => setReady(true)} onError={setError} />
@@ -238,7 +246,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           {!isPreview && office && !office.enabled && <div className="office-toast" role="status">This node isn't connected to a world server. <button className="btn" onClick={() => go({ kind: 'settings', section: 'mesh' })}>Set it up</button></div>}
           {(error || state.officeError) && <div className="office-toast is-error" role="alert"><span>{error || state.officeError}</span><button onClick={() => { setError(null); clearError() }} aria-label="Dismiss"><Icon name="close" /></button></div>}
           {notice && <div className="office-toast" role="status">{notice}</div>}
-          {pickingDesk && <div className="office-toast is-pick" role="status"><span>Click a free desk (outlined in green) to make it yours.</span><button className="btn" onClick={() => setPickingDesk(false)}>Cancel</button></div>}
+          {pickingDesk && !(deskPill && side === 'agents') && <div className="office-toast is-pick" role="status"><span>Click a free desk (outlined in green) to make it yours.</span><button className="btn" onClick={() => setPickingDesk(false)}>Cancel</button></div>}
         </div>
 
         {!isPreview && incoming.length > 0 && (
@@ -290,6 +298,23 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         )}
       </div>
       </div>
+      <OfficeDock
+        state={state}
+        preview={isPreview}
+        me={me}
+        ownDesk={ownDesk}
+        presentOwners={presentOwners}
+        activeChats={activeChats}
+        waiting={pendingApprovals.length}
+        onChats={() => { setOpenConv(null); setSide('chats') }}
+        onApprovals={() => { setOpenConv(null); setSide('approvals') }}
+        onOpenConv={id => { openChat(id); setSide('chats') }}
+        onFollow={id => sceneRef.current?.follow(id)}
+        onNotification={n => go(notificationTarget(n))}
+        onZoom={f => sceneRef.current?.zoomBy(f)}
+        onFit={() => sceneRef.current?.fitCamera()}
+      />
+      </div>
 
       <aside className="office-roster">
         {newParty && !conv ? (
@@ -331,20 +356,47 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         </div>
 
         {side === 'agents' && <>
-        <div className="o-frame office-card">
-          <h2><span className="o-h2-title">Your agents</span>{!isPreview && <button className="o-mini-btn is-primary" onClick={() => setQuickAgent(true)}>+ New agent</button>}</h2>
-          {/* Always here (not only once a desk is claimed): it's the one place to pick a desk after the first-run guide. */}
-          {(isPreview || office?.enabled) && <div className="office-desk-row"><Icon name="desk" />
-            <span>{ownDesk ? <>Your desk <strong>{ownDesk}</strong></> : 'No desk yet'}</span>
-            <button className={`o-mini-btn ${ownDesk || pickingDesk ? '' : 'is-primary'}`} disabled={!canAct} onClick={() => setPickingDesk(p => !p)}>
-              {pickingDesk ? 'Cancel' : ownDesk ? 'Change desk' : 'Pick a desk'}
-            </button></div>}
+        <div className="o-frame office-card ag-roster">
+          <header className="ag-roster-head">
+            <h2>Your agents</h2>
+            {mine.length > 0 && <span className="ag-count">{mine.length}</span>}
+            {/* Always here (not only once a desk is claimed): it's the one place to pick a desk after the first-run guide. */}
+            {(isPreview || office?.enabled) && (
+              <button ref={setDeskPill} className={`ag-desk ${ownDesk ? '' : 'is-missing'} ${pickingDesk ? 'is-open' : ''}`} disabled={!canAct} onClick={() => setPickingDesk(p => !p)}
+                title={ownDesk ? 'Change your desk' : 'Pick the desk you sit at'} aria-expanded={pickingDesk}>
+                <Icon name="desk" />{ownDesk ? <>Desk <b>{ownDesk}</b></> : 'Pick a desk'}
+              </button>
+            )}
+            {!isPreview && <button className="o-mini-btn is-primary" onClick={() => setQuickAgent(true)}>+ New</button>}
+          </header>
           {!mine.length && <p className="office-empty">{hasAgents ? 'Your agents appear here once the office connects.' : 'No agents yet. Press + New to create one.'}</p>}
-          <div className="office-agent-list">{mine.map(a => <button key={a.agent_id} className={`office-agent ${selected.includes(a.agent_id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(a.agent_id)} onClick={() => sceneRef.current?.selectOnly([a.agent_id])}>
-            <img src={`office/characters/${a.skin}-portrait.png`} alt="" width="32" height="48" />
-            <span><strong>{a.name}</strong><small>{statusText(a)}</small></span>
-            <i style={{ backgroundColor: ownerCss(a.owner) }} />
-          </button>)}</div>
+          <div className="ag-tiles">{mine.map(a => {
+            const busyNow = !!a.activity && ACTIVE_STATUSES.includes(a.activity.status)
+            const on = selected.includes(a.agent_id)
+            return (
+              <div key={a.agent_id} className={`ag-tile ${on ? 'is-selected' : ''}`}>
+                <button className="ag-tile-main" aria-pressed={on} onClick={() => sceneRef.current?.selectOnly([a.agent_id])} title={statusText(a)}>
+                  <img src={`office/characters/${a.skin}-portrait.png`} alt="" width="32" height="48" />
+                  <span><strong>{a.name}</strong><small><i className={busyNow ? 'is-busy' : ''} />{statusText(a)}</small></span>
+                </button>
+                <span className="ag-tile-tools">
+                  <button className={looks?.agentId === a.agent_id ? 'is-on' : ''} onClick={e => { const el = e.currentTarget; setLooks(l => (l?.agentId === a.agent_id ? null : { agentId: a.agent_id, anchor: el })) }} title="Change look" aria-label={`Change ${a.name}'s look`} aria-expanded={looks?.agentId === a.agent_id}>👕</button>
+                  {!isPreview && <button onClick={() => go({ kind: 'settings', section: 'agents', agentId: a.agent_id })} title="Agent settings" aria-label={`${a.name} settings`}><Icon name="settings" /></button>}
+                </span>
+              </div>
+            )
+          })}</div>
+          {pickingDesk && deskPill && side === 'agents' && (
+            <DeskPicker anchor={deskPill} me={me} desks={desks} busy={busy}
+              deskIds={office?.desk_ids?.length ? office.desk_ids : ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2']}
+              onPick={id => callbacks.onDeskPick(id)} onClose={() => setPickingDesk(false)} />
+          )}
+          {looks && mine.some(a => a.agent_id === looks.agentId) && (() => {
+            const a = mine.find(x => x.agent_id === looks.agentId)!
+            return <SkinPicker anchor={looks.anchor} name={a.name} current={a.skin} disabled={!canAct}
+              onPick={skin => isPreview ? setDemo(rows => rows.map(r => r.agent_id === a.agent_id ? { ...r, skin } : r)) : void perform(() => api.setSkin(a.agent_id, skin))}
+              onClose={() => setLooks(null)} />
+          })()}
         </div>
 
         {picked && <AgentCard
@@ -360,8 +412,6 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
             : () => { setPeer(null); setOpenConv(null); setNewChat(null); setNewParty(picked.agent_id) }}
           // Spots inside each room on the map art; the scene snaps to the nearest tile it can reach.
           onGo={where => where === 'desk' ? sceneRef.current?.sendSelectedHome() : sceneRef.current?.goToPlace(where === 'pantry' ? { x: 46, y: 8 } : { x: 47, y: 21 })}
-          onSkin={skin => isPreview ? setDemo(rows => rows.map(a => a.agent_id === picked.agent_id ? { ...a, skin } : a)) : void perform(() => api.setSkin(picked.agent_id, skin))}
-          onSettings={() => go({ kind: 'settings', section: 'agents', agentId: picked.agent_id })}
           contactPolicy={isPreview ? undefined : (policyDraft[picked.agent_id] ?? state.agents[picked.agent_id]?.contact_policy ?? 'auto')}
           onContactPolicy={policy => setContactPolicy(picked.agent_id, policy)}
           permission={isPreview || !state.agents[picked.agent_id] ? undefined : levelOf(state.agents[picked.agent_id].allowed_tools)}
@@ -373,7 +423,6 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           usage={isPreview ? undefined : state.usage}
         />}
 
-        {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{(office?.desk_ids?.length ? office.desk_ids : ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2']).filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}
 
         </>}
 
@@ -382,23 +431,6 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         </>}
       </aside>
     </div>
-    <footer className="office-footer">
-      <span className={`office-connection ${isPreview || office?.connected ? 'is-online' : ''}`}>{isPreview ? 'Design preview' : office?.connected ? 'Office connected' : 'Reconnecting'}</span>
-      {!isPreview && <span className="office-present" title={presentOwners.join(', ')}>
-        {presentOwners.slice(0, 6).map(o => <i key={o} style={{ background: ownerCss(o) }} title={o} />)}
-        <Icon name="people" />{presentOwners.length} in the office
-      </span>}
-      {ownDesk && <span>Desk {ownDesk}</span>}
-      {!isPreview && <button className="office-foot-link" onClick={() => { setOpenConv(null); setSide('chats') }}>{activeChats} active chat{activeChats === 1 ? '' : 's'}</button>}
-      {!isPreview && pendingApprovals.length > 0 && <button className="office-foot-link is-alert" onClick={() => { setOpenConv(null); setSide('approvals') }}>{pendingApprovals.length} waiting for you</button>}
-      {/* Zoom lives in the status bar, not over the map's floor. */}
-      <div className="office-zoom" aria-label="Zoom">
-        <button className="o-mini-btn" aria-label="Zoom out" title="Zoom out" onClick={() => sceneRef.current?.zoomBy(0.85)}>−</button>
-        <button className="o-mini-btn" aria-label="Fit office" title="Fit the whole office" onClick={() => sceneRef.current?.fitCamera()}><Icon name="fit" /></button>
-        <button className="o-mini-btn" aria-label="Zoom in" title="Zoom in" onClick={() => sceneRef.current?.zoomBy(1.15)}>+</button>
-      </div>
-      <span className="office-keys"><Icon name="keyboard" /><kbd>WASD</kbd> walk · <kbd>E</kbd> talk · <kbd>H</kbd> desk · <kbd>F</kbd> follow · scroll to zoom</span>
-    </footer>
   </section>
 }
 

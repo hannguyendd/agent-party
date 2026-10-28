@@ -21,7 +21,7 @@
     blue = entrance) and `seats.json` from the manifest (`layout.ts` is only the fallback when the map is missing).
     Arcade-physics movement (keyboard driving, smoothed click-to-walk), proximity menu, desk tags, bubbles. It
     reports through `SceneCallbacks` and **never calls the API**; React pushes data in with `setSceneData`.
-  - React side: `OfficeView.tsx` (screen, side column, status bar), `AppBar.tsx` (shared with Settings),
+  - React side: `OfficeView.tsx` (screen, side column), `AppBar.tsx` (shared with Settings),
     `AgentCard.tsx` (selected agent: Message, Continue, Go to, contact-policy switch, look), `SideLists.tsx`
     (Chats with groups / search / unread, Approvals), `ConversationPanel.tsx` + `OfficeChat.tsx` (transcript with
     avatars, mesh events and attachments), `NewChatPanel.tsx` (private chat before its first message),
@@ -29,6 +29,10 @@
     `attachments.ts` (pick / drop / paste, checked against `node.files`, sent base64), `status.ts` (status labels and
     tones), `seen.ts` (per-browser "seen" marks for unread dots), `people.ts` (`who()`: display name / owner / skin),
     `SettingsView.tsx`, `SetupView.tsx` + `SetupForm.tsx` (first-run join page; the form is reused in Settings),
+    `NotificationBell.tsx` (the bell: notification history popover + live toasts; `nav.ts` says where one leads),
+    `OfficeDock.tsx` (under the map: status, zoom, "Happening now" from world activity, recent notifications; it
+    shrinks to one line, then to its bar, through a `dock` container query), `HistoryView.tsx` + `history.ts`
+    (History page; word search is `GET /api/conversations/search` on this node only),
     `Onboarding.tsx` (guide over the map; its step is derived from state in `OfficeView`, and "+ New agent" opens
     its short agent form alone), `PartyPanel.tsx` (gather a Party), `PartyBar.tsx` (party controls inside a
     conversation, by role), `RecapList.tsx` (recaps of the open conversation), `trim.ts` (portraits cropped to

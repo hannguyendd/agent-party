@@ -1,0 +1,129 @@
+// The dock under the map: office status and zoom on one bar, then "Happening now": every agent in the office that
+// is talking right now (status only, never words). It takes whatever height the map leaves; on short screens only
+// the bar shows.
+
+import type { AppNotification, Conversation } from '../api'
+import { timeAgo } from '../components/format'
+import type { LiveState } from '../useLiveState'
+import { Icon } from './Icon'
+import { Avatar } from './OfficeChat'
+import { useNotificationText, who } from './people'
+import { ownerCss } from './skins'
+import { ACTIVE_STATUSES, STATUS } from './status'
+
+interface Props {
+  state: LiveState
+  preview: boolean
+  me: string
+  ownDesk?: string
+  presentOwners: string[]
+  activeChats: number
+  waiting: number
+  onChats: () => void
+  onApprovals: () => void
+  onOpenConv: (id: string) => void
+  onFollow: (agentId: string) => void
+  onNotification: (n: AppNotification) => void
+  onZoom: (factor: number) => void
+  onFit: () => void
+}
+
+export function OfficeDock(p: Props) {
+  const office = p.state.office
+  const talking = (office?.agents ?? []).filter((a) => a.activity && ACTIVE_STATUSES.includes(a.activity.status))
+  // Mine first; one entry per pair (both sides of a chat report activity).
+  const seenPairs = new Set<string>()
+  const rows = talking
+    .sort((a, b) => Number(b.owner === p.me) - Number(a.owner === p.me))
+    .filter((a) => {
+      const key = [a.agent_id, a.activity?.peer ?? ''].sort().join('|')
+      if (seenPairs.has(key)) return false
+      seenPairs.add(key)
+      return true
+    })
+  const noteText = useNotificationText(p.state)
+  const recent = p.state.notifications.slice(0, 8)
+  const myConv = (agentId: string): Conversation | undefined =>
+    Object.values(p.state.conversations)
+      .filter((c) => c.agent_id === agentId && ACTIVE_STATUSES.includes(c.status))
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0]
+
+  return (
+    <div className="office-dock">
+      <div className="dock-bar">
+        <span className={`dock-pill office-connection ${p.preview || office?.connected ? 'is-online' : ''}`}>
+          {p.preview ? 'Design preview' : office?.connected ? 'Connected' : 'Reconnecting'}
+        </span>
+        {!p.preview && (
+          <span className="dock-pill office-present" title={p.presentOwners.join(', ')}>
+            {p.presentOwners.slice(0, 5).map((o) => <i key={o} style={{ background: ownerCss(o) }} />)}
+            {p.presentOwners.length} here
+          </span>
+        )}
+        {p.ownDesk && <span className="dock-pill dock-wide-only"><Icon name="desk" />{p.ownDesk}</span>}
+        {!p.preview && (
+          <button className="dock-pill" onClick={p.onChats}>{p.activeChats} active chat{p.activeChats === 1 ? '' : 's'}</button>
+        )}
+        {!p.preview && p.waiting > 0 && (
+          <button className="dock-pill is-alert" onClick={p.onApprovals}>{p.waiting} waiting for you</button>
+        )}
+        <span className="dock-spacer" />
+        <span className="dock-keys dock-wide-only"><kbd>WASD</kbd> walk <kbd>E</kbd> talk <kbd>H</kbd> desk <kbd>F</kbd> follow</span>
+        <div className="dock-zoom" aria-label="Zoom">
+          <button aria-label="Zoom out" title="Zoom out" onClick={() => p.onZoom(0.85)}>−</button>
+          <button aria-label="Fit office" title="Fit the whole office" onClick={p.onFit}><Icon name="fit" /></button>
+          <button aria-label="Zoom in" title="Zoom in" onClick={() => p.onZoom(1.15)}>+</button>
+        </div>
+      </div>
+
+      <div className="dock-feed">
+        <h3><i className={rows.length ? 'is-live' : ''} />Happening now</h3>
+        {rows.length === 0 && <p className="dock-quiet">Quiet right now. Agent conversations show up here live.</p>}
+        {rows.length > 0 && (
+          <ul className="dock-talks">
+            {rows.map((a) => {
+              const mine = a.owner === p.me
+              const peer = a.activity?.peer ? who(p.state, a.activity.peer) : null
+              const st = STATUS[a.activity!.status]
+              const conv = mine ? myConv(a.agent_id) : undefined
+              const arrow = a.activity?.direction === 'inbound' ? '←' : '→'
+              return (
+                <li key={a.agent_id}>
+                  <button
+                    className={`dock-talk is-${st.tone} ${mine ? 'is-mine' : ''}`}
+                    onClick={() => (conv ? p.onOpenConv(conv.id) : p.onFollow(a.agent_id))}
+                    title={conv ? 'Open this chat' : 'Follow on the map'}
+                  >
+                    <span className="dock-faces">
+                      <Avatar w={who(p.state, a.agent_id)} size={22} />
+                      {peer && <Avatar w={peer} size={22} />}
+                    </span>
+                    <span className="dock-talk-main">
+                      <strong>{a.name}{peer ? ` ${arrow} ${peer.name}` : ' ↔ you'}</strong>
+                      <small>{st.label}{!mine && ` · ${a.owner}'s agent`}</small>
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {recent.length > 0 && (
+          <div className="dock-recent">
+            <h4>Recently</h4>
+            <ul>
+              {recent.map((n) => (
+                <li key={n.id}>
+                  <button className={n.read ? '' : 'is-unread'} onClick={() => p.onNotification(n)}>
+                    <span>{noteText(n)}</span>
+                    <time>{timeAgo(n.created_at)}</time>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
