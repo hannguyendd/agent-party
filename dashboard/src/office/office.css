@@ -1038,3 +1038,11 @@ a.o-file:hover { border-color: var(--o-line); }
 /* topic titles: who talks moves to the small line */
 .o-crow-who { color: var(--o-ink); font-weight: 700; }
 .o-conv-who { display: block; font-size: 11.5px; font-weight: 700; color: var(--o-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* a finished agent-to-agent exchange: one quiet line */
+.o-exchange-line { align-self: center; display: inline-flex; align-items: center; gap: 6px; max-width: 92%; padding: 3px 10px 3px 4px;
+  font-size: 12px; color: var(--o-muted); background: var(--o-panel); border: 1px dashed var(--o-soft-line); border-radius: 999px; }
+.o-exchange-line strong { color: var(--o-ink); }
+.o-exchange-line.is-err { border-color: #e8a68e; color: #b0442a; }
+.o-exchange-line button, .o-exchange-fold { font-size: 11.5px; font-weight: 800; color: var(--o-muted); cursor: pointer; }
+.o-exchange-line button:hover, .o-exchange-fold:hover { color: var(--o-ink); text-decoration: underline; }

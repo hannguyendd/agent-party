@@ -169,7 +169,7 @@ export function ConversationPanel({ state, conv, messages, partial, approvals, o
         </div>
       )}
 
-      <OfficeChat state={state} conv={conv} messages={messages} partial={partial} />
+      <OfficeChat state={state} conv={conv} messages={messages} partial={partial} onOpen={onOpen} />
 
       {readOnly ? (
         <footer className="o-composer o-readonly">{composer.to}. {composer.placeholder}</footer>

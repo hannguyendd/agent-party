@@ -53,7 +53,10 @@ function Attachments({ files }: { files: unknown }) {
 }
 
 /** Mesh tools read as what the agent did ("asked API agent"), not as raw tool calls. */
-function MeshEvent({ state, use, result }: { state: LiveState; use: Message; result?: Message }) {
+function MeshEvent({ state, use, result, onOpen }: { state: LiveState; use: Message; result?: Message; onOpen?: (id: string) => void }) {
+  // A finished exchange folds to one line; the question and answer are a click away (the agent's own answer to
+  // the owner, right after it, is what matters in this chat).
+  const [open, setOpen] = useState(false)
   const input = (use.data.input ?? {}) as Record<string, unknown>
   const tool = use.content.replace(/^mcp__mesh__/, '')
   let parsed: Record<string, unknown> | null = null
@@ -75,9 +78,26 @@ function MeshEvent({ state, use, result }: { state: LiveState; use: Message; res
     const needsOk = !result && Object.values(state.approvals).some(
       (a) => a.status === 'pending' && a.conversation_id === use.conversation_id && a.tool_name === use.content && a.tool_input.to === input.to,
     )
+    const ctx = parsed && typeof parsed.context_id === 'string' ? parsed.context_id : null
+    const owner = state.conversations[use.conversation_id]?.agent_id
+    const thread = ctx ? Object.values(state.conversations).find((c) => c.context_id === ctx && c.agent_id === owner) : undefined
+    if (result && !open) {
+      return (
+        <div className={`o-exchange-line ${failed ? 'is-err' : ''}`}>
+          <Avatar w={to} size={18} />
+          <span>
+            {tool === 'share_file' ? 'Sent a file to' : 'Asked'} <strong>{to.name}</strong>
+            {failed ? ' · failed' : reply ? ' · answered' : ''}
+          </span>
+          <button onClick={() => setOpen(true)}>show</button>
+          {thread && onOpen && <button onClick={() => onOpen(thread.id)}>open thread →</button>}
+        </div>
+      )
+    }
     return (
       <div className="o-exchange">
         <div className="o-exchange-head">
+          {result && <button className="o-exchange-fold" onClick={() => setOpen(false)} aria-label="Fold">▾</button>}
           <Avatar w={to} size={22} />
           <span>
             {tool === 'share_file' ? `Sent ${String(input.path ?? 'a file')} to` : 'Asked'} <strong>{to.name}</strong>
@@ -145,7 +165,7 @@ function ToolLine({ use, result }: { use: Message; result?: Message }) {
   )
 }
 
-export function OfficeChat({ state, conv, messages, partial }: { state: LiveState; conv: Conversation; messages: Message[] | undefined; partial?: string }) {
+export function OfficeChat({ state, conv, messages, partial, onOpen }: { state: LiveState; conv: Conversation; messages: Message[] | undefined; partial?: string; onOpen?: (id: string) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const stick = useRef(true)
   const mine = who(state, conv.agent_id)
@@ -223,7 +243,7 @@ export function OfficeChat({ state, conv, messages, partial }: { state: LiveStat
         if (m.kind === 'tool_result') return null
         if (m.kind === 'tool_use') {
           const result = results.get(String(m.data.tool_use_id))
-          if (m.content.startsWith('mcp__mesh__')) return <MeshEvent key={m.id} state={state} use={m} result={result} />
+          if (m.content.startsWith('mcp__mesh__')) return <MeshEvent key={m.id} state={state} use={m} result={result} onOpen={onOpen} />
           const group = toolGroups.groups.get(m.id)
           return group ? <ToolGroup key={m.id} uses={group} results={results} /> : null
         }
