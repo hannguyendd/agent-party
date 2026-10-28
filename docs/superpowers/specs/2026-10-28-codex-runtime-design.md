@@ -320,3 +320,27 @@ copy with the names Codex shows, which the prototype confirms. Everything else i
 - Wording of error strings other than the hint texts above.
 - The `CODEX_TESTED` minimum (from the prototype).
 - Whether the reader thread is one per runtime or shared.
+
+## Prototype findings (2026-10-28)
+
+Codex CLI 0.163.0 (bundled with `openai-codex` 0.163.0), ChatGPT sign-in, macOS, low-level `CodexClient` with an
+approval handler. Scripts were throwaway (scratchpad).
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Personal MCP servers off | `-c` overrides **merge**; `mcp_servers={}` clears nothing. Per server `mcp_servers.<name>.enabled=false` works (seen in `codex mcp list` and in the agent's tool list). The node must read the server names from `~/.codex/config.toml` and disable each. Built-in ChatGPT connectors (`mcp__codex_apps__*`) go with `features.apps=false`. |
+| 2 | Saved rules and hooks off | **Rules: fails.** A `prefix_rule(pattern=["touch"], decision="allow")` in `$CODEX_HOME/rules/` makes `touch` run with no approval request. `ignore_rules=true` has no effect; no override found. **Hooks:** `features.hooks=false` is a valid flag, but the user's `SessionStart` hook did not reach the agent even with hooks on, so the override could not be observed. The owner's `~/.codex` has no `rules/` today. |
+| 3 | Every changing action reaches the handler | **Yes**, with `approvalPolicy="untrusted"` and `approvalsReviewer="user"`: `ls`, `cat`, `touch`, `git status`, `ls; rm …` each sent `item/commandExecution/requestApproval`; a file edit sent `item/fileChange/requestApproval`; MCP tool calls send `mcpServer/elicitation/request` with `_meta.codex_approval_kind="mcp_tool_call"`. |
+| 4 | Commands that skip the handler | None under `untrusted` (except saved allow rules, check 2). Under `on-request`, commands run in the sandbox **without asking**. |
+| 5 | Sandbox as a hard limit | **Fails for files.** Under `untrusted`, an approved command ignores the filesystem sandbox (a `read_only` thread wrote into the repo and into `$HOME`). Network stays blocked for approved commands (`curl` exit 6) unless the sandbox allows network. The per-turn `sandboxPolicy` parameter is accepted. |
+| 6 | MCP per-tool timeout | `mcp_servers.<name>.tool_timeout_sec=600`: a 70 s mesh call completed. |
+| 7 | MCP tool names | `mcp__<server>__<tool>`, the same as Claude (`mcp__mesh__send_message`). `MESH_PROMPT` and `party.py` need no renaming. |
+| 8 | Steer mid-turn | `turn/steer` folds into the running turn: one `turn/completed`. |
+| 9 | Escalation in approval params | Requests carry `availableDecisions` (`accept`, `acceptWithExecpolicyAmendment`, `cancel`); escalation would add `additionalPermissions` / `networkApprovalContext`. The handler answers `{"decision": "accept"}` or `{"decision": "decline"}`, and **must never** answer `acceptWithExecpolicyAmendment` (it writes an allow rule into `~/.codex/rules`). MCP elicitations are answered `{"action": "accept", "content": {}}` / `{"action": "decline"}`. |
+| 10 | Resume after a crash | Not run; `thread/resume` by id is the documented path. |
+
+Shapes: command approval params have `command` (a string like `/bin/zsh -lc 'ls; rm -f x'`) and `commandActions[].command`
+(the inner script, used for the policy); file-change approval params carry only `itemId` (paths come from the
+`fileChange` item's `changes[].path`). The SDK's default approval handler accepts everything, so a handler is
+mandatory, and it runs on the SDK's single stdout reader thread. Codex threads started by the node are saved in
+`~/.codex/sessions` (they show in the Codex app). `CODEX_MIN` stays 0.163.0 (only that version was tested).
