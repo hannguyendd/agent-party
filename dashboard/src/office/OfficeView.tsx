@@ -322,8 +322,12 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         {side === 'agents' && <>
         <div className="o-frame office-card">
           <h2><span className="o-h2-title">Your agents</span>{!isPreview && <button className="o-mini-btn is-primary" onClick={() => setQuickAgent(true)}>+ New agent</button>}</h2>
-          {ownDesk && <div className="office-desk-row"><Icon name="desk" /><span>Your desk <strong>{ownDesk}</strong></span>
-            <button className="o-mini-btn" disabled={!canAct} onClick={() => setPickingDesk(p => !p)}>{pickingDesk ? 'Cancel' : 'Change desk'}</button></div>}
+          {/* Always here (not only once a desk is claimed): it's the one place to pick a desk after the first-run guide. */}
+          {(isPreview || office?.enabled) && <div className="office-desk-row"><Icon name="desk" />
+            <span>{ownDesk ? <>Your desk <strong>{ownDesk}</strong></> : 'No desk yet'}</span>
+            <button className={`o-mini-btn ${ownDesk || pickingDesk ? '' : 'is-primary'}`} disabled={!canAct} onClick={() => setPickingDesk(p => !p)}>
+              {pickingDesk ? 'Cancel' : ownDesk ? 'Change desk' : 'Pick a desk'}
+            </button></div>}
           {!mine.length && <p className="office-empty">{hasAgents ? 'Your agents appear here once the office connects.' : 'No agents yet. Press + New to create one.'}</p>}
           <div className="office-agent-list">{mine.map(a => <button key={a.agent_id} className={`office-agent ${selected.includes(a.agent_id) ? 'is-selected' : ''}`} aria-pressed={selected.includes(a.agent_id)} onClick={() => sceneRef.current?.selectOnly([a.agent_id])}>
             <img src={`office/characters/${a.skin}-portrait.png`} alt="" width="32" height="48" />
@@ -351,7 +355,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           onContactPolicy={policy => setContactPolicy(picked.agent_id, policy)}
         />}
 
-        {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2'].filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}
+        {pickingDesk && <label className="o-frame office-card office-desk-list">Choose a desk<select className="input" defaultValue="" disabled={busy} onChange={e => callbacks.onDeskPick(e.target.value)}><option value="" disabled>Select…</option>{(office?.desk_ids?.length ? office.desk_ids : ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2']).filter(id => !desks[id]).map(id => <option key={id}>{id}</option>)}</select></label>}
 
         </>}
 
