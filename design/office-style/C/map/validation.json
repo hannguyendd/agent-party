@@ -1,0 +1,20 @@
+{
+  "sizes": "PASS",
+  "palette_colors": 32,
+  "foreground": "binary alpha; exact source pixels; stack is identical to background",
+  "desks": 18,
+  "red_pixels": 18,
+  "entrance": {
+    "x": 19,
+    "y": 4
+  },
+  "reachable_walkable_tiles": 1146,
+  "unreachable_walkable_tiles": 0,
+  "extras_per_desk": 3,
+  "collision_colors": [
+    "#000000",
+    "#FFFFFF",
+    "#FF0000",
+    "#0000FF"
+  ]
+}

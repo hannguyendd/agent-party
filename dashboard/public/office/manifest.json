@@ -1,0 +1,38 @@
+{
+  "style": "pastel-c",
+  "reference": "office-preview-v3",
+  "characters": {
+    "dev-hoodie": "office/characters/dev-hoodie.png",
+    "designer": "office/characters/designer.png",
+    "lead": "office/characters/lead.png",
+    "shiba": "office/characters/shiba.png",
+    "cat": "office/characters/cat.png",
+    "penguin": "office/characters/penguin.png",
+    "alien": "office/characters/alien.png",
+    "robot": "office/characters/robot.png"
+  },
+  "objects": {
+    "plant": "office/objects/plant.png",
+    "fridge": "office/objects/fridge.png",
+    "sink": "office/objects/sink.png",
+    "coffee": "office/objects/coffee.png",
+    "chair": "office/objects/chair.png",
+    "chair-back": "office/objects/chair-back.png",
+    "stool": "office/objects/stool.png",
+    "printer": "office/objects/printer.png",
+    "sofa": "office/objects/sofa.png",
+    "whiteboard": "office/objects/whiteboard.png",
+    "table": "office/objects/table.png",
+    "bookshelf": "office/objects/bookshelf.png",
+    "desk": "office/objects/desk.png",
+    "desk-side": "office/objects/desk-side.png",
+    "mat": "office/objects/mat.png",
+    "door": "office/objects/door.png"
+  },
+  "map": {
+    "background": "office/map/background.png",
+    "foreground": "office/map/foreground.png",
+    "collision": "office/map/collision.png",
+    "seats": "office/map/seats.json"
+  }
+}
