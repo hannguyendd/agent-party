@@ -1,0 +1,12 @@
+$ bun src/preview.ts
+render G3/full-office-000
+render G3/full-office-090
+render G3/full-office-180
+render G3/full-office-270
+render G3/left-bank-closeup
+render G3/bottom-bench-closeup
+render G3/m1-m2-closeup
+render G3/pantry-closeup
+render G3/manager-room-closeup
+render G3/entrance-person-closeup
+PASS G3 furniture previews; character status: pass

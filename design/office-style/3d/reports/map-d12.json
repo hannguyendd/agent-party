@@ -1,0 +1,701 @@
+{
+  "authorization": "D12 + HR seat correction: shared-map edit, this worktree only",
+  "changedTiles": [
+    {
+      "tile": [
+        13,
+        4
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        0,
+        0
+      ],
+      "reason": "new HR seat"
+    },
+    {
+      "tile": [
+        14,
+        4
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "HR entry gap"
+    },
+    {
+      "tile": [
+        14,
+        5
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "HR entry gap"
+    },
+    {
+      "tile": [
+        41,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        42,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        43,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        44,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        45,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        46,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        47,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        48,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        49,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        50,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        51,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        52,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        53,
+        28
+      ],
+      "before": [
+        0,
+        0,
+        0
+      ],
+      "after": [
+        255,
+        255,
+        255
+      ],
+      "reason": "remove old manager south partition"
+    },
+    {
+      "tile": [
+        40,
+        29
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "extend manager west partition"
+    },
+    {
+      "tile": [
+        48,
+        29
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new lounge-table footprint"
+    },
+    {
+      "tile": [
+        49,
+        29
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new lounge-table footprint"
+    },
+    {
+      "tile": [
+        50,
+        29
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new lounge-table footprint"
+    },
+    {
+      "tile": [
+        40,
+        30
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "extend manager west partition"
+    },
+    {
+      "tile": [
+        48,
+        30
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new lounge-table footprint"
+    },
+    {
+      "tile": [
+        49,
+        30
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new lounge-table footprint"
+    },
+    {
+      "tile": [
+        50,
+        30
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new lounge-table footprint"
+    },
+    {
+      "tile": [
+        40,
+        31
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "extend manager west partition"
+    },
+    {
+      "tile": [
+        48,
+        31
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new sofa footprint"
+    },
+    {
+      "tile": [
+        49,
+        31
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new sofa footprint"
+    },
+    {
+      "tile": [
+        50,
+        31
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new sofa footprint"
+    },
+    {
+      "tile": [
+        40,
+        32
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "extend manager west partition"
+    },
+    {
+      "tile": [
+        48,
+        32
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new sofa footprint"
+    },
+    {
+      "tile": [
+        49,
+        32
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new sofa footprint"
+    },
+    {
+      "tile": [
+        50,
+        32
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new sofa footprint"
+    },
+    {
+      "tile": [
+        52,
+        32
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "new floor-palm footprint"
+    },
+    {
+      "tile": [
+        40,
+        33
+      ],
+      "before": [
+        255,
+        255,
+        255
+      ],
+      "after": [
+        0,
+        0,
+        0
+      ],
+      "reason": "extend manager west partition"
+    }
+  ],
+  "furniture": [
+    {
+      "model": "sofa",
+      "x": 49.5,
+      "z": 32,
+      "rot": 180,
+      "walkable": false,
+      "area": "manager-extension",
+      "tiles": [
+        [
+          48,
+          31
+        ],
+        [
+          49,
+          31
+        ],
+        [
+          50,
+          31
+        ],
+        [
+          48,
+          32
+        ],
+        [
+          49,
+          32
+        ],
+        [
+          50,
+          32
+        ]
+      ]
+    },
+    {
+      "model": "lounge-table",
+      "x": 49.5,
+      "z": 30,
+      "rot": 0,
+      "walkable": false,
+      "area": "manager-extension",
+      "tiles": [
+        [
+          48,
+          29
+        ],
+        [
+          49,
+          29
+        ],
+        [
+          50,
+          29
+        ],
+        [
+          48,
+          30
+        ],
+        [
+          49,
+          30
+        ],
+        [
+          50,
+          30
+        ]
+      ]
+    },
+    {
+      "model": "floor-palm",
+      "x": 52.5,
+      "z": 32.5,
+      "rot": 0,
+      "walkable": false,
+      "area": "manager-extension",
+      "tiles": [
+        [
+          52,
+          32
+        ]
+      ]
+    }
+  ],
+  "backgroundChangedPixels": 85507,
+  "foregroundChangedPixels": 26401,
+  "paletteColors": 32,
+  "outsideAuthorizedRegions": "unchanged",
+  "hrProtectedRegions": {
+    "chair": [
+      380,
+      90,
+      444,
+      132
+    ],
+    "monitor": [
+      374,
+      130,
+      444,
+      176
+    ],
+    "leftPlant": [
+      338,
+      130,
+      370,
+      172
+    ],
+    "windowFrame": [
+      360,
+      48,
+      506,
+      110
+    ]
+  },
+  "hrSeat": "20th seat; the first 19 entries are unchanged",
+  "foreground": "binary alpha; opaque pixels exactly match background",
+  "collisionReview": "nearest-neighbour 16x grid + nearest-neighbour half-size plate, 50% blend",
+  "seatsSha256": "cb4b631d346f487d680ae9c870df8205ebc0a402798a79a62c72c7922b96a1fd"
+}

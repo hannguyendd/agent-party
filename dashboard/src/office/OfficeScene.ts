@@ -4,60 +4,26 @@
 // Pastel art objects and characters are loaded from public/office/manifest.json.
 
 import Phaser from 'phaser'
-import type { OfficeAgent, OfficeOwner, OfficeTarget } from '../api'
+import type { OfficeAgent } from '../api'
 import {
   COLS,
   DESKS,
-  DESK_BY_ID,
   ROWS,
   SPAWN,
   TILE,
-  applyMapData,
+  deskTagSpot,
   walkable,
   type Facing,
   type SeatRow,
   type Point,
 } from './layout'
-import { blockedRuns, distance, findPath, nearestFree, rebuildGrid } from './pathfind'
+import { blockedRuns, distance, findPath, nearestFree } from './pathfind'
 import { renderRoom } from './renderRoom'
 import { CHAR_ANIMS, CHAR_FRAME, CHAR_FRAME_48, CHAR_SCALE, SKIN_BY_ID, ownerHue } from './skins'
+import { applyCollisionImage } from './mapData'
+import { resolveTargets } from './placement'
+import { REACH, type OfficeRenderer, type PeerClick, type SceneCallbacks, type SceneData } from './renderer'
 
-export interface SceneData {
-  me: string
-  agents: OfficeAgent[]
-  desks: Record<string, string>
-  owners: Record<string, OfficeOwner>
-  /** Short text above an agent (own conversations: live text; others: "…"). */
-  bubbles: Record<string, string>
-  /** Status emoji above an agent. */
-  icons: Record<string, string>
-  pickingDesk: boolean
-}
-
-export interface PeerClick {
-  agentId: string
-  screen: Point
-  /** My agents standing within reach of the clicked agent. */
-  reachableBy: string[]
-  /** Opened by proximity rather than a click; closes when the agents part. */
-  auto?: boolean
-}
-
-export interface SceneCallbacks {
-  onSelect: (ids: string[]) => void
-  onMove: (agentId: string, at: OfficeTarget) => void
-  onPeerClick: (click: PeerClick) => void
-  onDeskPick: (deskId: string) => void
-  /** Clicked a desk someone already claimed while picking. */
-  onDeskTaken: (deskId: string, owner: string) => void
-  onOpenAgent: (agentId: string) => void
-  /** My agent stopped next to someone else's (or walked away: null). Gather-style proximity menu. */
-  onNearby: (click: PeerClick | null) => void
-  /** The owner walked their agent to the entrance door and stopped there: offer to go home (offline). */
-  onDoor?: (agentId: string) => void
-}
-
-export const REACH = 2 // tiles; CONTEXT.md "Within reach"
 // Movement feel (pixels per second). Agents accelerate and brake instead of snapping between tiles.
 const WALK_SPEED = 150
 const ACCEL = 1100
@@ -88,9 +54,6 @@ const TAG_LOOK = {
   mine: { fill: 0xf4b592, stroke: 0x8a4a2c, color: '#4a2412', chip: true, alpha: 1 },
   pick: { fill: 0xd9f2c9, stroke: 0x70a65b, color: '#2f5a22', chip: true, alpha: 1 },
 }
-// From the seat, one tile away from the desk: the floor behind the chair.
-// Side desks' chairs are drawn wider than a tile, so their tag sits a bit further out.
-const BEHIND: Record<string, Point> = { right: { x: -1.7, y: 0 }, left: { x: 1.7, y: 0 }, down: { x: 0, y: -1 }, up: { x: 0, y: 1 } }
 
 interface AgentSprite {
   id: string
@@ -139,7 +102,7 @@ function crisp<T extends Phaser.GameObjects.Text>(t: T, value?: string): T {
 }
 const ownerColor = (owner: string) => Phaser.Display.Color.HSLToColor(ownerHue(owner) / 360, 0.7, 0.5).color
 
-export class OfficeScene extends Phaser.Scene {
+export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
   private data_: SceneData = { me: '', agents: [], desks: {}, owners: {}, bubbles: {}, icons: {}, pickingDesk: false }
   private sprites = new Map<string, AgentSprite>()
   private selected = new Set<string>()
@@ -163,6 +126,11 @@ export class OfficeScene extends Phaser.Scene {
   private markers: { x: number; y: number; agentId: string; born: number; bad?: boolean; sprite?: Phaser.GameObjects.Sprite }[] = []
   callbacks: SceneCallbacks | null = null
   onReady: (() => void) | null = null
+  /** Device pixels per CSS pixel the game draws at (set by mountPhaser): overlays and screen positions divide it
+   *  out so they keep their CSS size while the map itself is drawn at the screen's full resolution. */
+  dpr = 1
+  /** The element that gets focus on a click so map keys reach the game (set by mountPhaser). */
+  keyTarget: HTMLElement | null = null
 
   constructor() {
     super({ key: 'office', physics: { default: 'arcade', arcade: { debug: false } } })
@@ -254,8 +222,8 @@ export class OfficeScene extends Phaser.Scene {
       renderRoom(this)
     }
     for (const d of DESKS) {
-      const back = BEHIND[d.seat.face] ?? { x: 0, y: 1 }
-      const at = { x: (d.seat.x + back.x + 0.5) * TILE, y: (d.seat.y + back.y + 0.5) * TILE }
+      const spot = deskTagSpot(d)
+      const at = { x: spot.x * TILE, y: spot.y * TILE }
       const text = crisp(
         this.add
           .text(0, 0, d.id, { fontFamily: 'Nunito, ui-sans-serif, system-ui', fontStyle: '800', fontSize: '11px', color: '#48506c', resolution: TEXT_RES })
@@ -268,35 +236,15 @@ export class OfficeScene extends Phaser.Scene {
     }
   }
 
-  /** collision.png: black blocks; white/red/blue walk; blue is where newcomers appear. */
   private applyCollision() {
-    const img = this.textures.get('map-collision').getSourceImage() as HTMLImageElement
-    const c = document.createElement('canvas')
-    c.width = COLS
-    c.height = ROWS
-    const ctx = c.getContext('2d', { willReadFrequently: true })!
-    ctx.drawImage(img, 0, 0)
-    const px = ctx.getImageData(0, 0, COLS, ROWS).data
-    const blocked: boolean[][] = []
-    let spawn: Point | null = null
-    for (let y = 0; y < ROWS; y++) {
-      blocked.push([])
-      for (let x = 0; x < COLS; x++) {
-        const i = (y * COLS + x) * 4
-        const [r, g, b] = [px[i], px[i + 1], px[i + 2]]
-        blocked[y].push(r < 64 && g < 64 && b < 64)
-        if (b > 192 && r < 64 && g < 64) spawn = { x, y }
-      }
-    }
-    applyMapData(blocked, this.cache.json.get('map-seats') as SeatRow[], spawn)
-    rebuildGrid()
+    applyCollisionImage(this.textures.get('map-collision').getSourceImage() as HTMLImageElement, this.cache.json.get('map-seats') as SeatRow[])
   }
 
   /** Smooth zoom: set a target and let update() glide there, keeping `anchor` (screen px) fixed. */
   zoomBy(factor: number, anchor?: Point) {
     const cam = this.cameras.main
     const fit = Math.min(this.scale.width / (COLS * TILE), this.scale.height / (ROWS * TILE))
-    this.zoomTarget = Phaser.Math.Clamp((this.zoomTarget ?? cam.zoom) * factor, fit * 0.8, 3)
+    this.zoomTarget = Phaser.Math.Clamp((this.zoomTarget ?? cam.zoom) * factor, fit * 0.8, 3 * this.dpr)
     const screen = anchor ?? { x: this.scale.width / 2, y: this.scale.height / 2 }
     const world = cam.getWorldPoint(screen.x, screen.y)
     this.zoomAnchor = { screen, world: { x: world.x, y: world.y } }
@@ -352,7 +300,7 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   private scaleDeskLabels() {
-    const k = 1 / this.cameras.main.zoom
+    const k = this.dpr / this.cameras.main.zoom
     for (const tag of this.deskLabels.values()) tag.box.setScale(k)
   }
 
@@ -556,42 +504,10 @@ export class OfficeScene extends Phaser.Scene {
   /** Turn each agent's symbolic target into a tile, without two agents claiming the same one. */
   private resolveTargets() {
     const d = this.data_
-    const taken = new Set<string>()
-    const free = (x: number, y: number) => !taken.has(`${x},${y}`)
-    const claim = (p: Point) => taken.add(`${p.x},${p.y}`)
-    const result = new Map<string, Point>()
-    const deskOf = (owner: string) => Object.entries(d.desks).find(([, o]) => o === owner)?.[0]
-    const order = (t: OfficeTarget) => (t.kind === 'desk' ? 0 : t.kind === 'tile' ? 1 : 2)
-    const agents = [...d.agents].sort((a, b) => order(a.at) - order(b.at) || a.agent_id.localeCompare(b.agent_id))
-    const byOwner = new Map<string, string[]>()
-    for (const a of [...d.agents].sort((x, y) => x.agent_id.localeCompare(y.agent_id))) {
-      byOwner.set(a.owner, [...(byOwner.get(a.owner) ?? []), a.agent_id])
-    }
-
-    for (const a of agents) {
-      let p: Point | null = null
-      const at = a.at
-      if (at.kind === 'desk') {
-        const deskId = deskOf(a.owner)
-        const i = byOwner.get(a.owner)!.indexOf(a.agent_id)
-        if (deskId) {
-          const desk = DESK_BY_ID[deskId]
-          const slot = [desk.seat, ...desk.extras][i]
-          p = slot && free(slot.x, slot.y) ? slot : nearestFree(desk.seat, free)
-        } else {
-          p = nearestFree({ x: SPAWN.x + 1 + i, y: SPAWN.y + 1 }, free)
-        }
-      } else if (at.kind === 'tile') {
-        p = nearestFree(at, free)
-      } else {
-        const other = this.sprites.get(at.agent_id)
-        const target = result.get(at.agent_id) ?? (other ? tileOf(posOf(other)) : null)
-        p = target ? nearestFree(target, (x, y) => free(x, y) && !(x === target.x && y === target.y), true) : null
-      }
-      if (!p) continue
-      claim(p)
-      result.set(a.agent_id, p)
-    }
+    const result = resolveTargets(d, (id) => {
+      const other = this.sprites.get(id)
+      return other ? tileOf(posOf(other)) : null
+    })
 
     const now = this.time.now
     for (const [id, p] of result) {
@@ -824,7 +740,8 @@ export class OfficeScene extends Phaser.Scene {
       .filter((m) => this.isMine(m.id) && !m.leaving && distance(tileOf(posOf(m)), here) <= REACH)
       .map((m) => m.id)
     const head = { x: s.feet.x, y: s.feet.y - CHAR_FRAME.height * CHAR_SCALE }
-    return { agentId: s.id, screen: { x: (head.x - cam.worldView.x) * cam.zoom, y: (head.y - cam.worldView.y) * cam.zoom }, reachableBy }
+    const k = cam.zoom / this.dpr // canvas px → CSS px for the React popups
+    return { agentId: s.id, screen: { x: (head.x - cam.worldView.x) * k, y: (head.y - cam.worldView.y) * k }, reachableBy }
   }
 
   /** The owner closed the proximity menu: don't reopen it until the agents part. */
@@ -866,7 +783,7 @@ export class OfficeScene extends Phaser.Scene {
 
   /** Names, icons and bubbles keep the same on-screen size at any zoom, and sit just above the head. */
   private scaleOverlay(s: AgentSprite) {
-    const k = 1 / this.cameras.main.zoom
+    const k = this.dpr / this.cameras.main.zoom
     const head = -(CHAR_FRAME.height - 2) * CHAR_SCALE
     s.label.setScale(k).setPosition(0, head)
     s.icon.setScale(k).setPosition((s.label.width * k) / 2 + 3, head) // just right of the name tag, never over it
@@ -1042,7 +959,7 @@ export class OfficeScene extends Phaser.Scene {
     this.input.mouse?.disableContextMenu()
     this.input.on('pointerdown', (p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
       // Phaser cancels the mousedown default, so the canvas host never gets focus by itself; keys need it.
-      ;(this.game.canvas.parentElement as HTMLElement | null)?.focus({ preventScroll: true })
+      ;(this.keyTarget ?? (this.game.canvas.parentElement as HTMLElement | null))?.focus({ preventScroll: true })
       if (over.length) return
       const cam = this.cameras.main
       this.drag = {
@@ -1070,7 +987,7 @@ export class OfficeScene extends Phaser.Scene {
       const w = this.drag.world
       // Drag-select box: dark outline + mint wash so it reads on the pastel floor; line width stays 2 screen px.
       const r = { x: Math.min(w.x, p.worldX), y: Math.min(w.y, p.worldY), w: Math.abs(p.worldX - w.x), h: Math.abs(p.worldY - w.y) }
-      const px = 1 / cam.zoom
+      const px = this.dpr / cam.zoom
       this.selectBox.clear().fillStyle(0x3f9a67, 0.2).fillRect(r.x, r.y, r.w, r.h)
       this.selectBox.lineStyle(4 * px, 0xfefaf2, 0.9).strokeRect(r.x, r.y, r.w, r.h)
       this.selectBox.lineStyle(2 * px, 0x2f6b4a, 1).strokeRect(r.x, r.y, r.w, r.h)

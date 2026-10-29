@@ -2,6 +2,17 @@
 Only writes map assets, manifest entries and design QA artifacts. Requires Pillow.
 """
 from pathlib import Path
+import subprocess
+
+# Owner-authorized Part D map corrections. The scoped exporter preserves every
+# unrelated pixel and never writes the shared manifest. Legacy export is retained
+# below for historical reference / repositories without the Part D source.
+_part_d_root = Path(__file__).resolve().parents[4]
+_part_d_package = _part_d_root / 'design/office-style/3d'
+if (_part_d_package / 'src/map-export.ts').exists():
+    subprocess.run(['bun', 'src/map-export.ts'], cwd=_part_d_package, check=True)
+    raise SystemExit(0)
+
 from collections import deque
 import json
 from PIL import Image, ImageDraw

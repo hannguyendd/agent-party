@@ -321,3 +321,15 @@ Verify and report: image sizes unchanged; only the pixels of the chair area chan
 collision.png differs from the old one only at the new seat tile; the MGR seat is reachable by a path from the
 entrance (blue tile) through the Manager Room doorway; seats.json is valid JSON with 19 entries.
 ```
+
+---
+
+## Part D owner correction: extended manager room + HR seat (2026-10-28)
+
+This supersedes the earlier manager-room lower boundary and 19-seat count. Asset work and the shared map change ship together, in the `feat/office-3d` worktree; application code remains separate.
+
+- Manager room: x=40 partition continues to the south exterior wall at row 34. Keep the doorway at x=40, rows 15–16 and keep MGR where it is. Row 28, x=41..53 is now walkable; x=40, rows 29..33 is blocked. The new lower lounge blocks exactly x=48..50 / rows 29..30 (table), x=48..50 / rows 31..32 (sofa), and tile (52,32) (plant).
+- HR: keep the corner, chair, monitor, left plant and wall/window-frame pixels. Shorten only the desk's right end; move that end's plant and mug onto the remaining desk. Tiles (14,4) and (14,5) become walkable; (13,4) is the new red seat tile. Append `HR`, face `down`, with extras `(14,4)`, `(14,5)`, `(15,4)` to seats.json. There are 20 seats; the previous 19 records are unchanged.
+- Preserve all unrelated collision cells and every unrelated pixel in background.png and foreground.png. Reuse the plate's pixel style and 32-color palette; no smoothing or partial alpha. Foreground pixels must remain copied from the final background so the two layers stack identically.
+- Reproduce with `python3 design/office-style/C/map/export-map.py`. The Part D adapter uses immutable pre-change sources under `design/office-style/3d/src/map-before/`; collision@16x.png remains a nearest-neighbour 16x grid blended 50% over the nearest-neighbour half-size background. Do not rerun the legacy full export over the corrected map.
+- Verify exact changed tiles, protected HR pixels, 20/20 reachable seats and extras, binary foreground alpha, unchanged unrelated pixels, and a before/after diff. See `design/office-style/3d/REPORT.md`, `REQUESTS-3D.md` and `reports/map-d12.json` for the delivered 2D + 3D contract. No shared manifest edit is part of this batch.

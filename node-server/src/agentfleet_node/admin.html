@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light" />
-<title>Office admin</title>
+<title>Office admin · Party Agent</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
 <style>
@@ -57,11 +57,15 @@
     font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
   .st-running, .st-awaiting_approval, .st-awaiting_owner { color: var(--mint-ink); font-weight: 800; }
   .st-error { color: var(--coral); font-weight: 800; }
+  header .docs { margin-left: auto; font-size: 13px; }
+  header .docs a { color: #fdf3e6; font-weight: 700; }
+  .steps { margin: 0 0 8px; padding-left: 20px; line-height: 1.6; font-size: 14px; }
   @media (max-width: 760px) { main { grid-template-columns: 1fr; } .kv { grid-template-columns: 1fr auto; } .kv b { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
-<header><h1 id="title">Office admin</h1><span id="sub"></span></header>
+<header><h1 id="title">Office admin</h1><span id="sub"></span>
+  <nav class="docs"><a href="https://github.com/hannguyendd/agent-party/blob/develop/docs/GUIDE.md" target="_blank" rel="noopener">Guide</a> · <a href="https://github.com/hannguyendd/agent-party/blob/develop/docs/RELEASE.md" target="_blank" rel="noopener">Releases</a></nav></header>
 
 <div id="login" class="card" hidden>
   <h2>Admin key</h2>
@@ -112,6 +116,22 @@
   </section>
 
   <section class="card wide">
+    <h2>Updating the office <small>when a new version is released</small></h2>
+    <ol class="steps">
+      <li>Someone releases from <code>develop</code> with <code>make release</code>; GitHub builds the package and the installers.</li>
+      <li>On this server: stop it (Ctrl+C), then <code>git pull &amp;&amp; make server</code>. The office server, the hub and this
+        page restart on the new version.</li>
+      <li>Every open Office shows <em>Update available</em>; one click updates that computer. Computers that are off update
+        the next time someone opens the Office.</li>
+      <li>When the release notes say the map or the desks changed (a new seat, a moved wall), ask everyone to update the same
+        day: computers on different versions draw the room differently.</li>
+    </ol>
+    <p class="note">Details and what to do if a release fails: <a href="https://github.com/hannguyendd/agent-party/blob/develop/docs/RELEASE.md" target="_blank" rel="noopener">docs/RELEASE.md</a>.
+      How staff use the Office (desks, agents, 2D / 3D look) and fixes for common problems:
+      <a href="https://github.com/hannguyendd/agent-party/blob/develop/docs/GUIDE.md" target="_blank" rel="noopener">docs/GUIDE.md</a>.</p>
+  </section>
+
+  <section class="card wide">
     <h2>Events <small>what happened, who and when; words never reach this server</small></h2>
     <div class="row" style="margin-bottom:8px">
       <div><input id="actWho" placeholder="Person or agent, e.g. Kien or Han/be" /></div>
@@ -130,7 +150,7 @@
     <h2>Server settings <small>saved on this server; make server needs no parameters</small></h2>
     <form id="settingsForm" class="settings">
       <div><label for="org">Organization name</label><input id="org" maxlength="60" placeholder="e.g. Taggle" />
-        <p class="note">Every Office shows "&lt;name&gt; Office", right away.</p></div>
+        <p class="note">Shown as "&lt;name&gt; Office" next to Party Agent in every Office header and tab title, right away.</p></div>
       <div><label for="hubData">Hub data folder</label><input id="hubData" placeholder="…/hub/data" />
         <p class="note">Where the hub keeps its data (hub/start-hub.sh uses hub/data). Needed to create invites.</p></div>
       <div><label for="amOne">agentmesh-one</label><input id="amOne" placeholder="leave empty to use PATH" />
@@ -168,7 +188,7 @@ async function load() {
   if (o.locked) { $('login').hidden = false; $('app').hidden = true; return }
   $('login').hidden = true; $('app').hidden = false
   const title = o.org ? `${o.org} Office` : 'Office'
-  document.title = `${title} admin`; $('title').textContent = `${title} admin`; $('sub').textContent = `server ${o.server}`
+  document.title = `${title} admin · Party Agent`; $('title').textContent = `${title} admin`; $('sub').textContent = `server ${o.server}`
   $('inviteBtn').disabled = !o.can_invite
   $('inviteErr').textContent = o.can_invite ? '' : `Can't create invites yet: ${o.invite_problem}`
   const deskOf = Object.fromEntries(Object.entries(o.desks).map(([d, owner]) => [owner, d]))

@@ -1,0 +1,18 @@
+$ bun src/preview.ts
+render baseline/full-office-000
+render baseline/left-bank-closeup
+render baseline/bottom-bench-closeup
+render baseline/pantry-closeup
+render baseline/manager-room-closeup
+render kaykit/full-office-000
+render kaykit/left-bank-closeup
+render kaykit/bottom-bench-closeup
+render kaykit/pantry-closeup
+render kaykit/manager-room-closeup
+render kenney/full-office-000
+render kenney/left-bank-closeup
+render kenney/bottom-bench-closeup
+render kenney/pantry-closeup
+render kenney/manager-room-closeup
+PASS Part G: three sets, five matching views each, 3-way comparisons, scaled-character lineup.
+Part G report + file inventory regenerated.

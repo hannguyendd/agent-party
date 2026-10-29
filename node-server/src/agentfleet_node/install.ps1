@@ -1,4 +1,4 @@
-# Agent Mesh: install this machine's node on Windows. Served by the team's office server, or attached to a GitHub release:
+# Party Agent: install this machine's node on Windows. Served by the team's office server, or attached to a GitHub release:
 #   irm http://<office server>:7500/install.ps1 | iex
 #   $env:AGENTMESH_SERVER='<host>:7500'; irm https://github.com/<repo>/releases/download/v<version>/install.ps1 | iex
 # Installs uv (if missing), the node server (dashboard included) and agentmesh-node, runs the node in the background
@@ -37,7 +37,7 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) { Die 'uv did not install; see https://docs.astral.sh/uv/' }
 
 # 2. The node server, with the dashboard built in.
-Say "Installing the Agent Mesh node ($Wheel)"
+Say "Installing the Party Agent node ($Wheel)"
 $Tmp = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid())
 New-Item -ItemType Directory -Path $Tmp | Out-Null
 $WheelPath = Join-Path $Tmp $Wheel

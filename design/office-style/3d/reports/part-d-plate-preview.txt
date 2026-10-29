@@ -1,0 +1,5 @@
+full-office 90
+full-office 180
+full-office 270
+topdown overlay
+PASS plate preview refresh

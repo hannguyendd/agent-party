@@ -1,0 +1,13 @@
+{
+  "identical": true,
+  "collisionUnchangedSincePartD": true,
+  "seatsUnchangedSincePartD": true,
+  "manifestUnchanged": true,
+  "sha256": {
+    "background.png": "e50dce285176e66942832b6f487b87cc5399534364f6c12f61a7014b291df8ad",
+    "foreground.png": "30730858704269c4f82a1bce05296f1532d3ae324c03f8a27076f547e4099aef",
+    "collision.png": "bbf25bc5530ebc134632108df4538439121abea48c8db3eea7ba0fcaefc3a3f4",
+    "collision@16x.png": "6abfaad831ca12bbbc594a7a5694b07b91bfb68bc7398145f5aa59c76d1d8e9e",
+    "seats.json": "cb4b631d346f487d680ae9c870df8205ebc0a402798a79a62c72c7922b96a1fd"
+  }
+}

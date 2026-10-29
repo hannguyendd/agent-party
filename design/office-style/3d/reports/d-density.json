@@ -1,0 +1,230 @@
+{
+  "newFurniture": [
+    {
+      "model": "desk-apron",
+      "x": 12,
+      "z": 7.5,
+      "rot": 0
+    },
+    {
+      "model": "desk-apron",
+      "x": 12,
+      "z": 15.5,
+      "rot": 0
+    },
+    {
+      "model": "desk-apron",
+      "x": 12,
+      "z": 19.5,
+      "rot": 0
+    },
+    {
+      "model": "desk-apron",
+      "x": 12,
+      "z": 23.5,
+      "rot": 0
+    },
+    {
+      "model": "desk-wing",
+      "x": 21,
+      "z": 28,
+      "rot": 0
+    },
+    {
+      "model": "desk-wing",
+      "x": 26,
+      "z": 28,
+      "rot": 0
+    },
+    {
+      "model": "desk-wing",
+      "x": 31,
+      "z": 28,
+      "rot": 0
+    },
+    {
+      "model": "desk-return",
+      "x": 16.5,
+      "z": 28,
+      "rot": 0
+    },
+    {
+      "model": "desk-return",
+      "x": 35.5,
+      "z": 28,
+      "rot": 0
+    },
+    {
+      "model": "counter-wide",
+      "x": 53,
+      "z": 9.5,
+      "rot": 90
+    },
+    {
+      "model": "counter-compact",
+      "x": 53,
+      "z": 11.9,
+      "rot": 90
+    },
+    {
+      "model": "counter-wide",
+      "x": 42,
+      "z": 21.5,
+      "rot": 90
+    },
+    {
+      "model": "counter-wide",
+      "x": 42,
+      "z": 24.5,
+      "rot": 90
+    },
+    {
+      "model": "desk-wing",
+      "x": 27.5,
+      "z": 14,
+      "rot": 90
+    }
+  ],
+  "deskItems": {
+    "HR": [
+      "mug",
+      "desk-plant",
+      "document-tray"
+    ],
+    "D1": [
+      "tissue-box",
+      "figurine",
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus"
+    ],
+    "D2": [
+      "figurine",
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus",
+      "mug",
+      "notebook"
+    ],
+    "D3": [
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus",
+      "mug"
+    ],
+    "D4": [
+      "desk-lamp",
+      "desk-cactus",
+      "mug",
+      "notebook",
+      "headphones"
+    ],
+    "D5": [
+      "desk-cactus",
+      "mug",
+      "notebook",
+      "headphones",
+      "snack-box",
+      "water-bottle"
+    ],
+    "D6": [
+      "mug",
+      "notebook",
+      "headphones",
+      "snack-box"
+    ],
+    "D7": [
+      "notebook",
+      "headphones",
+      "snack-box",
+      "water-bottle",
+      "desk-plant"
+    ],
+    "D8": [
+      "headphones",
+      "snack-box",
+      "water-bottle",
+      "desk-plant",
+      "pen-cup",
+      "phone-stand"
+    ],
+    "D9": [
+      "snack-box",
+      "water-bottle",
+      "desk-plant",
+      "pen-cup"
+    ],
+    "D10": [
+      "phone-stand",
+      "tissue-box",
+      "figurine",
+      "book-stack"
+    ],
+    "D11": [
+      "tissue-box",
+      "figurine",
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus"
+    ],
+    "D12": [
+      "figurine",
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus",
+      "mug",
+      "notebook"
+    ],
+    "D13": [
+      "book-stack",
+      "desk-lamp",
+      "desk-cactus",
+      "mug"
+    ],
+    "D14": [
+      "desk-lamp",
+      "desk-cactus",
+      "mug",
+      "notebook",
+      "headphones"
+    ],
+    "D15": [
+      "desk-cactus",
+      "mug",
+      "notebook",
+      "headphones",
+      "snack-box",
+      "water-bottle"
+    ],
+    "D16": [
+      "mug",
+      "notebook",
+      "headphones",
+      "snack-box"
+    ],
+    "M1": [
+      "desk-plant",
+      "pen-cup",
+      "phone-stand",
+      "tissue-box",
+      "figurine"
+    ],
+    "M2": [
+      "pen-cup",
+      "phone-stand",
+      "tissue-box",
+      "figurine",
+      "book-stack",
+      "desk-lamp"
+    ],
+    "MGR": [
+      "pen-cup",
+      "phone-stand",
+      "tissue-box",
+      "figurine",
+      "book-stack"
+    ]
+  },
+  "wallDecor": 63,
+  "before": 169
+}

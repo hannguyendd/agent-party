@@ -529,7 +529,7 @@ async def notify_test(request: Request) -> dict[str, bool]:
     """Fire a test OS notification on this machine (what owners get when no dashboard tab is open)."""
     from agentfleet_node.notify import os_notify
 
-    return {"shown": os_notify("Agent Mesh", "Test notification: this is how you'll be woken for an assignment.")}
+    return {"shown": os_notify("Party Agent", "Test notification: this is how you'll be woken for an assignment.")}
 
 
 @router.post("/office/assign")

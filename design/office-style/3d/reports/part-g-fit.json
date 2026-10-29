@@ -1,0 +1,555 @@
+[
+  {
+    "model": "cabinet",
+    "action": "fit",
+    "scale": [
+      0.793,
+      1,
+      0.798
+    ],
+    "at": [
+      7,
+      4.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "counter",
+    "action": "counter-run-fit",
+    "scale": [
+      0.7071428691854285,
+      1,
+      1
+    ],
+    "at": [
+      44,
+      5
+    ],
+    "reason": "Prevent adjacent enlarged cabinet meshes from overlapping; original centres retained."
+  },
+  {
+    "model": "counter",
+    "action": "fit",
+    "scale": [
+      0.7071428691854285,
+      1,
+      1
+    ],
+    "at": [
+      44,
+      5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "counter",
+    "action": "counter-run-fit",
+    "scale": [
+      0.7071428691854285,
+      1,
+      1
+    ],
+    "at": [
+      46,
+      5
+    ],
+    "reason": "Prevent adjacent enlarged cabinet meshes from overlapping; original centres retained."
+  },
+  {
+    "model": "counter",
+    "action": "fit",
+    "scale": [
+      0.7071428691854285,
+      1,
+      1
+    ],
+    "at": [
+      46,
+      5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "counter",
+    "action": "counter-run-fit",
+    "scale": [
+      0.7071428691854285,
+      1,
+      1
+    ],
+    "at": [
+      48,
+      5
+    ],
+    "reason": "Prevent adjacent enlarged cabinet meshes from overlapping; original centres retained."
+  },
+  {
+    "model": "counter",
+    "action": "fit",
+    "scale": [
+      0.7071428691854285,
+      1,
+      1
+    ],
+    "at": [
+      48,
+      5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "round-table",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.892
+    ],
+    "at": [
+      45.5,
+      10.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "coffee-table",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.714
+    ],
+    "at": [
+      46.5,
+      22.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "gaming-chair",
+    "action": "fit",
+    "scale": [
+      0.887,
+      1,
+      0.933
+    ],
+    "at": [
+      36.5,
+      30.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "floor-palm",
+    "action": "fit",
+    "scale": [
+      0.927,
+      1,
+      0.976
+    ],
+    "at": [
+      52.5,
+      32.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "counter-wide",
+    "action": "counter-run-fit",
+    "scale": [
+      0.6071428822532698,
+      1,
+      1
+    ],
+    "at": [
+      53,
+      9.5
+    ],
+    "reason": "Prevent adjacent enlarged cabinet meshes from overlapping; original centres retained."
+  },
+  {
+    "model": "counter-wide",
+    "action": "fit",
+    "scale": [
+      0.6071428822532698,
+      1,
+      0.775
+    ],
+    "at": [
+      53,
+      9.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "counter-compact",
+    "action": "counter-run-fit",
+    "scale": [
+      0.9444444515927971,
+      1,
+      1
+    ],
+    "at": [
+      53,
+      11.9
+    ],
+    "reason": "Prevent adjacent enlarged cabinet meshes from overlapping; original centres retained."
+  },
+  {
+    "model": "counter-compact",
+    "action": "fit",
+    "scale": [
+      0.8726666732717445,
+      1,
+      0.775
+    ],
+    "at": [
+      53,
+      11.9
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "floor-palm",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.976
+    ],
+    "at": [
+      52.5,
+      17.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "floor-palm",
+    "action": "fit",
+    "scale": [
+      0.927,
+      1,
+      1
+    ],
+    "at": [
+      44.5,
+      19.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "guest-chair",
+    "action": "fit",
+    "scale": [
+      0.992,
+      1,
+      1
+    ],
+    "at": [
+      51.5,
+      23.95
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "guest-chair",
+    "action": "fit",
+    "scale": [
+      0.955,
+      1,
+      0.955
+    ],
+    "at": [
+      50.5,
+      24.65
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk",
+    "station": "D9",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "at": [
+      18.5,
+      26.88
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk",
+    "station": "D10",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "at": [
+      23.5,
+      26.88
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk",
+    "station": "D11",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "at": [
+      28.5,
+      26.88
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk",
+    "station": "D12",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "at": [
+      33.5,
+      26.88
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk",
+    "station": "D13",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "at": [
+      18.5,
+      29.12
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk",
+    "station": "D14",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "at": [
+      23.5,
+      29.12
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk",
+    "station": "D15",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "at": [
+      28.5,
+      29.12
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk",
+    "station": "D16",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "at": [
+      33.5,
+      29.12
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "workstation-desk-compact",
+    "station": "MGR",
+    "action": "fit",
+    "scale": [
+      0.776,
+      1,
+      1
+    ],
+    "at": [
+      51.5,
+      22.99
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "reception-desk",
+    "station": "HR",
+    "action": "fit",
+    "scale": [
+      1,
+      1,
+      0.7928571488581547
+    ],
+    "at": [
+      12.74,
+      5.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "action": "fit",
+    "model": "monitor-compact",
+    "station": "HR",
+    "scale": [
+      1,
+      1,
+      0.7107
+    ],
+    "reason": "Fit on own desk / frozen collision"
+  },
+  {
+    "model": "spine-left",
+    "action": "fit",
+    "scale": [
+      0.47619049781574513,
+      1,
+      0.9705793347420062
+    ],
+    "at": [
+      12,
+      9.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "spine-left",
+    "action": "fit",
+    "scale": [
+      0.47619049781574513,
+      1,
+      0.9705793347420062
+    ],
+    "at": [
+      12,
+      13.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "spine-left",
+    "action": "fit",
+    "scale": [
+      0.47619049781574513,
+      1,
+      0.9705793347420062
+    ],
+    "at": [
+      12,
+      17.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "spine-left",
+    "action": "fit",
+    "scale": [
+      0.47619049781574513,
+      1,
+      0.9705793347420062
+    ],
+    "at": [
+      12,
+      21.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "spine-middle",
+    "action": "fit",
+    "scale": [
+      0.5357142948374458,
+      1,
+      0.9705793347420062
+    ],
+    "at": [
+      27.5,
+      14.5
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "spine-bench",
+    "action": "fit",
+    "scale": [
+      0.7142857003837566,
+      1,
+      0.3116367918745519
+    ],
+    "at": [
+      18.5,
+      28
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "spine-bench",
+    "action": "fit",
+    "scale": [
+      0.7142857003837566,
+      1,
+      0.3116367918745519
+    ],
+    "at": [
+      23.5,
+      28
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "spine-bench",
+    "action": "fit",
+    "scale": [
+      0.7142857003837566,
+      1,
+      0.3116367918745519
+    ],
+    "at": [
+      28.5,
+      28
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  },
+  {
+    "model": "spine-bench",
+    "action": "fit",
+    "scale": [
+      0.7142857003837566,
+      1,
+      0.3116367918745519
+    ],
+    "at": [
+      33.5,
+      28
+    ],
+    "reason": "Only horizontal fitting; ×1.4 height retained"
+  }
+]

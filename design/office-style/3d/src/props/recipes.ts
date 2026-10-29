@@ -1,0 +1,24 @@
+import {fProp,fPropIds} from './part-f';
+import {create as managerFloor} from '../kit/floor-manager';
+import {dProp,dPropIds} from './part-d';
+import {dKit,dKitIds} from '../kit/part-d';
+import {extended,extraPropIds} from './extended';
+import {extendedKit,extraKitIds} from '../kit/extended';
+import {Model} from '../primitives';
+import {create as r0} from '../props/desk';
+import {create as r1} from '../props/monitor-dual';
+import {create as r2} from '../props/monitor-arm';
+import {create as r3} from '../props/keyboard';
+import {create as r4} from '../props/office-chair';
+import {create as r5} from '../props/pc-tower';
+import {create as r6} from '../props/desk-plant';
+import {create as r7} from '../props/mug';
+import {create as r8} from '../kit/floor-tile';
+import {create as r9} from '../kit/wall-straight';
+import {create as r10} from '../kit/wall-column';
+import {create as r11} from '../kit/wall-corner';
+import {create as r12} from '../kit/wall-blind';
+export const propIds=['desk','monitor-dual','monitor-arm','keyboard','office-chair','pc-tower','desk-plant','mug',...fPropIds,...extraPropIds,...dPropIds];
+export const kitIds=['floor-tile','wall-straight','wall-blind','wall-column','wall-corner',...extraKitIds,...dKitIds,'floor-manager'];
+const recipes={'desk':r0,'monitor-dual':r1,'monitor-arm':r2,'keyboard':r3,'office-chair':r4,'pc-tower':r5,'desk-plant':r6,'mug':r7,'floor-tile':r8,'wall-straight':r9,'wall-column':r10,'wall-corner':r11,'wall-blind':r12};
+export function recipe(id:string):Model{if(fPropIds.includes(id))return fProp(id);if(id==='floor-manager')return managerFloor();if(dPropIds.includes(id))return dProp(id);if(dKitIds.includes(id))return dKit(id);if(extraPropIds.includes(id))return extended(id);if(extraKitIds.includes(id))return extendedKit(id);if(!recipes[id])throw Error(`Unknown model ${id}`);return recipes[id]();}

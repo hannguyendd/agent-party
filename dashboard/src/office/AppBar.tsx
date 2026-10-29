@@ -11,9 +11,22 @@ import { NotificationBell } from './NotificationBell'
 import { SoundMenu } from './SoundMenu'
 import { notificationTarget } from './nav'
 import { ownerCss } from './skins'
+import { setOfficeTheme, useOfficeTheme, webglAvailable } from './theme'
 
-/** "Taggle Office" when the admin named the organization on the server, else the product name. */
-const brand = (org?: string) => (org ? `${org} Office` : 'Agent Mesh')
+/** 2D / 3D in one click (ADR 0004): the same per-browser choice as Settings → Office look. */
+function LookSwitch() {
+  const look = useOfficeTheme()
+  const gl = webglAvailable()
+  return (
+    <div className="office-look" role="radiogroup" aria-label="Office look">
+      {(['2d', '3d'] as const).map((l) => (
+        <button key={l} role="radio" aria-checked={look === l} disabled={l === '3d' && !gl}
+          title={l === '3d' && !gl ? 'This browser cannot draw 3D (WebGL is off)' : l === '2d' ? 'Pixel-art map' : '3D office'}
+          onClick={() => setOfficeTheme(l)}>{l.toUpperCase()}</button>
+      ))}
+    </div>
+  )
+}
 
 /** When the office server has a newer build: one click updates this machine, then the page reloads on it. */
 function UpdateButton() {
@@ -130,7 +143,9 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
     <nav className="office-appbar" aria-label="Navigation">
       <button className="office-logo" onClick={() => go({ kind: 'office' })}>
         <img src="office/ui/logo.png" srcSet="office/ui/logo.png 1x, office/ui/logo@2x.png 2x" width="28" height="28" alt="" />
-        {brand(office?.org)}
+        <span className="office-brand">Party <em>Agent</em></span>
+        {/* The organization the admin named on the server ("Taggle Office"). */}
+        {office?.org && <span className="office-org">{office.org} Office</span>}
       </button>
       <div className="office-nav">
         <button className={view.kind === 'office' ? 'is-active' : ''} aria-current={view.kind === 'office' ? 'page' : undefined} onClick={() => go({ kind: 'office' })}>
@@ -141,6 +156,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
         </button>
       </div>
       <div className="office-right">
+        {view.kind === 'office' && <LookSwitch />}
         <UpdateButton />
         <button
           className={`office-health ${healthy ? 'is-ok' : 'is-warn'}`}

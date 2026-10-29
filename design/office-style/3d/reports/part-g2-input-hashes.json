@@ -1,0 +1,27 @@
+{
+  "map": {
+    "seats.json": "cb4b631d346f487d680ae9c870df8205ebc0a402798a79a62c72c7922b96a1fd",
+    "collision.png": "bbf25bc5530ebc134632108df4538439121abea48c8db3eea7ba0fcaefc3a3f4",
+    "background.png": "f4c7caab69e64ab1eb3bf55f7bd8403b68b139afd22ec2aa6d61e25759ac42f7",
+    "foreground.png": "6b93c50853027604d84f78f23a9d10dfbd9fda618a7b2d2eaa9d3ef7faa2e083",
+    "collision@16x.png": "6abfaad831ca12bbbc594a7a5694b07b91bfb68bc7398145f5aa59c76d1d8e9e"
+  },
+  "characters": {
+    "penguin.glb": "180e0fba8a81518542eb8c0829c02030064905a27dd70d49fccbce87aa3e8e34",
+    "alien.glb": "5eb83a816be194c477fc0acfdf09d255a3bbb8fafa1a6e905f8a74f44f719661",
+    "cat.glb": "2c3ebcbbbae00a6184fa074828f84fa289fca28f82d47e330696ad8f3d719e8d",
+    "robot.glb": "3275c36321cfe69a92919ab4e9e415479b19e7f862e96496e6ecaaa3622cefe0",
+    "lead.glb": "69e37f3b2574a3399130642bbba17db7fbda330c260a35dd01ed93bf1d7e8806",
+    "dev-hoodie.glb": "849651e798484ef20724763f85c7561978e4ee737caf87cebc5f6765fdbd1705",
+    "shiba.glb": "8df66083bfdcd313e03db1cdb517da53d817d113f0bb2f5757b9a98525557f4a",
+    "rogue.glb": "0c26f5b08bf67f0fe78d9f6547ea4652435a912344dfa5be9321508a01bf6ac8",
+    "berserker.glb": "9af36d1d4fd82b16bf4e913a46feb4c30b393cc38585ec0cb93e96994dea95d2",
+    "designer.glb": "3d6e7cd8924b8301e146795eafc3a28d0efab7c2907d0ceac93ccb0338154524",
+    "mage.glb": "334f660ad7ac2527af12b9a7288fb18d105f0f5f3614498b0c76f5ec1e10c1e7",
+    "healer.glb": "e5134e929ab0b19e7c25a266e88f6d65d1d351c790a9033e895970eba589e98c",
+    "slime.glb": "84ba6dd710a8f78b92d8cb380cfd6f950de4475a742ec8c52d4ad51f8f1b7abd",
+    "ranger.glb": "d9e6a622d85acd573781e7ecc71df846827bb922436d5080fcbb72e922c855a2",
+    "dragon.glb": "b289a9fef566c5384bf276e7fe77d0a1cee7d057c1be53330a85275e4711d8e9",
+    "knight.glb": "a05f0920fcd422afb2c7319cd7878273e1d3438e79887825040686222bd1dc17"
+  }
+}

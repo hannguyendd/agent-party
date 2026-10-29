@@ -1,0 +1,32 @@
+prune: Removed types... Mesh (3), Primitive (24), TextureInfo (5), Material (1), Accessor (8)
+dev-hoodie 2908
+prune: Removed types... Mesh (3), Primitive (23), TextureInfo (5), Material (1), Accessor (8)
+designer 2604
+prune: Removed types... Primitive (10), TextureInfo (5), Material (1)
+lead 2660
+prune: Removed types... Mesh (7), Primitive (24), TextureInfo (5), Material (1), Accessor (19)
+shiba 2140
+prune: Removed types... Mesh (7), Primitive (26), TextureInfo (5), Material (1), Accessor (19)
+cat 2316
+prune: Removed types... Mesh (7), Primitive (24), TextureInfo (5), Material (1), Accessor (18)
+penguin 2312
+prune: Removed types... Mesh (7), Primitive (26), TextureInfo (5), Material (1), Accessor (19)
+alien 2356
+prune: Removed types... Mesh (9), Primitive (20), TextureInfo (5), Material (1), Accessor (27)
+robot 1916
+prune: Removed types... Mesh (6), Primitive (22), TextureInfo (5), Material (1), Accessor (17)
+mage 2000
+prune: Removed types... Mesh (6), Primitive (27), TextureInfo (5), Material (1), Accessor (17)
+knight 2712
+prune: Removed types... Mesh (6), Primitive (23), TextureInfo (5), Material (1), Accessor (17)
+ranger 2640
+prune: Removed types... Mesh (3), Primitive (22), TextureInfo (5), Material (1), Accessor (8)
+healer 2748
+prune: Removed types... Mesh (6), Primitive (23), TextureInfo (5), Material (1), Accessor (17)
+rogue 2680
+prune: Removed types... Mesh (6), Primitive (23), TextureInfo (5), Material (1), Accessor (17)
+berserker 2240
+prune: Removed types... Mesh (15), Primitive (30), TextureInfo (5), Material (1), Accessor (42)
+slime 1396
+prune: Removed types... Mesh (7), Primitive (25), TextureInfo (5), Material (1), Accessor (19)
+dragon 2320

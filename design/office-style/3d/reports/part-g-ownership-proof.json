@@ -1,0 +1,10 @@
+{
+  "charactersUnchangedSinceHandoff": true,
+  "mapUnchanged": {
+    "background.png": true,
+    "foreground.png": true,
+    "collision.png": true,
+    "collision@16x.png": true,
+    "seats.json": true
+  }
+}
