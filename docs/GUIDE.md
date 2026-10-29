@@ -117,8 +117,9 @@ That's the only time you need the terminal, apart from logging in to Claude Code
 
 ### Join (once)
 
-On the page that opens: check the **Claude Code** box at the top. If it says *Log in to Claude Code once*, open
-Terminal (Windows: PowerShell), run `claude` and follow the steps; the page notices by itself. Then enter **your
+On the page that opens: check the **Claude Code** box at the top. If it says *Log in to Claude Code*, press
+**Log in to Claude** and sign in on the page that opens in your browser (if that page shows a code, paste it in the
+box); the page notices by itself. The terminal works too: `claude auth login`. Then enter **your
 name** (agents will be called `yourname/...`), check the **office server** address (filled in, or type the one from
 the admin's message), paste the **join token**, press **Connect**. Then the short guide helps you create your
 first agent (name, what it does, which project folder), pick your desk and turn on notifications.
@@ -194,7 +195,8 @@ one-time Claude Code login.
 | Nothing opens at http://127.0.0.1:9100 | Open the Office shortcut (it starts the node), or run `agentfleet-node` and choose **1**. |
 | The agent card shows no Claude usage | It appears after the agent's next turn. |
 | Staff install: "Could not download the node package" | Open the server address in that computer's browser. If it works, use the GitHub command from the invite; if not, it's the network. |
-| Setup page: "Log in to Claude Code once" | In Terminal run `claude` and log in; the page updates by itself (or press **Check again**). |
+| Setup page: "Log in to Claude Code" | Press **Log in to Claude** and sign in in the browser (or run `claude auth login` in Terminal); the page updates by itself. |
+| "Claude login expired" in the top bar, or a chat says Claude Code's login expired | Claude Code couldn't renew its login on this computer. Settings > This computer > **Log in to Claude**, then send the message again. |
 | `make server` without bun: "No GitHub release vX yet" | Publish that version (`make release`, see RELEASE.md) or install bun on the server. |
 
 Commands on a staff computer, if ever needed: `agentfleet-node` (menu), `agentfleet-node status`, `agentfleet-node logs`.

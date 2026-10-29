@@ -1,7 +1,7 @@
 // Live dashboard state: REST snapshot + /api/ws event stream folded through one reducer.
 
 import { useCallback, useEffect, useReducer, useRef } from 'react'
-import { api, wsUrl, type Agent, type Approval, type Conversation, type LiveEvent, type Message, type NodeInfo, type AppNotification, type OfficeState, type PlanUsage, type Recap, type WorldEvent } from './api'
+import { api, wsUrl, type Agent, type Approval, type Conversation, type LiveEvent, type Message, type NodeInfo, type AppNotification, type ClaudeLogin, type OfficeState, type PlanUsage, type Recap, type WorldEvent } from './api'
 
 export interface LiveState {
   connected: boolean
@@ -21,6 +21,8 @@ export interface LiveState {
   recaps: Record<string, Recap>
   /** This machine's Claude plan usage (null until fetched). */
   usage: PlanUsage | null
+  /** Claude Code's login on this machine: expired (a turn failed on it) and a login running from the dashboard. */
+  claude: { expired: boolean; login: ClaudeLogin } | null
   /** The owner is online (agents in the Office) or went offline; null until fetched. */
   online: boolean | null
   /** The bell's history, newest first. */
@@ -75,6 +77,7 @@ const initial: LiveState = {
   officeError: null,
   recaps: {},
   usage: null,
+  claude: null,
   online: null,
   notifications: [],
   doing: {},
@@ -175,6 +178,8 @@ function applyEvent(s: LiveState, e: LiveEvent): LiveState {
       return { ...s, recaps: { ...s.recaps, [e.recap.id]: e.recap } }
     case 'usage':
       return { ...s, usage: e.usage }
+    case 'claude':
+      return { ...s, claude: { expired: e.expired, login: e.login } }
     case 'presence':
       return { ...s, online: e.online }
     case 'notification':
@@ -250,6 +255,7 @@ export function useLiveState(openConversationId: string | null) {
     void refreshNode()
     api.office().then((office) => dispatch({ type: 'office', office })).catch(() => {})
     api.usage().then((u) => dispatch({ type: 'event', event: { type: 'usage', usage: u.usage } })).catch(() => {})
+    api.claude().then((c) => dispatch({ type: 'event', event: { type: 'claude', expired: !!c.expired, login: c.login ?? { state: 'idle', url: '', error: '' } } })).catch(() => {})
     api.presence().then((p) => dispatch({ type: 'event', event: { type: 'presence', online: p.online } })).catch(() => {})
     api.notifications().then((rows) => dispatch({ type: 'notifications', rows })).catch(() => {})
     if (openRef.current) await loadConversation(openRef.current).catch(() => {})

@@ -1700,3 +1700,15 @@ button.dock-pill:hover { border-color: var(--o-line); }
 .whatsnew-group li + li { margin-top: 3px; }
 .whatsnew-empty { padding: 18px 0; font-size: 13px; color: var(--o-muted); }
 .whatsnew .cmdk-foot { justify-content: flex-end; }
+
+/* ---- Claude Code login (Settings > This computer, setup page, app bar alert) ---- */
+.o-claude-check > .btn-primary { align-self: flex-start; }
+.o-claude-check code { padding: 1px 5px; font-size: 12px; background: #fff; border: 1px solid var(--o-soft-line); border-radius: 4px; }
+.o-claude-check .is-err { color: var(--o-err-ink, #a33a22); font-weight: 700; }
+.o-claude-code { display: flex; gap: 8px; }
+.o-claude-code input { flex: 1; min-width: 0; padding: 6px 10px; font: inherit; font-size: 13px; background: #fff; border: 2px solid var(--o-line); border-radius: 8px; }
+.office-claude-alert {
+  height: 30px; padding: 0 12px; font-size: 13px; font-weight: 800; border-radius: 999px; cursor: pointer;
+  background: #f8d9cf; color: #7a3b25; border: 2px solid #c4583a; box-shadow: 0 2px 0 #8a3b25;
+}
+.office-claude-alert:hover { background: #fbe6de; }

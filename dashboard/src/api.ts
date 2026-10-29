@@ -63,8 +63,26 @@ export interface SetupState {
   enrolled: boolean
   agents: number
   mesh_node: MeshProcess
-  /** Claude Code on this machine (agents run on it); logged_in is read from where it keeps its login. */
-  claude?: { installed: boolean; path: string; logged_in: boolean }
+  /** Claude Code on this machine (agents run on it). */
+  claude?: ClaudeStatus
+}
+
+/** Logging in to Claude Code from the dashboard (node `claude_auth.py`). */
+export interface ClaudeLogin {
+  state: 'idle' | 'waiting' | 'done' | 'failed'
+  /** The sign-in page, when the CLI printed it (its page shows a code to paste back if the browser can't finish). */
+  url: string
+  error: string
+}
+
+/** GET /api/claude. `logged_in`: a login is saved; `expired`: a turn just failed on it. */
+export interface ClaudeStatus {
+  installed: boolean
+  path: string
+  logged_in: boolean
+  email?: string
+  expired?: boolean
+  login?: ClaudeLogin
 }
 
 /** A file the owner attaches to a message, base64-encoded. */
@@ -274,6 +292,7 @@ export type LiveEvent =
   | { type: 'office'; event: WorldEvent }
   | { type: 'recap'; recap: Recap }
   | { type: 'usage'; usage: PlanUsage }
+  | { type: 'claude'; expired: boolean; login: ClaudeLogin }
   | { type: 'presence'; online: boolean }
   | { type: 'notification'; notification: AppNotification }
   | { type: 'notifications_read'; ids: string[] | null }
@@ -365,6 +384,10 @@ export const api = {
     req<{ status: string; conversation_id: string }>('POST', '/api/office/assign', { from_agent, to_agent, text }),
   notifyTest: () => req<{ shown: boolean }>('POST', '/api/notify/test'),
   setup: () => req<SetupState>('GET', '/api/setup'),
+  claude: (fresh = false) => req<ClaudeStatus>('GET', `/api/claude${fresh ? '?fresh=true' : ''}`),
+  claudeLogin: () => req<ClaudeStatus>('POST', '/api/claude/login'),
+  claudeLoginCode: (code: string) => req<{ ok: boolean }>('POST', '/api/claude/login/code', { code }),
+  claudeLoginCancel: () => req<{ ok: boolean }>('POST', '/api/claude/login/cancel'),
   saveSetup: (owner: string, server: string, token: string) => req<SetupState>('POST', '/api/setup', { owner, server, token }),
   meshRestart: () => req<MeshStatus & { process: MeshProcess }>('POST', '/api/mesh/restart'),
 
