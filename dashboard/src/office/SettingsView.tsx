@@ -219,7 +219,7 @@ function NotificationsSection() {
       </div>
       <div className="o-frame settings-card">
         <h2>System notifications</h2>
-        <p className="settings-note">Used when no Agent Mesh tab is open: the node server on this machine pops a system notification.</p>
+        <p className="settings-note">Used when no Party Agent tab is open: the node server on this machine pops a system notification.</p>
         <div className="settings-actions">
           <button className="btn" onClick={() => void testOs()}><Icon name="notifications-on" />Send a test system notification</button>
         </div>

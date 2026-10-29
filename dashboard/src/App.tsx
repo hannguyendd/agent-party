@@ -48,7 +48,7 @@ export default function App() {
   // The tab title and icon count what waits: unread notifications, or pending approvals if more.
   const unread = state.notifications.filter((n) => !n.read).length
   const pendingCount = Object.values(state.approvals).filter((a) => a.status === 'pending').length
-  useTabBadge(org ? `${org} Office` : 'Agent Mesh', Math.max(unread, pendingCount))
+  useTabBadge(org ? `${org} Office · Party Agent` : 'Party Agent', Math.max(unread, pendingCount))
   const onSetupSaved = (s: SetupState) => {
     if (!setup?.configured) setJustJoined(true)
     setSetup(s)

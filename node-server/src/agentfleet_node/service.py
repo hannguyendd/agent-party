@@ -235,7 +235,7 @@ def set_autostart(on: bool) -> bool:
     elif SYSTEM == "linux":
         LINUX_UNIT.parent.mkdir(parents=True, exist_ok=True)
         lines = "\n".join(f"Environment={k}={v}" for k, v in {**env, "PATH": path}.items())
-        LINUX_UNIT.write_text(f"[Unit]\nDescription=Agent Mesh node\n[Service]\nExecStart={exe} serve\nWorkingDirectory={HOME}\n"
+        LINUX_UNIT.write_text(f"[Unit]\nDescription=Party Agent node\n[Service]\nExecStart={exe} serve\nWorkingDirectory={HOME}\n"
                               f"{lines}\nRestart=on-failure\n[Install]\nWantedBy=default.target\n")
         _run("systemctl", "--user", "daemon-reload")
         _run("systemctl", "--user", "enable", LINUX_UNIT.name)

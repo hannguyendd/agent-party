@@ -62,6 +62,7 @@ export class Office3D implements OfficeRenderer {
   callbacks: SceneCallbacks | null = null
   onReady: (() => void) | null = null
   onError: ((message: string) => void) | null = null
+  onProgress: ((fraction: number) => void) | null = null
 
   private data: SceneData = { me: '', agents: [], desks: {}, owners: {}, bubbles: {}, icons: {}, pickingDesk: false }
   private ready = false
@@ -154,6 +155,7 @@ export class Office3D implements OfficeRenderer {
     const m3 = await fetchModels3d(manifest)
     if (!m3) throw new Error('The 3D look is not available yet (no models3d in the office manifest).')
     await loadMapData(manifest)
+    this.onProgress?.(0.1)
     this.urls = { ...m3.kit, ...m3.props, ...m3.characters }
     const layout = (await (await fetch(m3.layout)).json()) as Layout3d
     const needed = new Set([...layout.objects, ...layout.walls].map((p) => p.model))
@@ -163,6 +165,7 @@ export class Office3D implements OfficeRenderer {
     if (unknown.length) console.warn(`3D office: no model in the manifest for ${unknown.join(', ')}`)
     for (const id of Object.keys(m3.characters)) needed.add(id)
     await this.loadModels([...needed], m3)
+    this.onProgress?.(0.95)
     if (this.disposed) return
     this.room.build(layout)
     for (const d of DESKS) {
@@ -177,6 +180,7 @@ export class Office3D implements OfficeRenderer {
 
   private async loadModels(ids: string[], m3: Models3d) {
     const loader = new GLTFLoader()
+    let done = 0
     await Promise.all(
       ids.map(async (id) => {
         const url = this.urls[id]
@@ -190,6 +194,7 @@ export class Office3D implements OfficeRenderer {
         })
         gltf.scene.updateMatrixWorld(true)
         this.models.set(id, gltf)
+        this.onProgress?.(0.1 + (0.85 * ++done) / ids.length)
       }),
     )
     if (!this.models.size) throw new Error(`no 3D models could be loaded (${m3.layout})`)

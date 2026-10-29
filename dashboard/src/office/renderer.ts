@@ -69,6 +69,8 @@ export interface MountOptions {
   data: SceneData
   callbacks: SceneCallbacks
   onReady: () => void
+  /** Loading progress 0–1 while the look builds itself (3D downloads its models). */
+  onProgress?: (fraction: number) => void
   /** The look failed after mounting (e.g. its art is missing); OfficeView falls back to 2D. */
   onError?: (message: string) => void
 }

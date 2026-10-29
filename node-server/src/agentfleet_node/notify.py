@@ -21,14 +21,14 @@ def os_notify(title: str, body: str) -> bool:
             subprocess.Popen(["osascript", "-e", script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return True
         if system == "Linux" and shutil.which("notify-send"):
-            subprocess.Popen(["notify-send", "-a", "Agent Mesh", title, body], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.Popen(["notify-send", "-a", "Party Agent", title, body], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return True
         if system == "Windows":
             ps = (
                 "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null;"
                 "$t = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent(1);"
                 f"$t.GetElementsByTagName('text')[0].AppendChild($t.CreateTextNode({_ps(title + ': ' + body)})) > $null;"
-                "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Agent Mesh').Show("
+                "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Party Agent').Show("
                 "[Windows.UI.Notifications.ToastNotification]::new($t))"
             )
             subprocess.Popen(["powershell", "-NoProfile", "-Command", ps], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

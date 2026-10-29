@@ -11,7 +11,6 @@ import { useNotificationText, who } from './people'
 import { ownerCss } from './skins'
 import { ACTIVE_STATUSES, STATUS } from './status'
 import { costLine, doingFor, elapsed } from './live'
-import type { OfficeTheme } from './renderer'
 
 interface Props {
   state: LiveState
@@ -31,10 +30,6 @@ interface Props {
   onFit: () => void
   /** Present only when the look can turn its camera (3D). */
   onRotate?: (step: number) => void
-  /** The 2D / 3D switch (ADR 0004); 3D is greyed out when this browser has no WebGL. */
-  look: OfficeTheme
-  can3d: boolean
-  onLook: (look: OfficeTheme) => void
 }
 
 export function OfficeDock(p: Props) {
@@ -83,13 +78,6 @@ export function OfficeDock(p: Props) {
         )}
         <span className="dock-spacer" />
         <span className="dock-keys dock-wide-only"><kbd>WASD</kbd> walk <kbd>E</kbd> talk <kbd>H</kbd> desk <kbd>F</kbd> follow</span>
-        <div className="dock-look" role="radiogroup" aria-label="Office look">
-          {(['2d', '3d'] as const).map((l) => (
-            <button key={l} role="radio" aria-checked={p.look === l} disabled={l === '3d' && !p.can3d}
-              title={l === '3d' && !p.can3d ? 'This browser cannot draw 3D (WebGL is off)' : l === '2d' ? 'Pixel-art map' : '3D office'}
-              onClick={() => p.onLook(l)}>{l.toUpperCase()}</button>
-          ))}
-        </div>
         <div className="dock-zoom" aria-label="Zoom">
           <button aria-label="Zoom out" title="Zoom out" onClick={() => p.onZoom(0.85)}>−</button>
           <button aria-label="Fit office" title="Fit the whole office" onClick={p.onFit}><Icon name="fit" /></button>

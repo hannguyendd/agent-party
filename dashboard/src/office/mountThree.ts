@@ -4,11 +4,12 @@
 import { Office3D } from './three/Office3D'
 import type { MountOptions, MountedRenderer } from './renderer'
 
-export function mountThree({ host, data, callbacks, onReady, onError }: MountOptions): MountedRenderer {
+export function mountThree({ host, data, callbacks, onReady, onError, onProgress }: MountOptions): MountedRenderer {
   const office = new Office3D(host)
   office.callbacks = callbacks
   office.onReady = onReady
   office.onError = onError ?? null
+  office.onProgress = onProgress ?? null
   office.setSceneData(data)
   return { renderer: office, destroy: () => office.destroy() }
 }

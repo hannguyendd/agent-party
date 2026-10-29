@@ -1,4 +1,4 @@
-# Agent Mesh — Claude Code agents talking to each other
+# Party Agent — Claude Code agents talking to each other
 
 Implements the "Agent Mesh Architecture" design: each teammate's Claude Code agents hold
 back-and-forth A2A conversations with teammates' agents over [Agent Mesh](https://github.com/google/agentmesh),

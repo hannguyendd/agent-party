@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Agent Mesh: install this machine's node. Served by the team's office server, or attached to a GitHub release:
+# Party Agent: install this machine's node. Served by the team's office server, or attached to a GitHub release:
 #   curl -fsSL http://<office server>:7500/install | bash
 #   curl -fsSL https://github.com/<repo>/releases/download/v<version>/install.sh | bash -s -- --server <host>:7500
 # Installs uv (if missing), the node server (dashboard included) and agentmesh-node, runs the node in the background
@@ -50,7 +50,7 @@ fi
 command -v uv >/dev/null 2>&1 || die "uv did not install; see https://docs.astral.sh/uv/"
 
 # 2. The node server, with the dashboard built in.
-say "Installing the Agent Mesh node ($WHEEL)"
+say "Installing the Party Agent node ($WHEEL)"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 # From the office server when there is one; else (or when that fails) from the GitHub release of the same version.

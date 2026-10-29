@@ -4,7 +4,7 @@ import type { LiveState } from '../useLiveState'
 import type { SideTab, View } from '../App'
 import { errMsg } from '../components/format'
 import type { MountedRenderer, OfficeRenderer, PeerClick, SceneCallbacks, SceneData } from './renderer'
-import { setOfficeTheme, themePicks, useOfficeTheme, webglAvailable } from './theme'
+import { themePicks, useOfficeTheme, webglAvailable } from './theme'
 import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
@@ -59,6 +59,11 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
   const picks = themePicks()
   const [failedPick, setFailedPick] = useState(-1)
   const look = theme === '3d' && failedPick !== picks && webglAvailable() ? '3d' : '2d'
+  // Switching looks: the new map fades in once ready; meanwhile a loading pill (with progress for 3D) covers it.
+  const key = `${look}:${picks}`
+  const [readyKey, setReadyKey] = useState<string | null>(null)
+  const [progress, setProgress] = useState({ key: '', p: 0 })
+  const switching = readyKey !== null && readyKey !== key
   useEffect(() => {
     let disposed = false
     let mounted: MountedRenderer | undefined
@@ -66,7 +71,9 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
     void load.then(mount => {
       if (disposed || !host.current) return
       mounted = mount({
-        host: host.current, data: latest.current.data, callbacks: latest.current.callbacks, onReady: () => latest.current.onReady(),
+        host: host.current, data: latest.current.data, callbacks: latest.current.callbacks,
+        onReady: () => { setReadyKey(key); latest.current.onReady() },
+        onProgress: p => setProgress({ key, p }),
         onError: message => { latest.current.onError(`3D office: ${message} Showing the 2D office instead.`); setFailedPick(picks) },
       })
       sceneRef.current = mounted.renderer
@@ -75,7 +82,7 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
       latest.current.onError(errMsg(e))
     })
     return () => { disposed = true; sceneRef.current = null; mounted?.destroy() }
-  }, [sceneRef, look, picks])
+  }, [sceneRef, look, picks, key])
   useEffect(() => { sceneRef.current?.setSceneData(data) }, [data, sceneRef])
   useEffect(() => { if (sceneRef.current) sceneRef.current.callbacks = callbacks }, [callbacks, sceneRef])
   // Map keys work wherever the focus is (after clicking an agent in the side column, a button…), except while
@@ -104,7 +111,16 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
-  return <div ref={host} className="office-canvas" tabIndex={0} role="region" aria-label="Office. Select your agent, then use WASD or arrow keys, or click the floor to walk. H returns to desk, F follows, Escape deselects." />
+  return <>
+    <div ref={host} className={`office-canvas${switching ? ' is-switching' : ''}`} tabIndex={0} role="region" aria-label="Office. Select your agent, then use WASD or arrow keys, or click the floor to walk. H returns to desk, F follows, Escape deselects." />
+    {switching && (
+      <div className="office-switching" role="status">
+        <span className="office-switching-dots" aria-hidden="true" />
+        {look === '3d' ? 'Building the 3D office' : 'Drawing the 2D office'}
+        {look === '3d' && <span className="office-switching-bar"><i style={{ width: `${Math.round((progress.key === key ? progress.p : 0) * 100)}%` }} /></span>}
+      </div>
+    )}
+  </>
 }
 
 export default function OfficeView({ state, view, go, clearError, openConv, setOpenConv }: {
@@ -351,9 +367,6 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         onZoom={f => sceneRef.current?.zoomBy(f)}
         onFit={() => sceneRef.current?.fitCamera()}
         onRotate={theme === '3d' ? s => sceneRef.current?.rotate?.(s) : undefined}
-        look={theme}
-        can3d={webglAvailable()}
-        onLook={setOfficeTheme}
       />
       </div>
 
