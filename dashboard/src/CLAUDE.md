@@ -53,6 +53,9 @@
     its short agent form alone), `PartyPanel.tsx` (gather a Party), `PartyBar.tsx` (party controls inside a
     conversation, by role), `RecapList.tsx` (recaps of the open conversation), `trim.ts` (portraits cropped to
     their visible pixels for avatars).
+  - Version + "What's new": `AppBar.tsx` `VersionArea` (version chip, "Update to vX", opens `WhatsNew.tsx` once after
+    an update; the `whats-new` command opens it from the menu / Settings). `changelog.ts` parses the repo's
+    `CHANGELOG.md`, imported with `?raw` at build time (`vite.config.ts` allows `..` for the dev server).
   - Art comes from `public/office/manifest.json` (Codex; see `docs/office/`). Don't hard-code art; add a manifest key.
   - `office.css` scopes the pastel theme to `.office-view` and maps the shared tokens (`--panel`, `--muted`, …) so
     shared components (`ApprovalCard`, `AgentForm`, `Directory`) match it without their own restyle.

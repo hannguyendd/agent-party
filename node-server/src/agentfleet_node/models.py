@@ -177,6 +177,7 @@ class Notification(SQLModel, table=True):
     body: str = ""
     conversation_id: str | None = Field(default=None, index=True)
     agent_id: str | None = None
+    approval_id: str | None = None  # approval / assignment rows: the approval they ask about
     read: bool = False
     created_at: datetime = Field(default_factory=utcnow, index=True)
 

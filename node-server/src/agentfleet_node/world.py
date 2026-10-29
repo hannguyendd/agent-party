@@ -515,6 +515,12 @@ def _agentmesh_version(downloads: Path | None) -> str:
         return DEFAULT_AGENTMESH_VERSION
 
 
+def wheel_version(name: str) -> str:
+    """'agentfleet_node-0.2.1-py3-none-any.whl' -> '0.2.1' ('' when the name doesn't say)."""
+    m = re.match(r"agentfleet_node-([^-]+)-", name)
+    return m.group(1) if m else ""
+
+
 def latest_build(downloads: Path | None) -> str:
     """Build id of the package in downloads (`make bundle` writes build.json next to it); nodes compare to update."""
     try:
@@ -576,7 +582,8 @@ def create_world_app(data_path: Path | None = None, downloads: Path | None = Non
 
     @app.get("/info")
     def info() -> dict[str, Any]:
-        return {"org": hub.state.org, "installer": bool(latest_wheel(downloads)), "build": latest_build(downloads)}
+        wheel = latest_wheel(downloads)
+        return {"org": hub.state.org, "installer": bool(wheel), "build": latest_build(downloads), "version": wheel_version(wheel)}
 
     @app.get("/downloads/{name}")
     def download(name: str) -> FileResponse:

@@ -8,7 +8,8 @@
 #   add --yes to skip the question, --dry-run to only print what would happen
 #   releases come from the develop branch (the project's main branch); --any-branch allows another one
 #
-# Bumps the version (node-server/pyproject.toml + uv.lock, dashboard/package.json) on a release/vX.Y.Z branch, merges
+# Bumps the version (node-server/pyproject.toml + uv.lock, dashboard/package.json), stamps CHANGELOG.md
+# ("## Unreleased" becomes the version; without it, the feat/fix commits are listed) on a release/vX.Y.Z branch, merges
 # it into develop through a pull request (develop only accepts pull requests; needs the GitHub CLI `gh`, logged in),
 # then tags the merged commit vX.Y.Z and pushes the tag. Pushing the tag starts .github/workflows/release.yml on GitHub, which runs the tests,
 # builds the node package (dashboard inside) and publishes a GitHub Release with the package and the installers.
@@ -60,6 +61,8 @@ git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1 && die "tag $TAG 
 [ "$(printf '%s\n%s\n' "$CURRENT" "$NEXT" | sort -V | tail -1)" = "$NEXT" ] && [ "$CURRENT" != "$NEXT" ] || die "$NEXT is not newer than $CURRENT"
 
 say "Release $CURRENT -> $NEXT from branch $BRANCH ($REPO)"
+say "What's new in $TAG (CHANGELOG.md, shown in the Office after the update):"
+python3 scripts/changelog.py "$NEXT" --print | sed 's/^/    /'
 if [ $DRY = 1 ]; then echo "dry run: nothing changed"; exit 0; fi
 if [ $YES = 0 ]; then
   if [ -t 0 ]; then read -r -p "Go ahead? [y/N] " ok; else ok=n; fi
@@ -71,7 +74,8 @@ git checkout -q -b "$WORK"
 sed -i.bak "s/^version = \"$CURRENT\"$/version = \"$NEXT\"/" node-server/pyproject.toml && rm node-server/pyproject.toml.bak
 sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$NEXT\"/" dashboard/package.json && rm dashboard/package.json.bak
 (cd node-server && uv lock -q)
-git add node-server/pyproject.toml node-server/uv.lock dashboard/package.json
+python3 scripts/changelog.py "$NEXT" >/dev/null
+git add node-server/pyproject.toml node-server/uv.lock dashboard/package.json CHANGELOG.md
 git commit -q -m "chore(release): $TAG"
 git push -q -u origin "$WORK"
 say "Merging $WORK into $BRANCH (pull request)"

@@ -1675,3 +1675,28 @@ button.dock-pill:hover { border-color: var(--o-line); }
 .settings-card.is-danger { border-color: var(--o-err); }
 .settings-confirm { display: flex; flex-direction: column; gap: 8px; }
 .settings-confirm label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+
+/* ---- version chip (app bar) and "What's new" ---- */
+.office-version {
+  height: 26px; padding: 0 8px; font-size: 12px; font-weight: 800; border-radius: 999px; cursor: pointer;
+  color: #fdf3e6; background: transparent; border: 1.5px solid #fdf3e655; font-variant-numeric: tabular-nums;
+}
+.office-version:hover { background: #ffffff1f; border-color: #fdf3e6aa; }
+@media (max-width: 900px) { .office-version { display: none; } }
+.settings-link { padding: 0; font: inherit; font-weight: 800; color: var(--o-bar-2, #6b5bd2); text-decoration: underline; background: none; border: 0; cursor: pointer; }
+.whatsnew { max-height: 78vh; }
+.whatsnew-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 2px solid var(--o-soft-line); }
+.whatsnew-head h2 { font: 600 19px var(--o-pixel); color: var(--o-ink); }
+.whatsnew-ver { font-size: 12px; font-weight: 800; color: var(--o-muted); }
+.whatsnew-x { margin-left: auto; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; cursor: pointer; }
+.whatsnew-x:hover { background: var(--o-panel-2); }
+.whatsnew-body { flex: 1; overflow-y: auto; padding: 6px 18px 14px; }
+.whatsnew-body section + section { margin-top: 6px; border-top: 2px dashed var(--o-soft-line); }
+.whatsnew-body h3 { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 6px; font: 600 16px var(--o-pixel); color: var(--o-ink); }
+.whatsnew-body h3 small { font: 700 12px var(--o-body); color: var(--o-muted); }
+.whatsnew-group h4 { margin: 8px 0 4px; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--o-muted); }
+.whatsnew-group ul { margin: 0; padding-left: 18px; list-style: disc; }
+.whatsnew-group li { font-size: 13.5px; line-height: 1.5; color: var(--o-ink); text-wrap: pretty; }
+.whatsnew-group li + li { margin-top: 3px; }
+.whatsnew-empty { padding: 18px 0; font-size: 13px; color: var(--o-muted); }
+.whatsnew .cmdk-foot { justify-content: flex-end; }

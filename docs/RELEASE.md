@@ -58,6 +58,15 @@ Don't edit versions by hand or push tags yourself: the script keeps the version,
 `MAJOR.MINOR.PATCH`. Patch: fixes and small UI changes. Minor: new features. Major: a change that needs every
 computer to update together (for example a protocol change between nodes and the office server).
 
+## What's new (CHANGELOG.md)
+
+Staff see `CHANGELOG.md` in the Office: it opens once after an update, and from the account menu or Settings > This
+computer. Add a line under `## Unreleased` when you merge something staff will notice, written for them (what they
+can do now, what works better). `make release` (`scripts/changelog.py`) renames that heading to `## vX.Y.Z (date)`;
+when there is no `## Unreleased`, it lists the release's `feat` / `fix` commit subjects instead. The dashboard bundles
+the file at build time, so each version shows its own list. The app bar shows the running version, and "Update to
+vX.Y.Z" names the one the office server has.
+
 ## Where staff install from
 
 | Source | Command | When |

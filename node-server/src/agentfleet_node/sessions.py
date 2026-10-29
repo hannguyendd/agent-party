@@ -8,6 +8,7 @@ timeout.
 """
 
 import asyncio
+import contextlib
 import fnmatch
 import json
 import logging
@@ -154,6 +155,11 @@ class SessionWorker:
         # Agents the owner @mentioned here (the composer sends "@han/be"): contacting them needs no extra OK.
         self.owner_named: set[str] = set()
         self._cost_seen = 0.0  # last total_cost_usd this client reported
+        # Time spent waiting on someone else (a peer's reply, the owner's approval) is not the agent's own work, so
+        # the turn timeout leaves it out; those waits have their own timeouts.
+        self._waits = 0
+        self._wait_started = 0.0
+        self._waited = 0.0
 
     @property
     def store(self) -> Store:
@@ -265,6 +271,36 @@ class SessionWorker:
 
     # turns
 
+    @contextlib.contextmanager
+    def waiting(self):
+        """Wrap a wait on someone else (peer reply, owner approval): it doesn't count toward the turn timeout."""
+        loop = asyncio.get_running_loop()
+        if self._waits == 0:
+            self._wait_started = loop.time()
+        self._waits += 1
+        try:
+            yield
+        finally:
+            self._waits -= 1
+            if self._waits == 0:
+                self._waited += loop.time() - self._wait_started
+
+    def _own_time(self, started: float) -> float:
+        """Seconds of this turn the agent spent working, waits left out."""
+        now = asyncio.get_running_loop().time()
+        return now - started - self._waited - (now - self._wait_started if self._waits else 0.0)
+
+    async def _wait_turn(self, started: float) -> TurnResult:
+        limit = self.m.settings.turn_timeout_s
+        while True:
+            left = limit - self._own_time(started)
+            if left <= 0:
+                raise TimeoutError
+            try:
+                return await asyncio.wait_for(asyncio.shield(self._turn_done), left)
+            except TimeoutError:
+                continue  # time spent waiting on others was left out: check again
+
     async def run_turn(self, prompt: str) -> TurnResult:
         async with self._turn_lock:
             client = await self._ensure_started()
@@ -272,10 +308,12 @@ class SessionWorker:
             self.needs_input = False
             self._turn_done = asyncio.get_running_loop().create_future()
             self._pending = 1
+            self._waited = 0.0
+            self._wait_started = asyncio.get_running_loop().time()  # a wait left over from an ended turn
             self.store.set_status(self.conv_id, ConversationStatus.RUNNING)
             await client.query(prompt)
             try:
-                result = await asyncio.wait_for(asyncio.shield(self._turn_done), self.m.settings.turn_timeout_s)
+                result = await self._wait_turn(asyncio.get_running_loop().time())
             except TimeoutError:
                 await self.interrupt(reason="turn timeout")
                 try:
@@ -486,7 +524,8 @@ class SessionManager:
             await w.status_hook(f"waiting for owner approval to use {tool_name}")
         fut = self._approvals[appr.id] = asyncio.get_running_loop().create_future()
         try:
-            allow, reason = await asyncio.wait_for(fut, self.settings.approval_timeout_s)
+            with w.waiting():
+                allow, reason = await asyncio.wait_for(fut, self.settings.approval_timeout_s)
         except TimeoutError:
             self.store.decide_approval(appr.id, ApprovalStatus.TIMED_OUT, "no decision before timeout")
             self.store.audit("approval_decided", agent_id=w.agent.id, tool=tool_name, outcome="timed_out")
@@ -521,6 +560,23 @@ class SessionManager:
             self.store.set_status(conv_id, ConversationStatus.IDLE)
             self.store.add_message(conv_id, "system", f"Assignment declined: {reason or 'owner declined'}", kind="status")
         return allow, reason or ("" if allow else "The owner declined the assignment.")
+
+    def agent_changed(self, agent: Agent) -> int:
+        """The owner saved an agent's settings. Its live sessions apply the new tool policy from the next call, and
+        approvals they are waiting on that the new policy settles (e.g. Bash after switching to Autopilot) are
+        decided at once. Returns how many were settled."""
+        settled = 0
+        for w in list(self._workers.values()):
+            if w.agent.id != agent.id:
+                continue
+            w.agent = agent
+            for appr in self.store.list_approvals(w.conv_id, pending_only=True):
+                if appr.tool_name == "Assignment":
+                    continue  # accepting work stays the owner's call
+                decision = policy_decision(agent, appr.tool_name, appr.tool_input, w._accepted(), w._named())
+                if decision != "ask" and self.decide(appr.id, decision == "allow", f"settled by {agent.id}'s new permissions"):
+                    settled += 1
+        return settled
 
     def decide(self, approval_id: str, allow: bool, reason: str = "") -> bool:
         fut = self._approvals.get(approval_id)

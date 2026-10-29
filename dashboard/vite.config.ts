@@ -12,6 +12,8 @@ export default defineConfig(({ mode }) => {
     // The Office chunk carries Phaser (~1.2 MB) and is loaded only when the Office opens.
     build: { outDir: 'dist', emptyOutDir: true, chunkSizeWarningLimit: 1500 },
     server: {
+      // CHANGELOG.md (repo root) is bundled for "What's new".
+      fs: { allow: ['..'] },
       proxy: {
         '/api': { target, changeOrigin: true, ws: true },
       },

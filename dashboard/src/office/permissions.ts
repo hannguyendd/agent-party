@@ -10,7 +10,7 @@ const FULL_TOOLS = [...EDIT_TOOLS, 'Bash']
 export const LEVELS: { id: Exclude<PermissionLevel, 'custom'>; label: string; hint: string; tools: string[] }[] = [
   { id: 'read', label: 'Read only', hint: 'Reads and searches; asks you before any change', tools: READ_TOOLS },
   { id: 'edit', label: 'Can edit files', hint: 'Edits files in its folder without asking; other commands still ask', tools: EDIT_TOOLS },
-  { id: 'full', label: 'Full access', hint: 'Edits files and runs any command without asking', tools: FULL_TOOLS },
+  { id: 'full', label: 'Autopilot', hint: 'Edits files and runs any command on its own, never asks', tools: FULL_TOOLS },
 ]
 
 export function levelOf(allowed: string[]): PermissionLevel {

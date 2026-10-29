@@ -229,6 +229,8 @@ export interface AppNotification {
   body: string
   conversation_id: string | null
   agent_id: string | null
+  /** approval / assignment rows: the approval they ask about (null on rows from older nodes) */
+  approval_id?: string | null
   read: boolean
   created_at: string
 }
@@ -275,6 +277,16 @@ export type LiveEvent =
   | { type: 'presence'; online: boolean }
   | { type: 'notification'; notification: AppNotification }
   | { type: 'notifications_read'; ids: string[] | null }
+
+/** GET /api/update: this node's version and build, and what the office server offers. */
+export interface UpdateInfo {
+  installed: boolean
+  build: string
+  version: string
+  latest: string | null
+  latest_version: string | null
+  available: boolean
+}
 
 export class ApiError extends Error {
   status: number
@@ -376,7 +388,7 @@ export const api = {
   readNotifications: (ids: string[] | null) => req<{ ok: boolean }>('POST', '/api/notifications/read', { ids }),
   presence: () => req<{ online: boolean }>('GET', '/api/presence'),
   setPresence: (online: boolean) => req<{ online: boolean }>('POST', '/api/presence', { online }),
-  updateInfo: () => req<{ installed: boolean; build: string; latest: string | null; available: boolean }>('GET', '/api/update'),
+  updateInfo: () => req<UpdateInfo>('GET', '/api/update'),
   startUpdate: () => req<{ status: string }>('POST', '/api/update'),
 
   approvals: () => req<Approval[]>('GET', '/api/approvals'),

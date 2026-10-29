@@ -1,17 +1,20 @@
 // The one app bar: Office (the only working screen) and Settings (configuration).
 
-import { useEffect, useState } from 'react'
-import { api } from '../api'
+import { useCallback, useEffect, useState } from 'react'
+import { api, type UpdateInfo } from '../api'
 import { errMsg } from '../components/format'
 import { goOffline } from '../offline'
 import type { View } from '../App'
 import type { LiveState } from '../useLiveState'
+import { officeCommand, useOfficeCommand, type OfficeCommand } from './commands'
 import { Icon } from './Icon'
 import { NotificationBell } from './NotificationBell'
 import { SoundMenu } from './SoundMenu'
 import { notificationTarget } from './nav'
 import { ownerCss } from './skins'
 import { setOfficeTheme, useOfficeTheme, webglAvailable } from './theme'
+import { WhatsNew } from './WhatsNew'
+import { compareVersions, markSeen, releasesBetween, seenVersion, type Release } from './changelog'
 
 /** 2D / 3D in one click (ADR 0004): the same per-browser choice as Settings → Office look. */
 function LookSwitch() {
@@ -28,17 +31,30 @@ function LookSwitch() {
   )
 }
 
-/** When the office server has a newer build: one click updates this machine, then the page reloads on it. */
-function UpdateButton() {
-  const [info, setInfo] = useState<{ available: boolean; build: string; latest: string | null } | null>(null)
+/** This node's version (opens "What's new"), and when the office server has a newer build, one click updates this
+ * machine, then the page reloads on it. "What's new" also opens by itself once after an update. */
+function VersionArea() {
+  const [info, setInfo] = useState<UpdateInfo | null>(null)
   const [phase, setPhase] = useState<'idle' | 'updating' | 'failed'>('idle')
+  const [news, setNews] = useState<Release[] | null>(null)
+  const [seen] = useState(seenVersion) // the version this browser last showed "What's new" for
+  const [dismissed, setDismissed] = useState(false)
   useEffect(() => {
     const check = () => api.updateInfo().then(setInfo).catch(() => {})
     check()
     const t = setInterval(check, 30 * 60 * 1000)
     return () => clearInterval(t)
   }, [])
-  if (!info?.available && phase === 'idle') return null
+  const current = info?.version ?? ''
+  useEffect(() => {
+    if (current && seen === null) markSeen(current) // first visit: the Office itself is new, nothing to list
+  }, [current, seen])
+  // Updated since this browser last looked: open once with what came in between.
+  const autoNews = !dismissed && current && seen !== null && compareVersions(current, seen) > 0 ? releasesBetween(seen, current) : null
+  const shown = news ?? autoNews
+  const openNews = useCallback(() => setNews(releasesBetween('', current || '9999')), [current])
+  useOfficeCommand(useCallback((c: OfficeCommand) => { if (c.type === 'whats-new') openNews() }, [openNews]))
+  const closeNews = useCallback(() => { setNews(null); setDismissed(true); if (current) markSeen(current) }, [current])
   const update = async () => {
     setPhase('updating')
     try {
@@ -56,10 +72,22 @@ function UpdateButton() {
     }
     setPhase('failed')
   }
+  const target = info?.latest_version && info.latest_version !== current ? ` to v${info.latest_version}` : ''
   return (
-    <button className={`office-update ${phase}`} disabled={phase === 'updating'} onClick={() => void update()} title={info?.latest ? `New build ${info.latest}` : undefined}>
-      {phase === 'updating' ? 'Updating…' : phase === 'failed' ? 'Update failed: try again' : 'Update available'}
-    </button>
+    <>
+      {current && (
+        <button className="office-version" onClick={openNews} title={`Party Agent v${current}${info?.build && info.build !== 'dev' ? ` (build ${info.build})` : ''}. What's new?`}>
+          v{current}
+        </button>
+      )}
+      {(info?.available || phase !== 'idle') && (
+        <button className={`office-update ${phase}`} disabled={phase === 'updating'} onClick={() => void update()}
+          title={info?.latest ? `New build ${info.latest}` : undefined}>
+          {phase === 'updating' ? 'Updating…' : phase === 'failed' ? 'Update failed: try again' : `Update${target || ' available'}`}
+        </button>
+      )}
+      {shown && <WhatsNew releases={shown} current={current} onClose={closeNews} />}
+    </>
   )
 }
 
@@ -95,6 +123,7 @@ function AccountMenu({ owner, active, onSettings }: { owner: string; active: boo
       {open && (
         <div className="o-frame office-me-menu" role="menu" onMouseLeave={() => { setOpen(false); setConfirmOut(false) }}>
           <button role="menuitem" onClick={() => { setOpen(false); onSettings() }}><Icon name="settings" />Settings</button>
+          <button role="menuitem" onClick={() => { setOpen(false); officeCommand({ type: 'whats-new' }) }}><Icon name="recap" />What's new</button>
           {svc?.installed && (
             <>
               <label className="office-me-toggle">
@@ -157,7 +186,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
       </div>
       <div className="office-right">
         {view.kind === 'office' && <LookSwitch />}
-        <UpdateButton />
+        <VersionArea />
         <button
           className={`office-health ${healthy ? 'is-ok' : 'is-warn'}`}
           onClick={() => go({ kind: 'settings', section: 'mesh' })}

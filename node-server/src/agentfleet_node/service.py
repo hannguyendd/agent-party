@@ -50,6 +50,17 @@ def build_id() -> str:
         return "dev"
 
 
+def version() -> str:
+    """This node's package version (pyproject.toml; `make release` bumps it), '' when unknown."""
+    from importlib.metadata import PackageNotFoundError
+    from importlib.metadata import version as dist_version
+
+    try:
+        return dist_version("agentfleet-node")
+    except PackageNotFoundError:
+        return ""
+
+
 def installed() -> bool:
     return build_id() != "dev"
 
