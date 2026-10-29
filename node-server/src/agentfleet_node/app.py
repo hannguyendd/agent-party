@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from agentfleet_node.a2a_bridge import A2AGateway, OutboundClient
 from agentfleet_node.api import router
+from agentfleet_node.claude_auth import ClaudeAuth
 from agentfleet_node.config import Settings
 from agentfleet_node.db import Database, make_engine
 from agentfleet_node.mesh import MeshDirectory
@@ -48,6 +49,7 @@ class Node:
     titles: TitleService
     presence: Presence | None = None
     notifications: NotificationService | None = None
+    claude: ClaudeAuth | None = None
 
 
 def build_node(settings: Settings, client_factory: Callable | None = None) -> Node:
@@ -80,8 +82,11 @@ def build_node(settings: Settings, client_factory: Callable | None = None) -> No
     sessions.on_rate_limit = usage.update
     world.usage = usage
     usage.listeners.append(lambda u: world.send_usage(u))
+    claude = ClaudeAuth(settings, bus)
+    sessions.on_auth = lambda ok: claude.turn_ok() if ok else claude.turn_failed()
     return Node(settings, bus, store, directory, outbound, sessions, gateway, world, MeshNodeProcess(settings),
-                parties, RecapService(settings, store, parties), usage, TitleService(settings, store, bus, outbound))
+                parties, RecapService(settings, store, parties), usage, TitleService(settings, store, bus, outbound),
+                claude=claude)
 
 
 def create_app(settings: Settings | None = None, client_factory: Callable | None = None) -> FastAPI:
@@ -104,6 +109,8 @@ def create_app(settings: Settings | None = None, client_factory: Callable | None
             await node.notifications.stop()
         await node.world.stop()
         await node.sessions.shutdown()
+        if node.claude:
+            await node.claude.stop()
 
     app = FastAPI(title=f"agentfleet node ({settings.owner})", lifespan=lifespan)
     node.presence = Presence(node)

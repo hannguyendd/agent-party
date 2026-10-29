@@ -187,6 +187,12 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
       <div className="office-right">
         {view.kind === 'office' && <LookSwitch />}
         <VersionArea />
+        {state.claude?.expired && (
+          <button className="office-claude-alert" onClick={() => go({ kind: 'settings', section: 'computer' })}
+            title="A turn failed because Claude Code's login on this computer expired. Log in again to continue.">
+            Claude login expired
+          </button>
+        )}
         <button
           className={`office-health ${healthy ? 'is-ok' : 'is-warn'}`}
           onClick={() => go({ kind: 'settings', section: 'mesh' })}
