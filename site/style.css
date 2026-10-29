@@ -238,7 +238,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 .floor { position: relative; height: 130px; overflow: hidden; transition: opacity .4s; }
 .intro.loading .floor { opacity: 0; }
 .floor::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: calc(26px + env(safe-area-inset-bottom, 0px)); background: #F3CBA9; box-shadow: 0 -4px 0 #E9B892; }
-.walker { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 0; width: 64px; height: 96px; animation: cross var(--dur, 22s) linear infinite; animation-delay: var(--delay, 0s); }
+.walker { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 0; width: 64px; height: 96px; animation: cross 30s linear infinite; /* one speed, staggered starts: an evenly spaced parade of all 16 skins */ animation-delay: var(--delay, 0s); }
 .walker i { position: absolute; inset: 0; background-size: 400% 500%; background-position-y: 25%; image-rendering: pixelated; transform: scaleX(-1); animation: legs .55s steps(4) infinite; }
 @keyframes cross { from { translate: -80px 0; } to { translate: calc(100vw + 80px) 0; } }
 @keyframes legs { from { background-position-x: 0; } to { background-position-x: 133.333%; } }
@@ -246,19 +246,22 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 @media (prefers-reduced-motion: reduce) {
   .intro .logo, .intro .press, .walker, .walker i, .intro .line.fresh { animation: none; }
   .word span, .intro.loading .word span { animation: none; opacity: 1; translate: 0 0; }
-  .walker { translate: calc(var(--i) * 14vw + 6vw) 0; }
+  .walker { translate: calc(var(--i) * 6vw + 2vw) 0; }
   .intro, .intro.done .word span, .intro .enter, .word, .intro .line, .intro .logo { transition: none; }
 }
 
-/* A wide side panel (big screens): the text grows with the panel and the lists spread across it instead of
-   leaving the right half empty. Container units follow the panel's own width. */
+/* A big side panel (large screens): the text grows with the panel and the lists spread across it instead of leaving
+   space empty, but only as far as the panel's height allows, so it never has to scroll. Container units follow the
+   panel's own size (size containment only in the two-column layout, where the grid sets the panel's height). */
 .panel { container-type: inline-size; }
+@media (min-width: 901px) { .panel { container-type: size; } }
 @container (min-width: 560px) {
-  .panel-body { gap: clamp(28px, 4cqi, 48px); }
-  .pitch { gap: 18px; }
-  .pitch h1 { font-size: clamp(44px, min(9cqi, 8vh), 88px); }
-  .pitch .lede { font-size: clamp(17px, 2.5cqi, 22px); max-width: 44ch; }
-  .play { min-height: 58px; padding: 0 32px 0 26px; font-size: 20px; }
+  .pitch h1 { font-size: clamp(32px, min(8.5cqi, 7.2cqh), 84px); }
+  .pitch .lede { font-size: clamp(15px, min(2.4cqi, 2.1cqh), 21px); max-width: 44ch; }
+  .play { min-height: clamp(44px, 6cqh, 58px); font-size: clamp(16px, 2.2cqh, 20px); }
+}
+@container (min-width: 560px) and (min-height: 820px) {
+  .panel-body { gap: clamp(28px, 4cqh, 48px); }
   .panel h2 { font-size: 18px; margin-bottom: 14px; }
   .feats { gap: 12px; }
   .feats li { padding: 14px 16px; grid-template-columns: 44px 1fr; align-items: center; }
@@ -272,7 +275,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
   .rules b { font-size: 16px; }
   .rules div span { display: block; margin: 2px 0 0; font-size: 13.5px; }
 }
-@container (min-width: 760px) {
+@container (min-width: 760px) and (min-height: 820px) {
   .feats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .feats li { grid-template-columns: 1fr; align-items: start; }
 }
