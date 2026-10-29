@@ -31,26 +31,52 @@ function LookSwitch() {
   )
 }
 
-/** This node's version (opens "What's new"), and when the office server has a newer build, one click updates this
- * machine, then the page reloads on it. "What's new" also opens by itself once after an update. */
-function VersionArea() {
+/** This node's version and what the office server offers (checked now and every 30 minutes). */
+function useUpdateInfo() {
   const [info, setInfo] = useState<UpdateInfo | null>(null)
-  const [phase, setPhase] = useState<'idle' | 'updating' | 'failed'>('idle')
-  const [news, setNews] = useState<Release[] | null>(null)
-  const [seen] = useState(seenVersion) // the version this browser last showed "What's new" for
-  const [dismissed, setDismissed] = useState(false)
   useEffect(() => {
     const check = () => api.updateInfo().then(setInfo).catch(() => {})
     check()
     const t = setInterval(check, 30 * 60 * 1000)
     return () => clearInterval(t)
   }, [])
+  return info
+}
+
+/** The version, small, beside the logo; it opens "What's new". */
+function VersionTag({ info }: { info: UpdateInfo | null }) {
+  if (!info?.version) return null
+  return (
+    <button className="office-version" onClick={() => officeCommand({ type: 'whats-new' })}
+      title={`Party Agent v${info.version}${info.build && info.build !== 'dev' ? ` (build ${info.build})` : ''}. What's new?`}>
+      v{info.version}
+    </button>
+  )
+}
+
+/** When the office server has a newer build, one click updates this machine, then the page reloads on it. "What's new"
+ * opens by itself once per new version: the releases since this browser last looked. A browser that never looked
+ * (the first version with this list) gets the current release's notes, unless the Office is brand new (no agents). */
+function UpdateArea({ info }: { info: UpdateInfo | null }) {
+  const [phase, setPhase] = useState<'idle' | 'updating' | 'failed'>('idle')
+  const [news, setNews] = useState<Release[] | null>(null)
+  const [seen] = useState(seenVersion) // the version this browser last showed "What's new" for
+  const [dismissed, setDismissed] = useState(false)
+  const [firstLook, setFirstLook] = useState(false)
   const current = info?.version ?? ''
   useEffect(() => {
-    if (current && seen === null) markSeen(current) // first visit: the Office itself is new, nothing to list
+    if (!current || seen !== null) return
+    let live = true
+    api.agents().then((list) => {
+      if (!live) return
+      if (list.length) setFirstLook(true)
+      else markSeen(current) // a brand-new Office: onboarding comes first, nothing to list
+    }).catch(() => {})
+    return () => { live = false }
   }, [current, seen])
-  // Updated since this browser last looked: open once with what came in between.
-  const autoNews = !dismissed && current && seen !== null && compareVersions(current, seen) > 0 ? releasesBetween(seen, current) : null
+  const autoNews = dismissed || !current ? null
+    : seen === null ? (firstLook ? releasesBetween('', current).slice(0, 1) : null)
+    : compareVersions(current, seen) > 0 ? releasesBetween(seen, current) : null
   const shown = news ?? autoNews
   const openNews = useCallback(() => setNews(releasesBetween('', current || '9999')), [current])
   useOfficeCommand(useCallback((c: OfficeCommand) => { if (c.type === 'whats-new') openNews() }, [openNews]))
@@ -75,11 +101,6 @@ function VersionArea() {
   const target = info?.latest_version && info.latest_version !== current ? ` to v${info.latest_version}` : ''
   return (
     <>
-      {current && (
-        <button className="office-version" onClick={openNews} title={`Party Agent v${current}${info?.build && info.build !== 'dev' ? ` (build ${info.build})` : ''}. What's new?`}>
-          v{current}
-        </button>
-      )}
       {(info?.available || phase !== 'idle') && (
         <button className={`office-update ${phase}`} disabled={phase === 'updating'} onClick={() => void update()}
           title={info?.latest ? `New build ${info.latest}` : undefined}>
@@ -154,6 +175,7 @@ function AccountMenu({ owner, active, onSettings }: { owner: string; active: boo
 }
 
 export function AppBar({ state, view, go, onApprovals }: { state: LiveState; view: View; go: (v: View) => void; onApprovals?: () => void }) {
+  const info = useUpdateInfo()
   const mesh = state.node?.mesh
   const owner = state.node?.owner ?? ''
   const office = state.office
@@ -176,6 +198,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
         {/* The organization the admin named on the server ("Taggle Office"). */}
         {office?.org && <span className="office-org">{office.org} Office</span>}
       </button>
+      <VersionTag info={info} />
       <div className="office-nav">
         <button className={view.kind === 'office' ? 'is-active' : ''} aria-current={view.kind === 'office' ? 'page' : undefined} onClick={() => go({ kind: 'office' })}>
           <Icon name="office" />Office
@@ -186,7 +209,7 @@ export function AppBar({ state, view, go, onApprovals }: { state: LiveState; vie
       </div>
       <div className="office-right">
         {view.kind === 'office' && <LookSwitch />}
-        <VersionArea />
+        <UpdateArea info={info} />
         {state.claude?.expired && (
           <button className="office-claude-alert" onClick={() => go({ kind: 'settings', section: 'computer' })}
             title="A turn failed because Claude Code's login on this computer expired. Log in again to continue.">

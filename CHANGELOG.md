@@ -6,6 +6,12 @@ version and date (or, when the section is missing, lists the release's `feat` / 
 
 Format: `## Unreleased` or `## vX.Y.Z (YYYY-MM-DD)`, then `### New` / `### Fixed` / `### Changed`, then `- ` lines.
 
+## Unreleased
+
+### Fixed
+- "What's new" now opens by itself the first time too (it stayed quiet if you skipped a version).
+- The version sits beside the logo, top left, instead of among the buttons.
+
 ## v0.3.1 (2026-10-29)
 ### New
 - Log in to Claude Code from the Office: Settings > This computer > "Log in to Claude" (no terminal needed).
