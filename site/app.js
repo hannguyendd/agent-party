@@ -67,32 +67,65 @@
 
   // ---------------------------------------------------------------------------------------------------------------
   // The welcome parade: groups walk one floor line at one speed. Groups are spaced by their real width (a group of n
-  // is 64 + 46 * (n - 1) px) so they never touch; on a narrow screen the groups that don't fit stay home. The
-  // talkers take turns: each shows its line for ~3 s of a 12 s cycle, offset so only one bubble is up at a time.
+  // is 64 + 46 * (n - 1) px) so they never touch; on a narrow screen the groups that don't fit stay home. Every
+  // group talks: a new line every ~1.1 s from a shuffled pool, at most two bubbles up, never on neighbouring groups.
+  var PARADE_LINES = [
+    'Coffee?', 'Is it Friday yet?', 'Move it 2px left.', 'It works on my machine.', 'Ship it!', 'LGTM',
+    'Who approved this? Oh. Me.', 'Not a bug. Undefined behaviour.', 'I centred a div today.', 'App Store review, day 3.',
+    'Rendering... 99%.', 'Deploying on a Friday? Bold.', "That's not my blue.", 'What if I click it 36 times?',
+    'Drink some water!', 'Form 7B. In triplicate.', 'Standup? Never heard of it.', 'Can we make it pop?',
+    'Have you tried turning it off and on?', 'Checked the logs. On fire.', 'Merge conflict again?', 'Who touched prod?',
+    'git push --force? Brave.', "It's a feature.", 'Tabs or spaces?', 'Just one more commit.', 'Lunch is a sprint.',
+    'Who wrote this? Oh. Me, last week.', 'Works in staging.', 'Can you hop on a quick call?', 'Per my last message...',
+    'Let me rebase real quick.', 'Cache it. Then cache the cache.', 'The tests pass. Locally.', 'One more meeting and I quit.',
+    'Did someone say pizza?', '404: motivation not found.', 'I asked an agent. It asked another agent.',
+    'Ticket says "small change".', 'Dark mode or no mode.', 'The build is green! Screenshot it!', 'Reply-all? Never again.',
+    'My agent fixed it while I slept.', 'Who has the HDMI dongle?', 'Estimate: two days. Reality: two weeks.',
+    'Is the Wi-Fi down or is it me?', 'Snack drawer is empty. Again.', 'Ping me after lunch.', 'Commit message: "fix".',
+  ];
   function parade() {
     var floor = document.querySelector('.floor'), groups = [].slice.call(floor.querySelectorAll('.group'));
     var SPEED = 42, EDGE = 260, GAP = 90; // px per second; off-screen margin each side; least space between groups
+    var shown = [];
     function arrange() {
-      var travel = floor.clientWidth + 2 * EDGE, used = 0, shown = [];
+      var travel = floor.clientWidth + 2 * EDGE, used = 0;
+      shown = [];
       groups.forEach(function (g) {
         var w = 64 + 46 * (g.querySelectorAll('i').length - 1);
         if (used + w + GAP <= travel) { shown.push({ g: g, w: w }); used += w + GAP; }
         g.hidden = true;
       });
-      var slack = (travel - used) / Math.max(1, shown.length), dur = travel / SPEED, pos = 0, talker = 0;
+      var slack = (travel - used) / Math.max(1, shown.length), dur = travel / SPEED, pos = 0;
       shown.forEach(function (it) {
-        var g = it.g;
-        g.hidden = false;
-        g.style.setProperty('--dur', dur.toFixed(2) + 's');
-        g.style.setProperty('--delay', (-pos / SPEED).toFixed(2) + 's');
-        if (reduce) g.style.translate = (pos - EDGE) + 'px 0';
-        if (g.hasAttribute('data-talks')) g.style.setProperty('--t', (-3 * talker++) + 's');
+        it.g.hidden = false;
+        it.g.style.setProperty('--dur', dur.toFixed(2) + 's');
+        it.g.style.setProperty('--delay', (-pos / SPEED).toFixed(2) + 's');
+        if (reduce) it.g.style.translate = (pos - EDGE) + 'px 0';
         pos += it.w + GAP + slack;
       });
     }
     arrange();
     var queued = 0;
     addEventListener('resize', function () { clearTimeout(queued); queued = setTimeout(arrange, 150); });
+
+    // Bubbles: groups take turns in a stride that skips neighbours; each line stays up 3 s, a new one every 1.1 s.
+    var pool = [], turn = 0;
+    function nextLine() {
+      if (!pool.length) pool = PARADE_LINES.slice().sort(function () { return Math.random() - 0.5; });
+      return pool.pop();
+    }
+    function speak() {
+      var intro = document.getElementById('intro');
+      if (intro.hidden || !shown.length) return;
+      var n = shown.length, stride = n > 4 ? 3 : 2, it = shown[(turn * stride) % n];
+      turn++;
+      var talk = it.g.querySelector('.talk');
+      talk.textContent = nextLine();
+      talk.classList.add('on');
+      setTimeout(function () { talk.classList.remove('on'); }, 3000);
+    }
+    speak();
+    setInterval(speak, 1100);
   }
 
   // ---------------------------------------------------------------------------------------------------------------

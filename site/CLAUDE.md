@@ -10,7 +10,7 @@ product: nothing here talks to a node, the mesh or the world server, and every a
   comment each (`stars`, `pageLayout`, `welcome`, `mapControls`, `officeLife`). The page has two layers:
   - the **intro** (`#intro`): logo, the name "Party Agent" dropping in letter by letter, **Come in**, a parade of
     all 16 characters in 8 small groups on one floor line at one speed (`parade()` in `app.js` spaces them for the
-    screen width; talkers take turns so one bubble shows at a time). Come in (click anywhere or any key) shrinks the name to the middle and turns it into the
+    screen width; every group talks, a new line every ~1.1 s from `PARADE_LINES`, never on neighbouring groups). Come in (click anywhere or any key) shrinks the name to the middle and turns it into the
     loader (`.intro.loading`); when the office is ready the letters fly off (`.intro.done`) and the intro hides.
     `#office` in the URL skips the welcome and goes straight to loading.
   - the **office**: header (brand, the "you can play" invitation until you walk in, GitHub, Star with a live count
