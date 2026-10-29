@@ -6,8 +6,7 @@ version and date (or, when the section is missing, lists the release's `feat` / 
 
 Format: `## Unreleased` or `## vX.Y.Z (YYYY-MM-DD)`, then `### New` / `### Fixed` / `### Changed`, then `- ` lines.
 
-## Unreleased
-
+## v0.3.0 (2026-10-29)
 ### New
 - The app shows its version, and "Update available" says which version you'll get.
 - "What's new" opens after an update (and any time from the account menu or Settings > This computer).
