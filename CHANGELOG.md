@@ -6,8 +6,7 @@ version and date (or, when the section is missing, lists the release's `feat` / 
 
 Format: `## Unreleased` or `## vX.Y.Z (YYYY-MM-DD)`, then `### New` / `### Fixed` / `### Changed`, then `- ` lines.
 
-## Unreleased
-
+## v0.3.1 (2026-10-29)
 ### New
 - Log in to Claude Code from the Office: Settings > This computer > "Log in to Claude" (no terminal needed).
 - When Claude Code's login expires, the chat says so and the top bar shows "Claude login expired".
