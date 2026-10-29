@@ -8,6 +8,7 @@ export type OfficeCommand =
   | { type: 'new-agent' }
   | { type: 'message'; agentId?: string }
   | { type: 'find'; agentId: string }
+  | { type: 'whats-new' }
 
 const EVENT = 'office-command'
 
