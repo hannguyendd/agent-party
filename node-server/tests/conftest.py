@@ -23,6 +23,7 @@ class FakeClaude:
     - contains "ASK": calls the in-process needs_input flag, replies with a question
     - contains "TOOL:<name>": asks permission for that tool first
     - contains "SLOW": waits until interrupted
+    - contains "PEER:<agent id> <text>": calls the mesh send_message tool, then reports the reply
     - otherwise echoes the last line of the prompt
     """
 
@@ -51,6 +52,13 @@ class FakeClaude:
 
     async def _respond(self, prompt: str):
         self._interrupt.clear()
+        if "PEER:" in prompt:
+            to, text = prompt.split("PEER:", 1)[1].strip().split(None, 1)
+            send = self.options.mcp_servers["mesh"]["tools"]["send_message"]  # recorded by keep_mesh_tools
+            out = (await send.handler({"to": to, "text": text}))["content"][0]["text"]
+            await self.queue.put(AssistantMessage([TextBlock(f"peer said: {out}")], model="fake"))
+            await self._result(f"peer said: {out}")
+            return
         if "TOOL:" in prompt:
             name = prompt.split("TOOL:", 1)[1].split()[0]
             await self.queue.put(AssistantMessage([ToolUseBlock("t1", name, {"command": "make build"})], model="fake"))
@@ -133,6 +141,19 @@ def node_factory(tmp_path):
         return RunningNode(owner, tmp_path, **kw)
 
     return make
+
+
+@pytest.fixture(autouse=True)
+def keep_mesh_tools(monkeypatch):
+    """Keep each mesh tool server's tools by name, so FakeClaude can call them like the CLI would."""
+    import agentfleet_node.mesh_tools as mt
+
+    real = mt.create_sdk_mcp_server
+
+    def create(name, version="1.0.0", tools=None):
+        return {**real(name, version=version, tools=tools), "tools": {t.name: t for t in tools or []}}
+
+    monkeypatch.setattr(mt, "create_sdk_mcp_server", create)
 
 
 @pytest.fixture(autouse=True)

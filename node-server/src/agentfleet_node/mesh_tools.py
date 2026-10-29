@@ -32,21 +32,28 @@ def make_mesh_tools_factory(settings: Settings, directory: MeshDirectory, outbou
             if to == agent.id:
                 return _err("You cannot message yourself.")
             party_id, kind = party_tags(worker.conv_id) if party_tags else ("", "")
+            turn = worker._turn_done
             try:
-                res = await outbound.send(
-                    from_agent=agent.id,
-                    to_agent=to,
-                    text=args.get("text", ""),
-                    context_id=args.get("context_id") or None,
-                    task_id=args.get("task_id") or None,
-                    files=files,
-                    kind=kind,
-                    party_id=party_id,
-                )
+                with worker.waiting():
+                    res = await outbound.send(
+                        from_agent=agent.id,
+                        to_agent=to,
+                        text=args.get("text", ""),
+                        context_id=args.get("context_id") or None,
+                        task_id=args.get("task_id") or None,
+                        files=files,
+                        kind=kind,
+                        party_id=party_id,
+                    )
             except AgentOffline as e:
                 return _err(f"agent offline: {e}")
             except Exception as e:
                 return _err(f"send failed: {e}")
+            if turn is None or turn.done() or worker._turn_done is not turn:
+                # The turn that asked ended first (timeout, interrupt): the agent will never read this reply, so
+                # at least tell the owner in this chat where it went.
+                worker.store.add_message(worker.conv_id, "system", f"{to} answered after this turn ended; the reply "
+                                         f"is in the chat with {to}.", kind="status")
             return _ok({
                 "from": to,
                 "reply": res.reply,

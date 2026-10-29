@@ -286,6 +286,7 @@ async def upsert_agent(body: AgentIn, request: Request) -> dict[str, Any]:
     data["skills"] = [s.model_dump() for s in body.skills]
     agent = node.store.save_agent(Agent(**data, enabled=True))
     node.store.audit("agent_saved", agent_id=agent.id, contact_policy=agent.contact_policy, tools=len(agent.allowed_tools))
+    node.sessions.agent_changed(agent)
     node.gateway.invalidate(agent.id)
     node.directory.sync_node_config()
     await _republish(node)
@@ -775,12 +776,14 @@ async def update_info(request: Request) -> dict[str, Any]:
     """Is a newer build waiting on the office server? (A repo checkout is never offered one.)"""
     from agentfleet_node import service
 
-    out: dict[str, Any] = {"installed": service.installed(), "build": service.build_id(), "latest": None, "available": False}
+    out: dict[str, Any] = {"installed": service.installed(), "build": service.build_id(), "version": service.version(),
+                           "latest": None, "latest_version": None, "available": False}
     base = service.server_base()
     if out["installed"] and base:
         try:
             async with httpx.AsyncClient(timeout=3) as hc:
-                out["latest"] = (await hc.get(f"{base}/info")).json().get("build")
+                info = (await hc.get(f"{base}/info")).json()
+                out["latest"], out["latest_version"] = info.get("build"), info.get("version") or None
         except (httpx.HTTPError, ValueError):
             pass
         out["available"] = bool(out["latest"]) and out["latest"] != out["build"]
