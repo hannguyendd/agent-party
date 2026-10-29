@@ -67,32 +67,64 @@
 
   // ---------------------------------------------------------------------------------------------------------------
   // The welcome parade: groups walk one floor line at one speed. Groups are spaced by their real width (a group of n
-  // is 64 + 46 * (n - 1) px) so they never touch; on a narrow screen the groups that don't fit stay home. The
-  // talkers take turns: each shows its line for ~3 s of a 12 s cycle, offset so only one bubble is up at a time.
+  // is 64 + 46 * (n - 1) px) so they never touch; on a narrow screen the groups that don't fit stay home. Every
+  // group talks: a new line every ~1.1 s, in the voice of one of its members (that agent's lines in office.js),
+  // never on neighbouring groups.
+  // Characters in the parade without an agent in the office (office.js AGENTS) share these lines.
+  var EXTRA_LINES = [
+    'Coffee?', 'Is it Friday yet?', 'Ship it!', 'LGTM', 'Standup? Never heard of it.', 'Just one more commit.',
+    'One more meeting and I quit.', 'Let me rebase real quick.', 'Who wrote this? Oh. Me, last week.',
+  ];
   function parade() {
     var floor = document.querySelector('.floor'), groups = [].slice.call(floor.querySelectorAll('.group'));
     var SPEED = 42, EDGE = 260, GAP = 90; // px per second; off-screen margin each side; least space between groups
+    var shown = [];
     function arrange() {
-      var travel = floor.clientWidth + 2 * EDGE, used = 0, shown = [];
+      var travel = floor.clientWidth + 2 * EDGE, used = 0;
+      shown = [];
       groups.forEach(function (g) {
         var w = 64 + 46 * (g.querySelectorAll('i').length - 1);
         if (used + w + GAP <= travel) { shown.push({ g: g, w: w }); used += w + GAP; }
         g.hidden = true;
       });
-      var slack = (travel - used) / Math.max(1, shown.length), dur = travel / SPEED, pos = 0, talker = 0;
+      var slack = (travel - used) / Math.max(1, shown.length), dur = travel / SPEED, pos = 0;
       shown.forEach(function (it) {
-        var g = it.g;
-        g.hidden = false;
-        g.style.setProperty('--dur', dur.toFixed(2) + 's');
-        g.style.setProperty('--delay', (-pos / SPEED).toFixed(2) + 's');
-        if (reduce) g.style.translate = (pos - EDGE) + 'px 0';
-        if (g.hasAttribute('data-talks')) g.style.setProperty('--t', (-3 * talker++) + 's');
+        it.g.hidden = false;
+        it.g.style.setProperty('--dur', dur.toFixed(2) + 's');
+        it.g.style.setProperty('--delay', (-pos / SPEED).toFixed(2) + 's');
+        if (reduce) it.g.style.translate = (pos - EDGE) + 'px 0';
         pos += it.w + GAP + slack;
       });
     }
     arrange();
     var queued = 0;
     addEventListener('resize', function () { clearTimeout(queued); queued = setTimeout(arrange, 150); });
+
+    // Bubbles: groups take turns in a stride that skips neighbours; each line stays up 3 s, a new one every 1.1 s.
+    var bySkin = {}, turn = 0;
+    AgentParty.agents.forEach(function (a) { bySkin[a.skin] = a.lines; });
+    // Each skin cycles through its own lines in a shuffled order.
+    var queues = {};
+    function lineFor(group) {
+      var skins = [].map.call(group.querySelectorAll('i'), function (i) { return i.getAttribute('data-skin'); });
+      var skin = skins[Math.floor(Math.random() * skins.length)];
+      if (!queues[skin] || !queues[skin].length) {
+        queues[skin] = (bySkin[skin] || EXTRA_LINES).slice().sort(function () { return Math.random() - 0.5; });
+      }
+      return queues[skin].pop();
+    }
+    function speak() {
+      var intro = document.getElementById('intro');
+      if (intro.hidden || !shown.length) return;
+      var n = shown.length, stride = n > 4 ? 3 : 2, it = shown[(turn * stride) % n];
+      turn++;
+      var talk = it.g.querySelector('.talk');
+      talk.textContent = lineFor(it.g);
+      talk.classList.add('on');
+      setTimeout(function () { talk.classList.remove('on'); }, 3000);
+    }
+    speak();
+    setInterval(speak, 1100);
   }
 
   // ---------------------------------------------------------------------------------------------------------------

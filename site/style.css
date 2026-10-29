@@ -242,8 +242,9 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
    staggers who talks, so nobody overlaps and only one bubble shows at a time. */
 .group { position: absolute; left: 0; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); height: 96px; animation: cross var(--dur, 40s) linear infinite; animation-delay: var(--delay, 0s); }
 .group i { position: absolute; bottom: 0; left: calc(var(--k) * 46px); width: 64px; height: 96px; background-size: 400% 500%; background-position-y: 25%; image-rendering: pixelated; transform: scaleX(-1); animation: legs .55s steps(4) infinite; animation-delay: calc(var(--k) * -.18s); }
-.group .talk { position: absolute; left: 32px; bottom: calc(100% + 4px); translate: -50% 0; white-space: nowrap; background: #fff; color: var(--ink); font: 700 13px/1.2 var(--body); border-radius: 9px; padding: 5px 10px; box-shadow: 0 0 0 1.5px var(--ink), 0 2px 0 rgba(51, 44, 74, .2); opacity: 0; animation: chat 12s ease-in-out infinite; animation-delay: var(--t, 0s); }
-@keyframes chat { 0%, 4% { opacity: 0; translate: -50% 4px; } 8%, 26% { opacity: 1; translate: -50% 0; } 30%, 100% { opacity: 0; translate: -50% 0; } }
+.group .talk { position: absolute; left: 32px; bottom: calc(100% + 6px); translate: -50% 4px; white-space: nowrap; background: #fff; color: var(--ink); font: 700 12.5px/1.2 var(--body); border-radius: 9px; padding: 5px 9px; box-shadow: 0 0 0 1.5px var(--ink), 0 2px 0 rgba(51, 44, 74, .2); opacity: 0; transition-property: opacity, translate; transition-duration: .3s; transition-timing-function: cubic-bezier(.2, 0, 0, 1); }
+.group .talk::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% 0; border: 5px solid transparent; border-top-color: var(--ink); }
+.group .talk.on { opacity: 1; translate: -50% 0; }
 .intro.loading .floor { opacity: 0; }
 .floor::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: calc(26px + env(safe-area-inset-bottom, 0px)); background: #F3CBA9; box-shadow: 0 -4px 0 #E9B892; }
 @keyframes cross { from { translate: -80px 0; } to { translate: calc(100vw + 80px) 0; } }
@@ -252,7 +253,8 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 @media (prefers-reduced-motion: reduce) {
   .intro .logo, .intro .press, .intro .line.fresh { animation: none; }
   .word span, .intro.loading .word span { animation: none; opacity: 1; translate: 0 0; }
-  .group, .group i, .group .talk { animation: none; }
+  .group, .group i { animation: none; }
+  .group .talk { transition: none; }
   .intro, .intro.done .word span, .intro .enter, .word, .intro .line, .intro .logo { transition: none; }
 }
 

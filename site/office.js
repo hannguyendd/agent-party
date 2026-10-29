@@ -8,18 +8,18 @@
 
   // One agent per kind of work in the company; names only a programmer would pick.
   var AGENTS = [
-    { id: 'Root', role: 'The boss. Has every permission there is', skin: 'knight', c: '#3D5BA9', seat: 'MGR', lines: ["Ship it.", "Who approved this? Oh. Me.", "My door is always open. The repo isn't."] },
-    { id: 'Cron', role: 'Manager. Schedules everything, always on time', skin: 'healer', c: '#8A9A3B', seat: 'D15', lines: ["Let's circle back at 0 */2 * * *.", "Is this blocked, or just asleep?", "I booked a meeting to cancel meetings."] },
-    { id: 'Backlog', role: 'Product. Owns the roadmap and the sticky notes', skin: 'lead', c: '#B04A5A', seat: 'M2', lines: ["Can we make it pop?", "Great idea. Pencilled in for Q7.", "As a user, I want it yesterday."] },
-    { id: 'Segfault', role: 'Backend. Talks to databases at 3am', skin: 'dev-hoodie', c: '#E67E5A', seat: 'D3', lines: ["It works on my machine.", "Have you tried turning it off and on again?", "Not a bug. Undefined behaviour."] },
-    { id: 'Flexbox', role: 'Frontend. Centers divs with dark magic', skin: 'mage', c: '#7A6BC2', seat: 'D6', lines: ["I centred a div today. Ask me anything.", "It's fine in Chrome.", "justify-content: chill;"] },
-    { id: 'HotReload', role: 'Mobile. Ships to both app stores', skin: 'shiba', c: '#2F8FA0', seat: 'D10', lines: ["App Store review, day 3.", "Did you clear the cache? On both platforms?", "Saved. Reloaded. Still broken."] },
-    { id: 'Prefab', role: 'Unity. Builds whole worlds before lunch', skin: 'dragon', c: '#C9772E', seat: 'D12', lines: ["I built a whole world. The button still doesn't work.", "Physics says no.", "Rendering... 99%."] },
-    { id: 'Sudo', role: 'DevOps. Keeps the servers breathing', skin: 'robot', c: '#56657A', seat: 'M1', lines: ["Checked the logs. They're on fire.", "Deploying on a Friday? Bold.", "Permission granted. Temporarily."] },
-    { id: 'Pixel', role: 'Design. Moves things 2px to the left', skin: 'designer', c: '#D0679B', seat: 'D2', lines: ["Can we move it 2px to the left?", "That's not my blue.", "Love it. Now make it 20% friendlier."] },
-    { id: 'Edgecase', role: 'QA. Finds the bug you swore was fixed', skin: 'cat', c: '#3E9E6E', seat: 'D7', lines: ["I typed an emoji in the phone number field.", "What happens if I click it 36 times?", "Found a bug. Then its cousin."] },
-    { id: 'Handshake', role: 'HR. Says hello to everyone first', skin: 'slime', c: '#E0A21B', seat: 'D14', lines: ["Drink some water!", "Your vacation days miss you.", "Team lunch at noon. Mandatory fun."] },
-    { id: 'Chmod', role: 'Admin. Hands out the keys (and the forms)', skin: 'rogue', c: '#7B5A44', seat: 'D1', lines: ["Who has the meeting room key?", "Please fill in form 7B. In triplicate.", "Access granted. Don't make me regret it."] }
+    { id: 'Root', role: 'The boss. Has every permission there is', skin: 'knight', c: '#3D5BA9', seat: 'MGR', lines: ["Ship it.", "Who approved this? Oh. Me.", "My door is always open. The repo isn't.", "Is it shipped yet?", "Who touched prod?", "Let's not have a meeting about this."] },
+    { id: 'Cron', role: 'Manager. Schedules everything, always on time', skin: 'healer', c: '#8A9A3B', seat: 'D15', lines: ["Let's circle back at 0 */2 * * *.", "Is this blocked, or just asleep?", "I booked a meeting to cancel meetings.", "Per my last message...", "Can you hop on a quick call?", "Ping me after lunch."] },
+    { id: 'Backlog', role: 'Product. Owns the roadmap and the sticky notes', skin: 'lead', c: '#B04A5A', seat: 'M2', lines: ["Can we make it pop?", "Great idea. Pencilled in for Q7.", "As a user, I want it yesterday.", "Ticket says \"small change\".", "Estimate: two days. Reality: two weeks.", "Let's park that for v2."] },
+    { id: 'Segfault', role: 'Backend. Talks to databases at 3am', skin: 'dev-hoodie', c: '#E67E5A', seat: 'D3', lines: ["It works on my machine.", "Have you tried turning it off and on again?", "Not a bug. Undefined behaviour.", "Works in staging.", "Merge conflict again?", "git push --force? Brave."] },
+    { id: 'Flexbox', role: 'Frontend. Centers divs with dark magic', skin: 'mage', c: '#7A6BC2', seat: 'D6', lines: ["I centred a div today. Ask me anything.", "It's fine in Chrome.", "justify-content: chill;", "Dark mode or no mode.", "Who broke the layout on Safari?", "Tabs or spaces?"] },
+    { id: 'HotReload', role: 'Mobile. Ships to both app stores', skin: 'shiba', c: '#2F8FA0', seat: 'D10', lines: ["App Store review, day 3.", "Did you clear the cache? On both platforms?", "Saved. Reloaded. Still broken.", "It's a feature.", "Just one more build.", "The simulator says yes. The phone says no."] },
+    { id: 'Prefab', role: 'Unity. Builds whole worlds before lunch', skin: 'dragon', c: '#C9772E', seat: 'D12', lines: ["I built a whole world. The button still doesn't work.", "Physics says no.", "Rendering... 99%.", "Who left the physics on?", "Lunch is a sprint.", "My agent fixed it while I slept."] },
+    { id: 'Sudo', role: 'DevOps. Keeps the servers breathing', skin: 'robot', c: '#56657A', seat: 'M1', lines: ["Checked the logs. They're on fire.", "Deploying on a Friday? Bold.", "Permission granted. Temporarily.", "Who has the HDMI dongle?", "Is the Wi-Fi down or is it me?", "Cache it. Then cache the cache."] },
+    { id: 'Pixel', role: 'Design. Moves things 2px to the left', skin: 'designer', c: '#D0679B', seat: 'D2', lines: ["Can we move it 2px to the left?", "That's not my blue.", "Love it. Now make it 20% friendlier.", "Can we make it pop?", "The build is green! Screenshot it!", "404: motivation not found."] },
+    { id: 'Edgecase', role: 'QA. Finds the bug you swore was fixed', skin: 'cat', c: '#3E9E6E', seat: 'D7', lines: ["I typed an emoji in the phone number field.", "What happens if I click it 36 times?", "Found a bug. Then its cousin.", "The tests pass. Locally.", "Commit message: \"fix\". Really?", "I asked an agent. It asked another agent."] },
+    { id: 'Handshake', role: 'HR. Says hello to everyone first', skin: 'slime', c: '#E0A21B', seat: 'D14', lines: ["Drink some water!", "Your vacation days miss you.", "Team lunch at noon. Mandatory fun.", "Snack drawer is empty. Again.", "Reply-all? Never again.", "Did someone say pizza?"] },
+    { id: 'Chmod', role: 'Admin. Hands out the keys (and the forms)', skin: 'rogue', c: '#7B5A44', seat: 'D1', lines: ["Who has the meeting room key?", "Please fill in form 7B. In triplicate.", "Access granted. Don't make me regret it.", "Coffee machine is fixed. Mostly.", "Badges expire on Friday.", "Who booked the room and never came?"] }
   ];
   var PLAYER = { id: 'you', label: 'You', skin: 'alien', c: '#D9663F' };
   var SPAWN = [19, 6]; // just inside the entrance door
@@ -394,5 +394,6 @@
     });
   }
 
-  window.AgentParty = { start: start };
+  // The made-up agents (name, skin, role, lines), also used by the welcome parade in app.js.
+  window.AgentParty = { start: start, agents: AGENTS };
 })();
