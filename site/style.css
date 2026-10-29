@@ -34,7 +34,8 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 .app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 16px; padding-block: max(14px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-bottom, 0px)); padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
 
 /* header */
-.head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; }
+.head .links { justify-self: end; }
 .brand { white-space: nowrap; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px 0 6px; border-radius: 999px; font: 700 26px var(--display); letter-spacing: -.01em; transition: background-color .15s; }
 .brand:hover { background: rgba(255, 247, 238, .7); }
 .brand img { width: 40px; height: 40px; image-rendering: pixelated; }
@@ -92,12 +93,13 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 .hint { position: absolute; left: 50%; bottom: 12px; translate: -50% 0; z-index: 3; margin: 0; background: var(--ink); color: var(--paper); font-weight: 600; font-size: 14px; padding: 7px 14px; border-radius: 999px; white-space: nowrap; box-shadow: 0 3px 0 #1D1830; transition-property: opacity, translate; transition-duration: .2s; transition-timing-function: cubic-bezier(.2, 0, 0, 1); }
 .hint.off { opacity: 0; translate: -50% 6px; pointer-events: none; }
 .hint kbd { background: var(--paper); box-shadow: none; margin: 0 1px; }
-.invite { position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 3; display: grid; justify-items: center; gap: 6px; text-align: center; background: var(--accent); color: #fff; padding: 14px 22px 16px; border-radius: 22px; box-shadow: 0 5px 0 #A6472A, 0 24px 40px -18px rgba(90, 40, 20, .5); pointer-events: none; animation: nudge 2.6s ease-in-out infinite; transition-property: opacity, scale; transition-duration: .25s; transition-timing-function: cubic-bezier(.2, 0, 0, 1); }
-.invite b { font: 700 20px/1.1 var(--display); }
-.invite span { font-weight: 600; font-size: 14px; }
+/* the invitation to play sits in the middle of the header until you walk in */
+.invite { justify-self: center; display: flex; align-items: center; gap: 10px; min-width: 0; background: var(--accent); color: #fff; padding: 7px 16px 7px 14px; border-radius: 999px; box-shadow: 0 4px 0 #A6472A; white-space: nowrap; pointer-events: none; animation: nudge 2.6s ease-in-out infinite; transition-property: opacity, scale; transition-duration: .25s; transition-timing-function: cubic-bezier(.2, 0, 0, 1); }
+.invite b { font: 700 15px/1.1 var(--display); }
+.invite span { font-weight: 600; font-size: 13px; opacity: .92; overflow: hidden; text-overflow: ellipsis; }
 .invite kbd { background: #fff; box-shadow: none; margin: 0 1px; color: var(--accent); }
 .invite.gone { opacity: 0; scale: .9; animation: none; }
-@keyframes nudge { 0%, 70%, 100% { translate: -50% -50%; } 80% { translate: -50% calc(-50% - 6px); } 90% { translate: -50% -50%; } }
+@keyframes nudge { 0%, 70%, 100% { translate: 0 0; } 80% { translate: 0 -4px; } 90% { translate: 0 0; } }
 
 
 /* office view */
@@ -125,7 +127,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 /* while the 3D office builds, the map dims behind the progress pill and the invitation steps aside */
 #office { transition-property: opacity, filter; }
 .mapfit.building #office { opacity: .45; filter: blur(3px) saturate(.8); }
-.mapfit.building .invite, .mapfit.building .hint { opacity: 0; pointer-events: none; }
+.mapfit.building .hint { opacity: 0; pointer-events: none; }
 .ap-bubble i, .dots { display: block; width: 24px; height: 6px; background: url(office/ui/typing.png) 0 0 / 72px 6px; image-rendering: pixelated; animation: dots .9s steps(3) infinite; }
 @keyframes dots { to { background-position-x: -72px; } }
 
@@ -198,7 +200,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
   .mapfit { width: calc(100cqw - 18px); }
   .panel { overflow: visible; }
 }
-@media (max-width: 560px) { .chip:not(.open) { display: none; } .gh .lbl .t { display: none; } .brand { font-size: 21px; } .brand img { width: 32px; height: 32px; } .invite { padding: 9px 14px 10px; border-radius: 16px; gap: 3px; } .invite b { font-size: 15px; } .invite span { font-size: 12px; } }
+@media (max-width: 560px) { .chip:not(.open) { display: none; } .gh .lbl .t { display: none; } .brand { font-size: 21px; } .brand img { width: 32px; height: 32px; } .invite span { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .ap-view, .ap-map, .ap-actor, .ap-bubble, .hint, .invite, .app { transition: none; }
   .ap-bubble i, .dots, .ap-actor.me .ap-ring, .invite, .gossip .tag::before, .gossip .line.fresh { animation: none; }
@@ -238,8 +240,14 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 .floor { position: relative; height: 130px; overflow: hidden; transition: opacity .4s; }
 .intro.loading .floor { opacity: 0; }
 .floor::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: calc(26px + env(safe-area-inset-bottom, 0px)); background: #F3CBA9; box-shadow: 0 -4px 0 #E9B892; }
-.walker { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 0; width: 64px; height: 96px; animation: cross 30s linear infinite; /* one speed, staggered starts: an evenly spaced parade of all 16 skins */ animation-delay: var(--delay, 0s); }
+.walker { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 0; width: 64px; height: 96px; animation: cross 30s linear infinite; /* one speed so nobody overtakes; uneven starts make pairs, a trio and gaps */ animation-delay: var(--delay, 0s); }
 .walker i { position: absolute; inset: 0; background-size: 400% 500%; background-position-y: 25%; image-rendering: pixelated; transform: scaleX(-1); animation: legs .55s steps(4) infinite; }
+.walker.hop i { animation: legs .55s steps(4) infinite, hop .55s ease-in-out infinite; }
+@keyframes hop { 50% { translate: 0 -4px; } }
+/* in each pair one of them is chatting: typing dots now and then */
+.walker .talk { position: absolute; left: 50%; bottom: 100%; translate: -50% -2px; background: #fff; border-radius: 8px; padding: 4px 6px; box-shadow: 0 0 0 1.5px var(--ink), 0 2px 0 rgba(51, 44, 74, .2); opacity: 0; animation: chat 6s ease-in-out infinite; animation-delay: var(--t, 0s); }
+.walker .talk::before { content: ""; display: block; width: 18px; height: 5px; background: url(office/ui/typing.png) 0 0 / 54px 5px; image-rendering: pixelated; animation: dots .9s steps(3) infinite; }
+@keyframes chat { 0%, 35%, 100% { opacity: 0; } 42%, 88% { opacity: 1; } }
 @keyframes cross { from { translate: -80px 0; } to { translate: calc(100vw + 80px) 0; } }
 @keyframes legs { from { background-position-x: 0; } to { background-position-x: 133.333%; } }
 @media (max-height: 640px) { .floor { height: 100px; } .walker { width: 48px; height: 72px; } .intro .logo { width: 72px; height: 72px; } }
@@ -247,6 +255,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
   .intro .logo, .intro .press, .walker, .walker i, .intro .line.fresh { animation: none; }
   .word span, .intro.loading .word span { animation: none; opacity: 1; translate: 0 0; }
   .walker { translate: calc(var(--i) * 6vw + 2vw) 0; }
+  .walker .talk, .walker .talk::before, .walker.hop i { animation: none; }
   .intro, .intro.done .word span, .intro .enter, .word, .intro .line, .intro .logo { transition: none; }
 }
 
@@ -279,3 +288,10 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
   .feats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .feats li { grid-template-columns: 1fr; align-items: start; }
 }
+
+/* a tall panel: spread the pitch, the features and the rules over the height instead of a cluster in the middle */
+@container (min-height: 900px) {
+  .panel-body { justify-content: space-evenly; }
+  .pitch h1 { font-size: clamp(40px, min(9.5cqi, 7cqh), 88px); }
+}
+@media (max-width: 1100px) { .invite span { display: none; } }

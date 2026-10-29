@@ -23,27 +23,28 @@
     </div>
   </main>
   <div class="floor" aria-hidden="true">
-    <div class="walker" style="--i:0; --delay:-0.00s"><i style="background-image:url(office/characters48/dev-hoodie.png)"></i></div>
-    <div class="walker" style="--i:1; --delay:-1.88s"><i style="background-image:url(office/characters48/cat.png)"></i></div>
-    <div class="walker" style="--i:2; --delay:-3.75s"><i style="background-image:url(office/characters48/robot.png)"></i></div>
-    <div class="walker" style="--i:3; --delay:-5.62s"><i style="background-image:url(office/characters48/shiba.png)"></i></div>
-    <div class="walker" style="--i:4; --delay:-7.50s"><i style="background-image:url(office/characters48/lead.png)"></i></div>
-    <div class="walker" style="--i:5; --delay:-9.38s"><i style="background-image:url(office/characters48/penguin.png)"></i></div>
-    <div class="walker" style="--i:6; --delay:-11.25s"><i style="background-image:url(office/characters48/mage.png)"></i></div>
-    <div class="walker" style="--i:7; --delay:-13.12s"><i style="background-image:url(office/characters48/knight.png)"></i></div>
-    <div class="walker" style="--i:8; --delay:-15.00s"><i style="background-image:url(office/characters48/designer.png)"></i></div>
-    <div class="walker" style="--i:9; --delay:-16.88s"><i style="background-image:url(office/characters48/dragon.png)"></i></div>
-    <div class="walker" style="--i:10; --delay:-18.75s"><i style="background-image:url(office/characters48/healer.png)"></i></div>
-    <div class="walker" style="--i:11; --delay:-20.62s"><i style="background-image:url(office/characters48/alien.png)"></i></div>
-    <div class="walker" style="--i:12; --delay:-22.50s"><i style="background-image:url(office/characters48/ranger.png)"></i></div>
-    <div class="walker" style="--i:13; --delay:-24.38s"><i style="background-image:url(office/characters48/slime.png)"></i></div>
-    <div class="walker" style="--i:14; --delay:-26.25s"><i style="background-image:url(office/characters48/rogue.png)"></i></div>
-    <div class="walker" style="--i:15; --delay:-28.12s"><i style="background-image:url(office/characters48/berserker.png)"></i></div>
+    <div class="walker" style="--i:0; --delay:-0.00s"><i style="background-image:url(office/characters48/dev-hoodie.png)"></i><span class="talk" style="--t:-0.0s"></span></div>
+    <div class="walker hop" style="--i:1; --delay:-0.85s"><i style="background-image:url(office/characters48/cat.png)"></i></div>
+    <div class="walker" style="--i:2; --delay:-4.40s"><i style="background-image:url(office/characters48/robot.png)"></i></div>
+    <div class="walker hop" style="--i:3; --delay:-7.00s"><i style="background-image:url(office/characters48/shiba.png)"></i></div>
+    <div class="walker" style="--i:4; --delay:-7.80s"><i style="background-image:url(office/characters48/lead.png)"></i><span class="talk" style="--t:-6.8s"></span></div>
+    <div class="walker hop" style="--i:5; --delay:-8.65s"><i style="background-image:url(office/characters48/penguin.png)"></i></div>
+    <div class="walker" style="--i:6; --delay:-11.20s"><i style="background-image:url(office/characters48/mage.png)"></i></div>
+    <div class="walker" style="--i:7; --delay:-13.60s"><i style="background-image:url(office/characters48/knight.png)"></i><span class="talk" style="--t:-11.9s"></span></div>
+    <div class="walker" style="--i:8; --delay:-14.45s"><i style="background-image:url(office/characters48/designer.png)"></i></div>
+    <div class="walker hop" style="--i:9; --delay:-17.40s"><i style="background-image:url(office/characters48/dragon.png)"></i></div>
+    <div class="walker" style="--i:10; --delay:-19.90s"><i style="background-image:url(office/characters48/healer.png)"></i><span class="talk" style="--t:-17.0s"></span></div>
+    <div class="walker hop" style="--i:11; --delay:-20.80s"><i style="background-image:url(office/characters48/alien.png)"></i></div>
+    <div class="walker" style="--i:12; --delay:-23.60s"><i style="background-image:url(office/characters48/ranger.png)"></i></div>
+    <div class="walker hop" style="--i:13; --delay:-25.60s"><i style="background-image:url(office/characters48/slime.png)"></i></div>
+    <div class="walker" style="--i:14; --delay:-26.40s"><i style="background-image:url(office/characters48/rogue.png)"></i><span class="talk" style="--t:-23.8s"></span></div>
+    <div class="walker" style="--i:15; --delay:-28.70s"><i style="background-image:url(office/characters48/berserker.png)"></i></div>
   </div>
 </div>
 <div class="app">
   <header class="head">
     <a class="brand" href="#" id="home"><img src="office/ui/logo@2x.png" alt="">Party Agent</a>
+    <div class="invite" id="invite" role="status"><b>Psst, you can play!</b><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or click the floor to walk in</span></div>
     <nav class="links" aria-label="Project">
       <a class="gh" href="https://github.com/hannguyendd/agent-party" target="_blank" rel="noopener">
         <span class="lbl"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span class="t">GitHub</span></span>
@@ -75,7 +76,6 @@
       <div class="mapbox">
         <div class="mapfit">
         <div id="office" role="img" aria-label="Office map with agents walking between desks and talking"></div>
-        <div class="invite" id="invite"><b>Psst, you can play!</b><span>Press <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or click the floor to walk in</span></div>
         <p class="hint off" id="hint" aria-live="polite"></p>
         <div class="loading3d" id="loading3d" hidden role="status"><span class="dots"></span><span id="loading3d-text">Building the 3D office</span><span class="bar"><i id="loading3d-bar"></i></span></div>
         <div class="zoom" role="group" aria-label="Zoom">
