@@ -158,7 +158,7 @@ def _setup_view(node) -> dict[str, Any]:
         "enrolled": node.meshproc.enrolled,
         "agents": len([a for a in node.store.list_agents() if a.enabled]),
         "mesh_node": node.meshproc.status(),
-        "claude": claude_status(s.claude_cli_path),
+        "claude": node.claude.status() if node.claude else claude_status(s.claude_cli_path),
     }
 
 
@@ -179,6 +179,45 @@ def claude_status(cli_path: str | None = None) -> dict[str, Any]:
         except (OSError, ValueError, AttributeError):
             logged_in = False
     return {"installed": bool(path), "path": path or "", "logged_in": bool(path) and logged_in}
+
+
+# Claude Code's login (claude_auth.py): status, and logging in from the dashboard.
+
+
+class LoginCode(BaseModel):
+    code: str = Field(min_length=1, max_length=2000)
+
+
+@router.get("/claude")
+async def get_claude(request: Request, fresh: bool = False) -> dict[str, Any]:
+    return await asyncio.to_thread(_node(request).claude.status, fresh)
+
+
+@router.post("/claude/login")
+async def claude_login(request: Request) -> dict[str, Any]:
+    node = _node(request)
+    try:
+        await node.claude.start_login()
+    except (RuntimeError, OSError) as e:
+        raise HTTPException(409, str(e)) from None
+    node.store.audit("claude_login_started")
+    return await asyncio.to_thread(node.claude.status)
+
+
+@router.post("/claude/login/code")
+async def claude_login_code(body: LoginCode, request: Request) -> dict[str, Any]:
+    node = _node(request)
+    try:
+        await node.claude.send_code(body.code)
+    except (RuntimeError, OSError) as e:
+        raise HTTPException(409, str(e)) from None
+    return {"ok": True}
+
+
+@router.post("/claude/login/cancel")
+async def claude_login_cancel(request: Request) -> dict[str, Any]:
+    await _node(request).claude.cancel()
+    return {"ok": True}
 
 
 @router.get("/setup")

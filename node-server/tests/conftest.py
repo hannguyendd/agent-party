@@ -23,6 +23,7 @@ class FakeClaude:
     - contains "ASK": calls the in-process needs_input flag, replies with a question
     - contains "TOOL:<name>": asks permission for that tool first
     - contains "SLOW": waits until interrupted
+    - contains "AUTHFAIL": the turn fails like an expired Claude login
     - contains "PEER:<agent id> <text>": calls the mesh send_message tool, then reports the reply
     - otherwise echoes the last line of the prompt
     """
@@ -65,6 +66,9 @@ class FakeClaude:
             res = await self.options.can_use_tool(name, {"command": "make build"}, ToolPermissionContext())
             verdict = "allowed" if isinstance(res, PermissionResultAllow) else f"denied: {res.message}"
             await self._result(f"tool {name} {verdict}")
+            return
+        if "AUTHFAIL" in prompt:
+            await self._result("Failed to authenticate: OAuth session expired and could not be refreshed", is_error=True)
             return
         if "SLOW" in prompt:
             await self._interrupt.wait()

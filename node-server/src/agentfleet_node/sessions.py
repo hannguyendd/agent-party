@@ -36,6 +36,7 @@ from claude_agent_sdk import (
     fork_session,
 )
 
+from agentfleet_node.claude_auth import AUTH_ERROR
 from agentfleet_node.config import Settings
 from agentfleet_node.models import Agent, ApprovalStatus, ConversationStatus, Direction, Mode
 from agentfleet_node.store import Store
@@ -157,6 +158,7 @@ class SessionWorker:
         self._cost_seen = 0.0  # last total_cost_usd this client reported
         # Time spent waiting on someone else (a peer's reply, the owner's approval) is not the agent's own work, so
         # the turn timeout leaves it out; those waits have their own timeouts.
+        self._auth_failed = False  # this turn's assistant message said authentication_failed
         self._waits = 0
         self._wait_started = 0.0
         self._waited = 0.0
@@ -227,6 +229,8 @@ class SessionWorker:
             if ev.get("type") == "content_block_delta" and ev.get("delta", {}).get("type") == "text_delta":
                 self.store.stream_delta(self.conv_id, ev["delta"]["text"])
         elif isinstance(msg, AssistantMessage):
+            if getattr(msg, "error", None) == "authentication_failed":
+                self._auth_failed = True
             if msg.parent_tool_use_id:
                 return  # subagent chatter stays out of the conversation view
             for block in msg.content:
@@ -250,6 +254,7 @@ class SessionWorker:
                 self.store.update_conversation(self.conv_id, session_id=msg.session_id)
             self._record_usage(msg)
             interrupted = self._interrupted
+            self._report_auth(msg)
             result = TurnResult(
                 text=msg.result or "",
                 interrupted=interrupted,
@@ -384,6 +389,18 @@ class SessionWorker:
             self.store.update_conversation(self.conv_id, cost_usd=round(conv.cost_usd + max(0.0, delta), 6),
                                            agent_turns=conv.agent_turns + 1)
 
+    def _report_auth(self, msg: ResultMessage) -> None:
+        """Tell the node whether Claude Code's login worked this turn; a failed login also says so in the chat."""
+        failed = self._auth_failed or (msg.is_error and bool(AUTH_ERROR.search(msg.result or "")))
+        self._auth_failed = False
+        if failed:
+            self.store.add_message(self.conv_id, "system", "Claude Code's login on this computer has expired. Log in "
+                                   "again in Settings > This computer, then send your message again.", kind="status")
+            if self.m.on_auth:
+                self.m.on_auth(False)
+        elif not msg.is_error and self.m.on_auth:
+            self.m.on_auth(True)
+
     def _named(self) -> frozenset[str]:
         if not self.owner_named:  # after a restart: read them back from the owner's messages
             for m in self.store.list_messages(self.conv_id):
@@ -428,6 +445,8 @@ class SessionManager:
         self._owner_gates: dict[str, asyncio.Future[OwnerDecision]] = {}
         # The CLI's plan usage per window (usage.UsageTracker.update).
         self.on_rate_limit: Callable[[Any], None] | None = None
+        # Whether a turn's Claude login worked (claude_auth.ClaudeAuth.turn_ok / turn_failed).
+        self.on_auth: Callable[[bool], None] | None = None
         # Called when an Assignment needs the owner: (conversation_id, approval_id, sender) -> how they were woken.
         self.wake_owner: Callable[[str, str, str | None], str] | None = None
 

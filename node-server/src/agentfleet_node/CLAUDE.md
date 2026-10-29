@@ -29,6 +29,10 @@ lists the agents in that Party. World events (joined, left, ended) reach the ser
 `WorldClient.party_listeners`. Recap: `recap.RecapService.start` builds `party.transcript` and writes in the
 background (`recap.summarize`, replaced in tests).
 
+Claude login: `claude_auth.ClaudeAuth` (`node.claude`) reads `claude auth status --json`, runs `claude auth login` for
+the dashboard (`/api/claude/login`, `/login/code` writes a pasted code to its stdin) and keeps `expired`, set when a turn
+fails on authentication (`SessionWorker._report_auth`) and cleared by the next good turn or a login.
+
 Restart: `Store.recover_after_restart` (lifespan) closes pending approvals and marks mid-turn conversations
 interrupted, since the futures that would finish them died with the process.
 
