@@ -12,14 +12,24 @@
     --soft: #d7cecf; --mint: #9dd6b7; --mint-ink: #2f6b4a; --coral: #c4583a; --gold: #f2c45a; color-scheme: light; }
   * { box-sizing: border-box; margin: 0; }
   [hidden] { display: none !important; }
-  [hidden] { display: none !important; }
   body { background: var(--bg); color: var(--ink); font: 14px/1.5 Nunito, ui-sans-serif, system-ui, sans-serif; }
   header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #48506c; color: #fdf3e6; }
   header h1 { font: 600 20px Fredoka, sans-serif; }
   header span { margin-left: auto; font-size: 12px; opacity: .8; }
-  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+  main { max-width: 980px; margin: 0 auto; padding: 16px 16px 48px; }
+  .panel { display: grid; gap: 16px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+  .tabs button { box-shadow: none; border-width: 2px; background: transparent; border-color: transparent; color: var(--muted); }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { background: var(--panel); border-color: var(--line); color: var(--ink); box-shadow: 0 2px 0 var(--line); }
+  .tabs small { font-size: 11px; font-weight: 800; padding: 1px 6px; border-radius: 99px; background: var(--panel-2); color: var(--ink); }
+  .tabs small:empty { display: none; }
+  .tabs small.warn { background: var(--coral); color: #fff; }
+  .tabs { scrollbar-width: none; } .tabs::-webkit-scrollbar { display: none; }
+  .panel > * { min-width: 0; }
+  @media (max-width: 760px) { header { flex-wrap: wrap; padding: 10px 16px; } header #sub { display: none; }
+    .card { padding: 12px; } table { display: block; overflow-x: auto; } }
   .card { background: var(--panel); border: 2px solid var(--line); border-radius: 8px; box-shadow: 0 3px 0 var(--line); padding: 16px; }
-  .wide { grid-column: 1 / -1; }
   h2 { font: 600 17px Fredoka, sans-serif; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   h2 small { font: 700 12px Nunito, sans-serif; color: var(--muted); }
   p.note { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
@@ -50,17 +60,17 @@
   .ok { color: var(--mint-ink); font-weight: 800; } .miss { color: var(--coral); font-weight: 800; }
   .empty { color: var(--muted); font-size: 13px; }
   #login { max-width: 360px; margin: 80px auto; }
-  .scroll { max-height: 420px; overflow: auto; }
+  .scroll { max-height: 560px; overflow: auto; }
   select { width: 100%; padding: 8px 10px; font: inherit; border: 2px solid var(--line); border-radius: 6px; background: #fff; }
   td.details { color: var(--muted); font-size: 12px; }
-  pre.log { max-height: 320px; overflow: auto; padding: 10px; border-radius: 6px; background: #2c283c; color: #fdf3e6;
+  pre.log { max-height: 480px; overflow: auto; padding: 10px; border-radius: 6px; background: #2c283c; color: #fdf3e6;
     font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
   .st-running, .st-awaiting_approval, .st-awaiting_owner { color: var(--mint-ink); font-weight: 800; }
   .st-error { color: var(--coral); font-weight: 800; }
   header .docs { margin-left: auto; font-size: 13px; }
   header .docs a { color: #fdf3e6; font-weight: 700; }
   .steps { margin: 0 0 8px; padding-left: 20px; line-height: 1.6; font-size: 14px; }
-  @media (max-width: 760px) { main { grid-template-columns: 1fr; } .kv { grid-template-columns: 1fr auto; } .kv b { grid-column: 1 / -1; } }
+  @media (max-width: 760px) { .kv { grid-template-columns: 1fr auto; } .kv b { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
@@ -77,7 +87,23 @@
 </div>
 
 <main id="app" hidden>
-  <section class="card wide">
+  <nav class="tabs" role="tablist" aria-label="Admin sections">
+    <button role="tab" id="t-office" data-tab="office">Office <small id="tabPeople"></small></button>
+    <button role="tab" id="t-invites" data-tab="invites">Invites</button>
+    <button role="tab" id="t-activity" data-tab="activity">Activity</button>
+    <button role="tab" id="t-install" data-tab="install">Install &amp; update <small id="tabInstall"></small></button>
+    <button role="tab" id="t-settings" data-tab="settings">Settings <small id="tabSettings"></small></button>
+  </nav>
+
+  <div class="panel" id="tab-office" role="tabpanel" aria-labelledby="t-office" hidden>
+  <section class="card">
+    <h2>In the office <small id="presentCount"></small></h2>
+    <table><thead><tr><th>Person</th><th>Agents</th><th>Desk</th></tr></thead><tbody id="people"></tbody></table>
+  </section>
+  </div>
+
+  <div class="panel" id="tab-invites" role="tabpanel" aria-labelledby="t-invites" hidden>
+  <section class="card">
     <h2>Invite a computer <small>one single-use join token per machine</small></h2>
     <p class="note">Name the machine (for your list), create the invite, then send the message to the person. They run one
       command and paste the token on the page that opens.</p>
@@ -100,10 +126,29 @@
   </section>
 
   <section class="card">
-    <h2>In the office <small id="presentCount"></small></h2>
-    <table><thead><tr><th>Person</th><th>Agents</th><th>Desk</th></tr></thead><tbody id="people"></tbody></table>
+    <h2>Invites created <small>tokens are shown once; the list keeps their first letters</small></h2>
+    <table><thead><tr><th>Computer</th><th>Created</th><th>Token</th></tr></thead><tbody id="invites"></tbody></table>
+  </section>
+  </div>
+
+  <div class="panel" id="tab-activity" role="tabpanel" aria-labelledby="t-activity" hidden>
+  <section class="card">
+    <h2>Events <small>what happened, who and when; words never reach this server</small></h2>
+    <div class="row" style="margin-bottom:8px">
+      <div><input id="actWho" placeholder="Person or agent, e.g. Kien or Han/be" /></div>
+      <div style="flex:0 0 220px"><select id="actKind"><option value="">All events</option></select></div>
+      <button id="actRefresh">Refresh</button></div>
+    <div class="scroll"><table><thead><tr><th>When</th><th>Who</th><th>Event</th><th>Agent</th><th>With</th><th>Details</th></tr></thead><tbody id="activity"></tbody></table></div>
   </section>
 
+  <section class="card">
+    <h2>Server log <small id="logPath"></small></h2>
+    <pre class="log" id="serverLog"></pre>
+    <div style="margin-top:8px"><button id="logRefresh">Refresh</button></div>
+  </section>
+  </div>
+
+  <div class="panel" id="tab-install" role="tabpanel" aria-labelledby="t-install" hidden>
   <section class="card">
     <h2>Installer <small id="build"></small></h2>
     <p class="note" id="pkg"></p>
@@ -115,7 +160,7 @@
       <code>make bundle</code>); every Office then shows <em>Update available</em>.</p>
   </section>
 
-  <section class="card wide">
+  <section class="card">
     <h2>Updating the office <small>when a new version is released</small></h2>
     <ol class="steps">
       <li>Someone releases from <code>develop</code> with <code>make release</code>; GitHub builds the package and the installers.</li>
@@ -130,23 +175,10 @@
       How staff use the Office (desks, agents, 2D / 3D look) and fixes for common problems:
       <a href="https://github.com/hannguyendd/agent-party/blob/develop/docs/GUIDE.md" target="_blank" rel="noopener">docs/GUIDE.md</a>.</p>
   </section>
+  </div>
 
-  <section class="card wide">
-    <h2>Events <small>what happened, who and when; words never reach this server</small></h2>
-    <div class="row" style="margin-bottom:8px">
-      <div><input id="actWho" placeholder="Person or agent, e.g. Kien or Han/be" /></div>
-      <div style="flex:0 0 220px"><select id="actKind"><option value="">All events</option></select></div>
-      <button id="actRefresh">Refresh</button></div>
-    <div class="scroll"><table><thead><tr><th>When</th><th>Who</th><th>Event</th><th>Agent</th><th>With</th><th>Details</th></tr></thead><tbody id="activity"></tbody></table></div>
-  </section>
-
-  <section class="card wide">
-    <h2>Server log <small id="logPath"></small></h2>
-    <pre class="log" id="serverLog"></pre>
-    <div style="margin-top:8px"><button id="logRefresh">Refresh</button></div>
-  </section>
-
-  <section class="card wide">
+  <div class="panel" id="tab-settings" role="tabpanel" aria-labelledby="t-settings" hidden>
+  <section class="card">
     <h2>Server settings <small>saved on this server; make server needs no parameters</small></h2>
     <form id="settingsForm" class="settings">
       <div><label for="org">Organization name</label><input id="org" maxlength="60" placeholder="e.g. Taggle" />
@@ -163,11 +195,7 @@
     </form>
     <p class="note" id="keyNote"></p>
   </section>
-
-  <section class="card wide">
-    <h2>Invites created <small>tokens are shown once; the list keeps their first letters</small></h2>
-    <table><thead><tr><th>Computer</th><th>Created</th><th>Token</th></tr></thead><tbody id="invites"></tbody></table>
-  </section>
+  </div>
 </main>
 
 <script>
@@ -203,7 +231,11 @@ async function load() {
     $('org').value = o.settings.org; $('hubData').value = o.settings.hub_data; $('amOne').value = o.settings.agentmesh_one
   }
   $('amFound').textContent = o.settings.agentmesh_one_found ? `Using ${o.settings.agentmesh_one_found}` : 'Not found: set its full path.'
-  if (!loadedExtras) { loadedExtras = true; loadActivity().catch(() => {}); loadLog().catch(() => {}) }
+  if (!loadedExtras) { loadedExtras = true; showTab(location.hash.slice(1)) }
+  $('tabPeople').textContent = String(people.filter(([, s]) => s.connected).length)
+  const missing = (o.package ? 0 : 1) + o.platforms.filter((p) => !p.ready).length
+  $('tabInstall').textContent = missing ? `${missing} missing` : ''; $('tabInstall').className = missing ? 'warn' : ''
+  $('tabSettings').textContent = o.can_invite ? '' : 'fix'; $('tabSettings').className = o.can_invite ? '' : 'warn'
   document.querySelectorAll('.host').forEach((e) => (e.textContent = o.server))
   $('build').textContent = o.build ? `build ${o.build}` : ''
   $('pkg').innerHTML = o.package ? `Package <code>${esc(o.package)}</code> is ready.` : '<span class="miss">No package yet: run make server (or make bundle).</span>'
@@ -244,6 +276,25 @@ async function loadActivity() {
   }).join('') : '<tr><td colspan="6" class="empty">Nothing yet.</td></tr>'
 }
 $('actKind').addEventListener('change', () => void loadActivity())
+
+const TABS = ['office', 'invites', 'activity', 'install', 'settings']
+function showTab(name) {
+  if (!TABS.includes(name)) name = 'office'
+  for (const t of TABS) {
+    $('tab-' + t).hidden = t !== name
+    $('t-' + t).setAttribute('aria-selected', String(t === name))
+    $('t-' + t).tabIndex = t === name ? 0 : -1
+  }
+  if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name)
+  if (name === 'activity' && !$('app').hidden) { loadActivity().catch(() => {}); loadLog().catch(() => {}) }
+}
+document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab) })
+document.querySelector('.tabs').addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+  const i = TABS.indexOf(location.hash.slice(1)), next = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length]
+  showTab(next); $('t-' + next).focus()
+})
+window.addEventListener('hashchange', () => showTab(location.hash.slice(1)))
 async function loadLog() {
   const r = await call('/admin/api/log?lines=300')
   $('logPath').textContent = r.path
