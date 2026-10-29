@@ -292,3 +292,8 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
   .pitch h1 { font-size: clamp(40px, min(9.5cqi, 7cqh), 88px); }
 }
 @media (max-width: 1100px) { .invite span { display: none; } }
+/* narrow screens: the play invitation takes its own row under the brand and the GitHub links */
+@media (max-width: 700px) {
+  .head { grid-template-columns: 1fr auto; row-gap: 10px; }
+  .invite { grid-row: 2; grid-column: 1 / -1; }
+}
