@@ -126,6 +126,9 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
   private markers: { x: number; y: number; agentId: string; born: number; bad?: boolean; sprite?: Phaser.GameObjects.Sprite }[] = []
   callbacks: SceneCallbacks | null = null
   onReady: (() => void) | null = null
+  /** Device pixels per CSS pixel the game draws at (set by mountPhaser): overlays and screen positions divide it
+   *  out so they keep their CSS size while the map itself is drawn at the screen's full resolution. */
+  dpr = 1
 
   constructor() {
     super({ key: 'office', physics: { default: 'arcade', arcade: { debug: false } } })
@@ -239,7 +242,7 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
   zoomBy(factor: number, anchor?: Point) {
     const cam = this.cameras.main
     const fit = Math.min(this.scale.width / (COLS * TILE), this.scale.height / (ROWS * TILE))
-    this.zoomTarget = Phaser.Math.Clamp((this.zoomTarget ?? cam.zoom) * factor, fit * 0.8, 3)
+    this.zoomTarget = Phaser.Math.Clamp((this.zoomTarget ?? cam.zoom) * factor, fit * 0.8, 3 * this.dpr)
     const screen = anchor ?? { x: this.scale.width / 2, y: this.scale.height / 2 }
     const world = cam.getWorldPoint(screen.x, screen.y)
     this.zoomAnchor = { screen, world: { x: world.x, y: world.y } }
@@ -295,7 +298,7 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
   }
 
   private scaleDeskLabels() {
-    const k = 1 / this.cameras.main.zoom
+    const k = this.dpr / this.cameras.main.zoom
     for (const tag of this.deskLabels.values()) tag.box.setScale(k)
   }
 
@@ -735,7 +738,8 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
       .filter((m) => this.isMine(m.id) && !m.leaving && distance(tileOf(posOf(m)), here) <= REACH)
       .map((m) => m.id)
     const head = { x: s.feet.x, y: s.feet.y - CHAR_FRAME.height * CHAR_SCALE }
-    return { agentId: s.id, screen: { x: (head.x - cam.worldView.x) * cam.zoom, y: (head.y - cam.worldView.y) * cam.zoom }, reachableBy }
+    const k = cam.zoom / this.dpr // canvas px → CSS px for the React popups
+    return { agentId: s.id, screen: { x: (head.x - cam.worldView.x) * k, y: (head.y - cam.worldView.y) * k }, reachableBy }
   }
 
   /** The owner closed the proximity menu: don't reopen it until the agents part. */
@@ -777,7 +781,7 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
 
   /** Names, icons and bubbles keep the same on-screen size at any zoom, and sit just above the head. */
   private scaleOverlay(s: AgentSprite) {
-    const k = 1 / this.cameras.main.zoom
+    const k = this.dpr / this.cameras.main.zoom
     const head = -(CHAR_FRAME.height - 2) * CHAR_SCALE
     s.label.setScale(k).setPosition(0, head)
     s.icon.setScale(k).setPosition((s.label.width * k) / 2 + 3, head) // just right of the name tag, never over it
@@ -981,7 +985,7 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
       const w = this.drag.world
       // Drag-select box: dark outline + mint wash so it reads on the pastel floor; line width stays 2 screen px.
       const r = { x: Math.min(w.x, p.worldX), y: Math.min(w.y, p.worldY), w: Math.abs(p.worldX - w.x), h: Math.abs(p.worldY - w.y) }
-      const px = 1 / cam.zoom
+      const px = this.dpr / cam.zoom
       this.selectBox.clear().fillStyle(0x3f9a67, 0.2).fillRect(r.x, r.y, r.w, r.h)
       this.selectBox.lineStyle(4 * px, 0xfefaf2, 0.9).strokeRect(r.x, r.y, r.w, r.h)
       this.selectBox.lineStyle(2 * px, 0x2f6b4a, 1).strokeRect(r.x, r.y, r.w, r.h)
