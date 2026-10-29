@@ -47,19 +47,32 @@ class UsageTracker:
             self.usage = {}
         self.listeners: list = []  # called with the whole view after each change (the world link)
 
-    def update(self, info) -> None:
-        """From a claude_agent_sdk RateLimitInfo."""
-        window = info.rate_limit_type
-        if window not in WINDOWS:
-            return
+    def _set(self, window: str, utilization, resets_at, status: str, now: int) -> None:
         prev = self.usage.get(window, {})
         self.usage[window] = {
             # Some events carry only the status: keep the last known fraction rather than forget it.
-            "utilization": info.utilization if info.utilization is not None else prev.get("utilization"),
-            "resets_at": info.resets_at or prev.get("resets_at"),
-            "status": info.status,
-            "at": int(time.time()),
+            "utilization": utilization if utilization is not None else prev.get("utilization"),
+            "resets_at": resets_at or prev.get("resets_at"),
+            "status": status or prev.get("status", ""),
+            "at": now,
         }
+
+    def update(self, info) -> None:
+        """From a claude_agent_sdk RateLimitInfo. The event names one window (the one whose status changed), but
+        its raw `unifiedWindows` carries every window, so the 5-hour one shows even while only the week warns."""
+        now = int(time.time())
+        seen = False
+        windows = (info.raw or {}).get("unifiedWindows") if isinstance(getattr(info, "raw", None), dict) else None
+        for window, v in (windows or {}).items():
+            if window in WINDOWS and isinstance(v, dict):
+                self._set(window, v.get("utilization"), v.get("resetsAt"), str(v.get("status") or ""), now)
+                seen = True
+        if info.rate_limit_type in WINDOWS:
+            # The named window's own status is the precise one (e.g. allowed_warning).
+            self._set(info.rate_limit_type, info.utilization, info.resets_at, info.status, now)
+            seen = True
+        if not seen:
+            return
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             self.path.write_text(json.dumps(self.usage, indent=2))

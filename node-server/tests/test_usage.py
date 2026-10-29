@@ -32,3 +32,17 @@ async def test_usage_is_kept_served_and_shared_with_the_office(node_factory, tmp
             assert json.loads((a.settings.data_dir / "usage.json").read_text())["five_hour"]["resets_at"] == 1700000000
             # Bob's Office knows how much room kien's agents have.
             await wait_for(lambda: b.node.world.mirror["usage"].get("kien", {}).get("seven_day", {}).get("utilization") == 0.3)
+
+
+def test_every_window_is_read_from_one_event(tmp_path):
+    # The CLI names only the window whose status changed (here the week), but lists all of them in unifiedWindows.
+    from agentfleet_node.config import Settings
+    from agentfleet_node.store import EventBus
+    from agentfleet_node.usage import UsageTracker
+
+    t = UsageTracker(Settings(owner="kien", data_dir=tmp_path), EventBus())
+    t.update(RateLimitInfo(status="allowed_warning", resets_at=1793732400, rate_limit_type="seven_day", utilization=0.57, raw={
+        "unifiedWindows": {"five_hour": {"utilization": 0.63, "resetsAt": 1793257800, "status": "allowed"},
+                           "seven_day": {"utilization": 0.57, "resetsAt": 1793732400, "status": "allowed"}}}))
+    assert t.usage["five_hour"]["utilization"] == 0.63 and t.usage["five_hour"]["resets_at"] == 1793257800
+    assert t.usage["seven_day"]["status"] == "allowed_warning"
