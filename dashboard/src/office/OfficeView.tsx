@@ -4,7 +4,7 @@ import type { LiveState } from '../useLiveState'
 import type { SideTab, View } from '../App'
 import { errMsg } from '../components/format'
 import type { MountedRenderer, OfficeRenderer, PeerClick, SceneCallbacks, SceneData } from './renderer'
-import { useOfficeTheme, webglAvailable } from './theme'
+import { setOfficeTheme, themePicks, useOfficeTheme, webglAvailable } from './theme'
 import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
@@ -55,8 +55,10 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
   useEffect(() => { latest.current = { data, callbacks, onReady, onError } })
   // The look this browser picked (Settings); 3D falls back to 2D when WebGL is missing or the 3D art fails to load.
   const theme = useOfficeTheme()
-  const [failed3d, setFailed3d] = useState(false)
-  const look = theme === '3d' && !failed3d && webglAvailable() ? '3d' : '2d'
+  // A failure is remembered for the pick it happened under; picking a look again (dock switch or Settings) retries 3D.
+  const picks = themePicks()
+  const [failedPick, setFailedPick] = useState(-1)
+  const look = theme === '3d' && failedPick !== picks && webglAvailable() ? '3d' : '2d'
   useEffect(() => {
     let disposed = false
     let mounted: MountedRenderer | undefined
@@ -65,15 +67,15 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
       if (disposed || !host.current) return
       mounted = mount({
         host: host.current, data: latest.current.data, callbacks: latest.current.callbacks, onReady: () => latest.current.onReady(),
-        onError: message => { latest.current.onError(`3D office: ${message} Showing the 2D office instead.`); setFailed3d(true) },
+        onError: message => { latest.current.onError(`3D office: ${message} Showing the 2D office instead.`); setFailedPick(picks) },
       })
       sceneRef.current = mounted.renderer
     }).catch(e => {
-      if (look === '3d') setFailed3d(true)
+      if (look === '3d') setFailedPick(picks)
       latest.current.onError(errMsg(e))
     })
     return () => { disposed = true; sceneRef.current = null; mounted?.destroy() }
-  }, [sceneRef, look])
+  }, [sceneRef, look, picks])
   useEffect(() => { sceneRef.current?.setSceneData(data) }, [data, sceneRef])
   useEffect(() => { if (sceneRef.current) sceneRef.current.callbacks = callbacks }, [callbacks, sceneRef])
   // Map keys work wherever the focus is (after clicking an agent in the side column, a button…), except while
@@ -349,6 +351,9 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         onZoom={f => sceneRef.current?.zoomBy(f)}
         onFit={() => sceneRef.current?.fitCamera()}
         onRotate={theme === '3d' ? s => sceneRef.current?.rotate?.(s) : undefined}
+        look={theme}
+        can3d={webglAvailable()}
+        onLook={setOfficeTheme}
       />
       </div>
 

@@ -1434,6 +1434,11 @@ button.dock-pill:hover { border-color: var(--o-line); }
 .dock-zoom { flex: none; display: inline-flex; padding: 2px; gap: 2px; background: var(--o-panel-2); border: 1.5px solid var(--o-soft-line); border-radius: 8px; }
 .dock-zoom button { display: grid; place-items: center; width: 28px; height: 26px; font-family: var(--o-pixel); font-size: 18px; font-weight: 600; border-radius: 6px; cursor: pointer; }
 .dock-zoom button:hover { background: var(--o-panel); box-shadow: 0 0 0 1.5px var(--o-line); }
+.dock-look { flex: none; display: inline-flex; padding: 2px; gap: 2px; background: var(--o-panel-2); border: 1.5px solid var(--o-soft-line); border-radius: 8px; }
+.dock-look button { height: 26px; padding: 0 9px; font-family: var(--o-pixel); font-size: 13px; font-weight: 600; color: var(--o-muted); border-radius: 6px; cursor: pointer; }
+.dock-look button:hover:not(:disabled):not([aria-checked='true']) { background: var(--o-panel); color: var(--o-ink); }
+.dock-look button[aria-checked='true'] { background: var(--o-line); color: var(--o-panel); }
+.dock-look button:disabled { opacity: 0.45; cursor: not-allowed; }
 .dock-feed { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 8px 10px; background: var(--o-panel); border: 2px solid var(--o-line); border-radius: 10px; box-shadow: 0 3px 0 var(--o-shadow); overflow: hidden; }
 .dock-feed h3 { display: flex; align-items: center; gap: 7px; font-family: var(--o-pixel); font-size: 14px; font-weight: 600; }
 .dock-feed h3 i { width: 8px; height: 8px; border-radius: 50%; background: #b9b4c8; }

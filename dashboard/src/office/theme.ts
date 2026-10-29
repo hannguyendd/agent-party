@@ -22,8 +22,13 @@ export function setOfficeTheme(theme: OfficeTheme) {
     // storage blocked (private window): the choice lasts until reload
   }
   current = theme
+  picks++
   for (const l of listeners) l()
 }
+
+let picks = 0
+/** Counts choices made in this tab, so a 3D fallback can be retried by picking 3D again. */
+export const themePicks = () => picks
 
 let current = getOfficeTheme()
 
