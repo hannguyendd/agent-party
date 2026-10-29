@@ -36,7 +36,7 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 /* header */
 .head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; }
 .head .links { justify-self: end; }
-.brand { white-space: nowrap; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px 0 6px; border-radius: 999px; font: 700 26px var(--display); letter-spacing: -.01em; transition: background-color .15s; }
+.brand { justify-self: start; white-space: nowrap; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px 0 6px; border-radius: 999px; font: 700 26px var(--display); letter-spacing: -.01em; transition: background-color .15s; }
 .brand:hover { background: rgba(255, 247, 238, .7); }
 .brand img { width: 40px; height: 40px; image-rendering: pixelated; }
 .links { display: flex; gap: 8px; }
