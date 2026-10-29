@@ -271,7 +271,8 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
         win = f"irm http://{host}/install.ps1 | iex"
         # The same installer from the GitHub release of the version this server serves, for a computer that can't
         # download from the server (it still has to reach it afterwards to use the Office).
-        github = installer.release_base(os.environ.get("AGENTFLEET_RELEASE_REPO", installer.DEFAULT_REPO),
+        repo = os.environ.get("AGENTFLEET_RELEASE_REPO", installer.DEFAULT_REPO)
+        github = installer.release_base(repo,
                                         installer.wheel_version(latest_wheel(cfg.downloads)))
         mac_gh = f"curl -fsSL {github}/install.sh | bash -s -- --server {host}" if github else ""
         win_gh = f"$env:AGENTMESH_SERVER='{host}'; irm {github}/install.ps1 | iex" if github else ""
@@ -283,6 +284,9 @@ def router(cfg: AdminConfig, hub, latest_wheel, latest_build) -> APIRouter:
                f"   macOS / Linux: {mac_gh}\n   Windows: {win_gh}\n" if github else "")
             + f"3. On the page that opens, enter your name and this join token (single use):\n   {token}\n"
             f"   Office server: {host}\n"
+            f"4. Then, in the Office: create your first agent, pick your desk (the Desk button under the map), and switch\n"
+            f"   between the 2D and 3D look at the top right whenever you like.\n"
+            f"   How it all works: https://github.com/{repo}/blob/develop/docs/GUIDE.md\n"
         )
         return {"device": device, "token": token, "mac": mac, "windows": win, "mac_github": mac_gh, "windows_github": win_gh,
                 "message": message, "raw": raw}
