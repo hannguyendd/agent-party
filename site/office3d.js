@@ -22,6 +22,9 @@ const css = `
 .ap3-tag.me { background: #D9663F; color: #fff; box-shadow: none; }
 .ap3-bubble { position: absolute; left: 0; top: 0; background: #fff; border-radius: 10px; padding: 6px 8px; box-shadow: 0 0 0 1.5px #332C4A, 0 3px 0 rgba(51, 44, 74, .2); opacity: 0; transition: opacity .2s; will-change: transform; }
 .ap3-bubble.on { opacity: 1; }
+.ap3-bubble .say { display: none; }
+.ap3-bubble.text i { display: none; }
+.ap3-bubble.text .say { display: block; width: max-content; max-width: 15em; white-space: normal; text-align: center; font: 700 calc(var(--tag, 11px) + 1px)/1.3 Nunito, system-ui, sans-serif; color: #332C4A; }
 .ap3-bubble i { display: block; width: 24px; height: 6px; background: url(office/ui/typing.png) 0 0 / 72px 6px; image-rendering: pixelated; animation: dots .9s steps(3) infinite; }
 .ap3 canvas.grabbing { cursor: grabbing; }
 `;
@@ -173,7 +176,7 @@ export async function mount(host, office, opts) {
     g.animations.forEach((c) => { clips[c.name] = mixer.clipAction(c); });
     const height = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3()).y || 1.6;
     const tag = document.createElement('span'); tag.className = 'ap3-tag' + (a.isPlayer ? ' me' : ''); tag.textContent = a.label || a.id; tag.style.setProperty('--c', a.c);
-    const bub = document.createElement('span'); bub.className = 'ap3-bubble'; bub.innerHTML = '<i></i>';
+    const bub = document.createElement('span'); bub.className = 'ap3-bubble'; bub.innerHTML = '<i></i><span class="say"></span>';
     labels.append(tag, bub);
     return { a, obj, mixer, clips, current: null, height, tag, bub, yaw: FACE[a.face] || 0 };
   });
@@ -318,8 +321,9 @@ export async function mount(host, office, opts) {
           act.tag.style.transform = `translate(${sx}px, ${sy}px) translate(-50%, -100%)`;
           act.bub.style.transform = `translate(${sx}px, ${sy - 22}px) translate(-50%, -100%)`;
         }
-        const bubble = !!a.bubble;
+        const bubble = !!a.bubble, line = a.line || '';
         if (bubble !== act.bubble) { act.bubble = bubble; act.bub.classList.toggle('on', bubble); }
+        if (line !== act.line) { act.line = line; act.bub.lastChild.textContent = line; act.bub.classList.toggle('text', !!line); }
       });
       renderer.render(scene, cam);
     },

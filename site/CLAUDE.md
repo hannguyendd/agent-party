@@ -18,7 +18,8 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 - `office.js`: the demo simulation, exposed as `window.AgentParty.start()`. `officeSim` holds 12 made-up agents
   (nicknames like Segfault, Flexbox, Root, with a role each) seated at real seats from `seats.json`; they walk to
   each other with A* over `collision.png`, talk in typing dots, take coffee breaks, and go back. The visitor's
-  character (`You`) spawns at the door on the first WASD key or floor click; `E` says hi to the agent in reach.
+  character (`You`) spawns at the door on the first WASD key or floor click; `E` next to an agent makes it say one
+  of its `lines` (three per agent, in character) in a speech bubble, and `E` again gets the next one.
   `mapView` draws the map and sprites with DOM elements. `addView()` lets another renderer follow the same sim.
 - `office3d.js`: the real 3D view (ES module, three.js r160 from jsDelivr through the import map in `index.html`),
   loaded on first use of the 3D switch. It reads `office/3d/models3d.json` and `layout3d.json`, instances every
@@ -61,6 +62,8 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 - Models load 6 at a time with one retry (a burst of 100+ requests resets simple local servers).
 - **Links**: Play now goes to the README's `#install`; GitHub and Star to the repo. If the repo moves, change
   `REPO` in `app.js` and the links in `index.html` (and the URL in `.github/workflows/pages.yml`, the README and here).
+- **The side panel scales with its own width** (container queries in `style.css`): on wide screens the text grows
+  and the lists spread into rows instead of leaving the right half empty.
 - English copy, playful but plain. Reduced motion: every animation has a static fallback; keep it that way.
 
 ## Preview and publish

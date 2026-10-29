@@ -117,6 +117,15 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 @keyframes me { 50% { scale: 1.25; opacity: .45; } }
 .ap-bubble { position: absolute; bottom: calc(100% + var(--tag, 11px) * 1.9); left: 50%; translate: -50% 0; background: #fff; border-radius: 10px; padding: 6px 8px; box-shadow: 0 0 0 1.5px var(--ink), 0 3px 0 rgba(51, 44, 74, .2); opacity: 0; scale: .5; transition-property: opacity, scale; transition-duration: .2s; transition-timing-function: cubic-bezier(.2, 0, 0, 1); }
 .ap-bubble.on { opacity: 1; scale: 1; }
+/* a spoken line (press E next to an agent) replaces the typing dots */
+.ap-bubble .say { display: none; }
+.ap-bubble.text { padding: 7px 11px; z-index: 5; }
+.ap-bubble.text i { display: none; }
+.ap-bubble.text .say { display: block; width: max-content; max-width: 15em; white-space: normal; text-align: center; font: 700 calc(var(--tag, 11px) + 1px)/1.3 var(--body); color: var(--ink); }
+/* while the 3D office builds, the map dims behind the progress pill and the invitation steps aside */
+#office { transition-property: opacity, filter; }
+.mapfit.building #office { opacity: .45; filter: blur(3px) saturate(.8); }
+.mapfit.building .invite, .mapfit.building .hint { opacity: 0; pointer-events: none; }
 .ap-bubble i, .dots { display: block; width: 24px; height: 6px; background: url(office/ui/typing.png) 0 0 / 72px 6px; image-rendering: pixelated; animation: dots .9s steps(3) infinite; }
 @keyframes dots { to { background-position-x: -72px; } }
 
@@ -239,4 +248,31 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
   .word span, .intro.loading .word span { animation: none; opacity: 1; translate: 0 0; }
   .walker { translate: calc(var(--i) * 14vw + 6vw) 0; }
   .intro, .intro.done .word span, .intro .enter, .word, .intro .line, .intro .logo { transition: none; }
+}
+
+/* A wide side panel (big screens): the text grows with the panel and the lists spread across it instead of
+   leaving the right half empty. Container units follow the panel's own width. */
+.panel { container-type: inline-size; }
+@container (min-width: 560px) {
+  .panel-body { gap: clamp(28px, 4cqi, 48px); }
+  .pitch { gap: 18px; }
+  .pitch h1 { font-size: clamp(44px, min(9cqi, 8vh), 88px); }
+  .pitch .lede { font-size: clamp(17px, 2.5cqi, 22px); max-width: 44ch; }
+  .play { min-height: 58px; padding: 0 32px 0 26px; font-size: 20px; }
+  .panel h2 { font-size: 18px; margin-bottom: 14px; }
+  .feats { gap: 12px; }
+  .feats li { padding: 14px 16px; grid-template-columns: 44px 1fr; align-items: center; }
+  .feats .ic { width: 44px; height: 44px; }
+  .feats b { font-size: 17px; }
+  .feats div span { display: block; font-size: 14px; }
+  .rules { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .rules li { grid-template-columns: 1fr; align-items: start; gap: 8px; padding: 14px; border-radius: 16px; background: var(--paper-2); }
+  .rules .ic { width: 40px; height: 40px; background: var(--paper); }
+  .rules .ic img { width: 32px; height: 32px; }
+  .rules b { font-size: 16px; }
+  .rules div span { display: block; margin: 2px 0 0; font-size: 13.5px; }
+}
+@container (min-width: 760px) {
+  .feats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .feats li { grid-template-columns: 1fr; align-items: start; }
 }

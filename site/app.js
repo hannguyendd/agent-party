@@ -180,13 +180,13 @@
       b3.setAttribute('aria-pressed', m === '3d');
       store.set(VIEW_KEY, m);
       if (m === '2d') {
-        loading.el.hidden = true;
+        loading.el.hidden = true; fit.classList.remove('building');
         fade(function () { view.setTilt(false); fit.classList.remove('real3d'); if (view3d) view3d.setActive(false); });
         return;
       }
-      if (!view3d) loading.el.hidden = false;
+      if (!view3d) { loading.el.hidden = false; fit.classList.add('building'); }
       build3d().then(function (v) {
-        loading.el.hidden = true;
+        loading.el.hidden = true; fit.classList.remove('building');
         if (mode !== '3d') return;
         fade(function () {
           reset2d();
@@ -303,7 +303,7 @@
       else if (type === 'talk') gossip(b(a.id) + ' and ' + b(other.id) + ' are talking in dots');
       else if (type === 'stroll') gossip(b(a.id) + ' ' + BREAKS[Math.floor(Math.random() * BREAKS.length)]);
       else if (type === 'spawn') { gossip(b('You') + ' walked in. Everyone pretended not to notice'); tipUntil = Date.now() + 6000; }
-      else if (type === 'hi') gossip(b('You') + ' said hi to ' + b(other.id));
+      else if (type === 'hi') gossip(b(other.id) + ' told ' + b('you') + ': \u201c' + other.line + '\u201d');
     });
     gossip(b('Cron') + ' tried to schedule a standup. ' + b('Root') + ' said no');
 
@@ -332,7 +332,7 @@
       if (ago !== last.ago) { last.ago = ago; el.when.textContent = ago; }
       if (last.invite !== sim.player.active) { last.invite = sim.player.active; el.invite.classList.toggle('gone', sim.player.active); }
       var near = sim.nearby(), hint = '';
-      if (sim.player.hiWith) hint = 'Chatting with ' + sim.player.hiWith.id;
+      if (sim.player.hiWith) hint = 'Press <kbd>E</kbd> again for more from ' + sim.player.hiWith.id;
       else if (near && !sim.canChat(near)) hint = near.id + ' is busy chatting. Try someone else';
       else if (near) hint = 'Press <kbd>E</kbd> to say hi to ' + near.id;
       else if (sim.player.active && Date.now() < tipUntil) hint = 'Nice! Walk up to an agent and press <kbd>E</kbd>';

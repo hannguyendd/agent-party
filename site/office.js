@@ -8,25 +8,25 @@
 
   // One agent per kind of work in the company; names only a programmer would pick.
   var AGENTS = [
-    { id: 'Root', role: 'The boss. Has every permission there is', skin: 'knight', c: '#3D5BA9', seat: 'MGR' },
-    { id: 'Cron', role: 'Manager. Schedules everything, always on time', skin: 'healer', c: '#8A9A3B', seat: 'D15' },
-    { id: 'Backlog', role: 'Product. Owns the roadmap and the sticky notes', skin: 'lead', c: '#B04A5A', seat: 'M2' },
-    { id: 'Segfault', role: 'Backend. Talks to databases at 3am', skin: 'dev-hoodie', c: '#E67E5A', seat: 'D3' },
-    { id: 'Flexbox', role: 'Frontend. Centers divs with dark magic', skin: 'mage', c: '#7A6BC2', seat: 'D6' },
-    { id: 'HotReload', role: 'Mobile. Ships to both app stores', skin: 'shiba', c: '#2F8FA0', seat: 'D10' },
-    { id: 'Prefab', role: 'Unity. Builds whole worlds before lunch', skin: 'dragon', c: '#C9772E', seat: 'D12' },
-    { id: 'Sudo', role: 'DevOps. Keeps the servers breathing', skin: 'robot', c: '#56657A', seat: 'M1' },
-    { id: 'Pixel', role: 'Design. Moves things 2px to the left', skin: 'designer', c: '#D0679B', seat: 'D2' },
-    { id: 'Edgecase', role: 'QA. Finds the bug you swore was fixed', skin: 'cat', c: '#3E9E6E', seat: 'D7' },
-    { id: 'Handshake', role: 'HR. Says hello to everyone first', skin: 'slime', c: '#E0A21B', seat: 'D14' },
-    { id: 'Chmod', role: 'Admin. Hands out the keys (and the forms)', skin: 'rogue', c: '#7B5A44', seat: 'D1' }
+    { id: 'Root', role: 'The boss. Has every permission there is', skin: 'knight', c: '#3D5BA9', seat: 'MGR', lines: ["Ship it.", "Who approved this? Oh. Me.", "My door is always open. The repo isn't."] },
+    { id: 'Cron', role: 'Manager. Schedules everything, always on time', skin: 'healer', c: '#8A9A3B', seat: 'D15', lines: ["Let's circle back at 0 */2 * * *.", "Is this blocked, or just asleep?", "I booked a meeting to cancel meetings."] },
+    { id: 'Backlog', role: 'Product. Owns the roadmap and the sticky notes', skin: 'lead', c: '#B04A5A', seat: 'M2', lines: ["Can we make it pop?", "Great idea. Pencilled in for Q7.", "As a user, I want it yesterday."] },
+    { id: 'Segfault', role: 'Backend. Talks to databases at 3am', skin: 'dev-hoodie', c: '#E67E5A', seat: 'D3', lines: ["It works on my machine.", "Have you tried turning it off and on again?", "Not a bug. Undefined behaviour."] },
+    { id: 'Flexbox', role: 'Frontend. Centers divs with dark magic', skin: 'mage', c: '#7A6BC2', seat: 'D6', lines: ["I centred a div today. Ask me anything.", "It's fine in Chrome.", "justify-content: chill;"] },
+    { id: 'HotReload', role: 'Mobile. Ships to both app stores', skin: 'shiba', c: '#2F8FA0', seat: 'D10', lines: ["App Store review, day 3.", "Did you clear the cache? On both platforms?", "Saved. Reloaded. Still broken."] },
+    { id: 'Prefab', role: 'Unity. Builds whole worlds before lunch', skin: 'dragon', c: '#C9772E', seat: 'D12', lines: ["I built a whole world. The button still doesn't work.", "Physics says no.", "Rendering... 99%."] },
+    { id: 'Sudo', role: 'DevOps. Keeps the servers breathing', skin: 'robot', c: '#56657A', seat: 'M1', lines: ["Checked the logs. They're on fire.", "Deploying on a Friday? Bold.", "Permission granted. Temporarily."] },
+    { id: 'Pixel', role: 'Design. Moves things 2px to the left', skin: 'designer', c: '#D0679B', seat: 'D2', lines: ["Can we move it 2px to the left?", "That's not my blue.", "Love it. Now make it 20% friendlier."] },
+    { id: 'Edgecase', role: 'QA. Finds the bug you swore was fixed', skin: 'cat', c: '#3E9E6E', seat: 'D7', lines: ["I typed an emoji in the phone number field.", "What happens if I click it 47 times?", "Found a bug. Then its cousin."] },
+    { id: 'Handshake', role: 'HR. Says hello to everyone first', skin: 'slime', c: '#E0A21B', seat: 'D14', lines: ["Drink some water!", "Your vacation days miss you.", "Team lunch at noon. Mandatory fun."] },
+    { id: 'Chmod', role: 'Admin. Hands out the keys (and the forms)', skin: 'rogue', c: '#7B5A44', seat: 'D1', lines: ["Who has the meeting room key?", "Please fill in form 7B. In triplicate.", "Access granted. Don't make me regret it."] }
   ];
   var PLAYER = { id: 'you', label: 'You', skin: 'alien', c: '#D9663F' };
   var SPAWN = [19, 6]; // just inside the entrance door
   // Places agents sometimes wander to: pantry, lounge, window, printer corner.
   var SPOTS = [[44, 9], [36, 14], [30, 7], [12, 28], [48, 30]];
   var SPEED = 2.6, PLAYER_SPEED = 4.2; // tiles per second
-  var TALK_S = 4.6, STAND_S = 2.6, HI_S = 4.2, REACH = 2.4;
+  var TALK_S = 4.6, STAND_S = 2.6, HI_S = 5.5, REACH = 2.4;
 
   function loadImage(src) {
     return new Promise(function (ok, bad) { var i = new Image(); i.onload = function () { ok(i); }; i.onerror = bad; i.src = src; });
@@ -233,8 +233,7 @@
     if (b) {
       if (this.t > p.hiUntil || Math.hypot(b.x - p.x, b.y - p.y) > REACH + 1) this.endHi();
       else {
-        var mine = Math.floor((this.t - p.hiSince) / 1.1) % 2 === 0;
-        p.bubble = mine; b.bubble = !mine;
+        p.bubble = false; b.bubble = true; // the agent's line shows in its bubble
         if (p.mode === 'stand') p.face = faceTo(p, b);
         if (b.mode !== 'sit') b.face = faceTo(b, p);
       }
@@ -252,11 +251,14 @@
   };
   // Agents already talking to another agent finish that first.
   officeSim.prototype.canChat = function (b) { return !!b && (b.withPlayer || (b.mode !== 'talk' && !b.busy)); };
+  // E: the agent next to you says one of its lines in a speech bubble; E again gets the next one.
   officeSim.prototype.sayHi = function () {
     var p = this.player, b = this.nearby();
-    if (!b || p.hiWith || !this.canChat(b)) return null;
+    if (!b || (p.hiWith && p.hiWith !== b) || (!p.hiWith && !this.canChat(b))) return null;
     p.hiWith = b; p.hiSince = this.t; p.hiUntil = this.t + HI_S;
     b.busy = true; b.withPlayer = true; b.face = faceTo(b, p);
+    b.lineAt = b.lineAt == null ? Math.floor(Math.random() * b.lines.length) : (b.lineAt + 1) % b.lines.length;
+    b.line = b.lines[b.lineAt];
     if (b.mode === 'stand') b.until = Math.max(b.until, p.hiUntil);
     this.emit('hi', p, b);
     return b;
@@ -264,7 +266,7 @@
   officeSim.prototype.endHi = function () {
     var p = this.player, b = p.hiWith;
     if (!b) return;
-    p.bubble = false; b.bubble = false; b.busy = false; b.withPlayer = false; p.hiWith = null;
+    p.bubble = false; b.bubble = false; b.busy = false; b.withPlayer = false; b.line = ''; p.hiWith = null;
   };
   officeSim.prototype.walkPlayerTo = function (tx, ty) {
     var o = this.nearestOpen(tx, ty), p = this.player;
@@ -287,9 +289,9 @@
       n.style.setProperty('--c', a.c);
       n.style.width = (48 / MAP_W * 100) + '%';
       n.innerHTML = '<span class="ap-ring"></span><span class="ap-sp" style="background-image:url(' + BASE + 'characters48/' + a.skin + '.png)"></span>' +
-        '<span class="ap-tag">' + (a.label || a.id) + '</span><span class="ap-bubble" aria-hidden="true"><i></i></span>';
+        '<span class="ap-tag">' + (a.label || a.id) + '</span><span class="ap-bubble" aria-hidden="true"><i></i><span class="say"></span></span>';
       map.appendChild(n);
-      return { el: n, sp: n.children[1], bb: n.children[3] };
+      return { el: n, sp: n.children[1], bb: n.children[3], say: n.children[3].lastChild };
     });
     var size = function () { el.style.setProperty('--tag', Math.max(9, Math.min(13, el.clientWidth / 95)) + 'px'); };
     size();
@@ -326,8 +328,9 @@
       if (flip !== o.flip) { o.flip = flip; o.sp.style.transform = flip ? 'scaleX(-1)' : ''; }
       var lift = a.mode === 'talk' || !!a.hiWith;
       if (lift !== o.lift) { o.lift = lift; o.el.classList.toggle('lift', lift); }
-      var bubble = !!a.bubble;
+      var bubble = !!a.bubble, line = a.line || '';
       if (bubble !== o.bubble) { o.bubble = bubble; o.bb.classList.toggle('on', bubble); }
+      if (line !== o.line) { o.line = line; o.say.textContent = line; o.bb.classList.toggle('text', !!line); }
     }
   };
 
