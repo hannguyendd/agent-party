@@ -17,12 +17,12 @@ needs code goes to `design/office-style/REQUESTS.md`, as with the 2D art.
 | Rule | Value |
 |---|---|
 | Room scale | **×1.7** of the original contract: seat top 0.85, desk top 1.26 (desk-top items at 1.26), perimeter walls 5.1, door openings ~3.65, frosted Manager Room 4.35, wall decor bottom ≥2.8 unless ≤0.06 deep. Floor tiles, rugs, mats and sun patches stay tile-sized |
-| Characters | the 16 skins, height 2.2–2.55 (≈2.38), width ≤1.6, built from each 2D sprite (`characters48/<id>.png`) by `src/chars-build.ts`: smooth lofted shapes, sprite detail on the front/back only, flat region colours elsewhere, own texture `palette-characters.png`. Checked by `src/chars-validate.ts` (contract + silhouette IoU ≥0.80 front / ≥0.70 side) |
+| Characters | the 16 skins, height 2.2–2.55 (≈2.38), width ≤1.6, built from each 2D sprite (`characters48/<id>.png`) by `src/chars-build.ts`: smooth lofted shapes, sprite detail on the front/back only, flat region colours elsewhere, own texture `palette-characters.png`; each GLB embeds only its own band of it (`src/chars-crop-texture.ts`, run by chars-build) so no texture exceeds 4096 px and browsers don't hold 16 copies. Checked by `src/chars-validate.ts` (contract + silhouette IoU ≥0.80 front / ≥0.70 side) |
 | Furniture | Kenney Furniture Kit (CC0, `vendor/kenney/` with its LICENSE) converted onto our ids and the shared pastel `palette.png` by the Part G pipeline; our own model where Kenney has none. Walls, doors, window wall, glass room, floor and rugs are ours |
-| Workstations | own desk per seat, monitor 1.9–2.3 tiles in front of the seat on its axis; facing desks touch back to back, no spine or connector |
+| Workstations | own working area per seat, monitor 1.9–2.3 tiles in front of the seat on its axis; desk modules ~2.2 tiles (1.4–1.6 m) butted together along each row and back to back across it, covering the whole blocked bank (Part G3); no spine or connector |
 | Camera (code) | orthographic, ~35° (0.62 rad) elevation, quarter turns; walls whose outside faces the camera drop low |
 | Outputs | `dashboard/public/office/3d/` + `models3d.json` (the manifest points at it; no hand merge) |
-| Rebuild | `bun src/g2/build.ts && bun src/chars-build.ts`, then `bun src/g2/validate.ts && bun src/chars-validate.ts` |
+| Rebuild | furniture per REPORT.md (Part G3), `bun src/chars-build.ts`, then `bun src/validate.ts && bun src/chars-validate.ts` |
 | Map | collision.png, seats.json and the 2D plate are shared with the 2D look: never add obstacles; changing the room changes plate + collision + seats + layout3d together |
 
 ---
