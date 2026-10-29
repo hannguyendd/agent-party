@@ -1,6 +1,6 @@
 [project]
 name = "agentfleet-node"
-version = "0.3.0"
+version = "0.3.1"
 description = "Agent Mesh node server: runs Claude agents, speaks A2A over Agent Mesh, serves the owner dashboard"
 readme = "README.md"
 authors = [
