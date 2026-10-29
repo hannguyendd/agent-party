@@ -1,3 +1,4 @@
+import mimetypes
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -30,6 +31,20 @@ from agentfleet_node.notifications import NotificationService
 # and carries the built dashboard in agentfleet_node/static instead (`make bundle`).
 _REPO_DIST = Path(__file__).resolve().parents[3] / "dashboard" / "dist"
 DASHBOARD_DIST = _REPO_DIST if (_REPO_DIST / "index.html").is_file() else Path(__file__).resolve().parent / "static"
+
+# StaticFiles takes types from `mimetypes`, which on Windows reads the registry: a machine where some program set
+# .js to text/plain gets a blank dashboard (browsers refuse module scripts that aren't JavaScript). Pin the types.
+DASHBOARD_TYPES = {".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".html": "text/html",
+                   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
+                   ".glb": "model/gltf-binary", ".wasm": "application/wasm"}
+
+
+def pin_dashboard_types() -> None:
+    for ext, media_type in DASHBOARD_TYPES.items():
+        mimetypes.add_type(media_type, ext)
+
+
+pin_dashboard_types()
 
 
 @dataclass
