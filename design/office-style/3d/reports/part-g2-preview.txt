@@ -1,0 +1,13 @@
+$ bun src/preview.ts
+render G2/full-office-000
+render G2/full-office-090
+render G2/full-office-180
+render G2/full-office-270
+render G2/left-bank-closeup
+render G2/bottom-bench-closeup
+render G2/m1-m2-closeup
+render G2/pantry-closeup
+render G2/manager-room-closeup
+render G2/entrance-person-closeup
+Part G2 report + inventory regenerated.
+PASS G2 furniture previews; character status: pass

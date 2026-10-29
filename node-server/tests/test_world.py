@@ -41,6 +41,8 @@ def test_desk_claims_are_exclusive_and_one_per_owner():
         w.claim_desk("bob", "D1")
     w.claim_desk("han", "M2")  # moving desks releases the old one
     assert w.desks == {"M2": "han"}
+    w.claim_desk("han", "HR")  # the HR desk by the entrance is a desk like the others
+    assert w.desks == {"HR": "han"}
     with pytest.raises(ValueError):
         w.claim_desk("bob", "Z9")
 

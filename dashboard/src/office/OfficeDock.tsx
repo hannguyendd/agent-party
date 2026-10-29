@@ -28,6 +28,8 @@ interface Props {
   onNotification: (n: AppNotification) => void
   onZoom: (factor: number) => void
   onFit: () => void
+  /** Present only when the look can turn its camera (3D). */
+  onRotate?: (step: number) => void
 }
 
 export function OfficeDock(p: Props) {
@@ -80,6 +82,10 @@ export function OfficeDock(p: Props) {
           <button aria-label="Zoom out" title="Zoom out" onClick={() => p.onZoom(0.85)}>−</button>
           <button aria-label="Fit office" title="Fit the whole office" onClick={p.onFit}><Icon name="fit" /></button>
           <button aria-label="Zoom in" title="Zoom in" onClick={() => p.onZoom(1.15)}>+</button>
+          {p.onRotate && <>
+            <button aria-label="Turn left" title="Turn the view left ( [ )" onClick={() => p.onRotate?.(-1)}>⟲</button>
+            <button aria-label="Turn right" title="Turn the view right ( ] )" onClick={() => p.onRotate?.(1)}>⟳</button>
+          </>}
         </div>
       </div>
 

@@ -51,3 +51,24 @@ Owner request (2026-10-28): staff can pick the Manager Room as their desk. No ne
 behind the large desk is the seat. `seats.json` has a 19th entry `MGR` (seat (51, 21), facing down, extras (50, 21),
 (52, 21), (51, 20)); `collision.png` marks (51, 21) red. `export-map.py` reproduces both. Code: `MGR` in world.py
 `DESKS`. Desk count is now 19.
+
+## Part D shared-map correction: manager-room extension and HR seat
+
+Owner-authorized for `feat/office-3d`, in this worktree only. The manager room now reaches the south exterior wall at row 34. Its west partition remains x=40, with the original doorway at rows 15–16; it continues through rows 29–33. The old south partition at row 28, x=41..53, is walkable floor. MGR and all previous seat records are unchanged.
+
+Collision changes (34 tiles total):
+
+- Make `(41..53,28)` walkable (13 tiles).
+- Block `(40,29..33)` for the continuing partition (5 tiles).
+- Block `(48..50,29..30)` for the lounge table, `(48..50,31..32)` for the second sofa, and `(52,32)` for its plant (13 furniture tiles).
+- Make `(14,4)` and `(14,5)` walkable for the HR entry gap, and mark `(13,4)` red as seat HR (3 tiles).
+
+`office/map/seats.json` now has **20** entries. The new record is:
+
+```json
+{"id":"HR","seat":{"x":13,"y":4},"face":"down","extras":[{"x":14,"y":4},{"x":14,"y":5},{"x":15,"y":4}]}
+```
+
+App-owner integration: recognize HR in the server/default desk lists and seat picker if not already handled. HR sits behind the shortened reception desk, facing south. The 3D desk and monitor fronts face north; the chair is the standard nonblocking seat-chair exception. The 2D chair, monitor, left plant and window frame are pixel-identical; the right desk end was shortened and its plant/mug relocated.
+
+The scoped, reproducible export remains `python3 design/office-style/C/map/export-map.py`; it dispatches to `design/office-style/3d/src/map-export.ts` and does not edit manifest.json. It preserves unrelated 2D pixels, the existing 32-color palette, binary foreground alpha, and uses the original nearest-neighbour / 50% recipe for collision@16x.png. Before/after/diff reviews are in `design/office-style/3d/previews/map-before-after-diff.png` and `hr-before-after-diff.png`. Exact changes and validation evidence are in that package's reports.

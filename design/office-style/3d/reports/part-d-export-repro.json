@@ -1,0 +1,13 @@
+{
+  "command": "python3 design/office-style/C/map/export-map.py",
+  "identical": true,
+  "differences": [],
+  "sharedManifestUnchanged": true,
+  "sha256": {
+    "background.png": "46b03953306e3a73ddda54c0f2475147d626ef566fdbfa19df2391ff0eb34ea1",
+    "foreground.png": "f698863dfe8e469d49dd920f143826bc5548fbb1e2e72b958c7f3535dd2168f5",
+    "collision.png": "bbf25bc5530ebc134632108df4538439121abea48c8db3eea7ba0fcaefc3a3f4",
+    "collision@16x.png": "f6ce1203d0d9360f27eb4595ccfb1ef00b820e24df7e2f324f52a6f6b1bb5a74",
+    "seats.json": "cb4b631d346f487d680ae9c870df8205ebc0a402798a79a62c72c7922b96a1fd"
+  }
+}

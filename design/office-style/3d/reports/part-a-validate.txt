@@ -1,0 +1,17 @@
+lead bounds: height 1.500, width 0.770; hierarchy + 8 loopable clips PASS
+PASS characters/lead.glb: 2488 / 3000 triangles
+PASS props/desk.glb: 444 / 1500 triangles
+PASS props/monitor-dual.glb: 292 / 1500 triangles
+PASS props/monitor-arm.glb: 244 / 300 triangles
+PASS props/keyboard.glb: 192 / 300 triangles
+PASS props/office-chair.glb: 1256 / 1500 triangles
+PASS props/pc-tower.glb: 348 / 1500 triangles
+PASS props/desk-plant.glb: 300 / 300 triangles
+PASS props/mug.glb: 184 / 300 triangles
+PASS kit/floor-tile.glb: 480 / 1500 triangles
+PASS kit/wall-straight.glb: 108 / 1500 triangles
+PASS kit/wall-blind.glb: 300 / 1500 triangles
+PASS kit/wall-column.glb: 108 / 1500 triangles
+PASS kit/wall-corner.glb: 216 / 1500 triangles
+PASS 14 models; embedded textures, palette UVs, materials, axes/origins, dimensions, budgets, lead hierarchy and loop endpoints.
+PASS style-scene: 4 chairs face their desks; monitor fronts oppose chair fronts.

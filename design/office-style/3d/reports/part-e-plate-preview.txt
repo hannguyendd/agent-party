@@ -1,0 +1,9 @@
+full-office 90
+full-office 180
+full-office 270
+topdown overlay
+closeup entrance-door-closeup
+closeup entrance-door-open
+closeup manager-room-closeup
+closeup hr-desk-closeup
+PASS plate preview refresh

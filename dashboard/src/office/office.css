@@ -200,6 +200,45 @@
 }
 .office-canvas { width: 100%; height: 100%; outline: none; }
 .office-canvas canvas { display: block; image-rendering: pixelated; }
+.office-canvas canvas { transition: opacity .35s ease; }
+.office-canvas.is-switching canvas { opacity: 0; }
+/* Switching looks: a loading pill in the middle of the map, like the site's 3D loader. */
+.office-switching {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 4; display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px; border-radius: 999px; background: var(--o-panel); color: var(--o-ink); font: 600 15px var(--o-pixel);
+  box-shadow: 0 4px 0 var(--o-soft-line), 0 20px 40px -20px rgba(80, 50, 90, .45); animation: o-switch-in .2s ease-out;
+}
+.office-switching-dots { width: 22px; height: 8px; background: radial-gradient(circle, #d9663f 3px, transparent 3.5px) 0 50% / 8px 100% repeat-x; animation: o3d-dots 0.9s steps(3) infinite; }
+.office-switching-bar { width: 80px; height: 6px; border-radius: 999px; background: var(--o-panel-2); overflow: hidden; }
+.office-switching-bar i { display: block; height: 100%; background: #d9663f; border-radius: inherit; transition: width .2s; }
+@keyframes o-switch-in { from { opacity: 0; scale: .92; } to { opacity: 1; scale: 1; } }
+@media (prefers-reduced-motion: reduce) { .office-switching, .office-switching-dots { animation: none; } }
+.office-canvas canvas.o3d-canvas { image-rendering: auto; }
+/* 3D look (ADR 0004): names, status icons and bubbles are HTML over the WebGL canvas. */
+.o3d-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.o3d-tag { position: absolute; left: 0; top: 0; display: grid; justify-items: center; gap: 3px; will-change: transform; }
+.o3d-name {
+  display: flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 5px; white-space: nowrap;
+  font: 800 12px/1.4 Nunito, ui-sans-serif, system-ui; color: #fdf3e6; background: color-mix(in srgb, var(--o-line) 93%, transparent);
+}
+.o3d-tag.is-selected .o3d-name { outline: 2px solid var(--o-panel); }
+.o3d-desk {
+  position: absolute; left: 0; top: 0; padding: 0 5px; border-radius: 4px; white-space: nowrap;
+  font: 800 11px/1.5 Nunito, ui-sans-serif, system-ui; color: var(--o-line); opacity: 0.5;
+}
+.o3d-desk[data-look='taken'] { color: #2f5a44; opacity: 0.75; }
+.o3d-desk[data-look='mine'] { opacity: 1; color: #4a2412; background: var(--o-peach); border: 1.5px solid #8a4a2c; }
+.o3d-desk[data-look='pick'] { opacity: 1; color: #2f5a22; background: #d9f2c9; border: 1.5px solid #70a65b; }
+.o3d-bubble {
+  max-width: 180px; padding: 4px 8px; border: 2px solid var(--o-line); border-radius: 10px; background: var(--o-panel);
+  font: 700 12px/1.3 Nunito, ui-sans-serif, system-ui; color: var(--o-ink);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.o3d-bubble.is-typing { width: 34px; height: 12px; padding: 4px 6px; background:
+  radial-gradient(circle, var(--o-muted) 3px, transparent 3.5px) 0 50% / 11px 100% repeat-x, var(--o-panel);
+  animation: o3d-dots 1s steps(3) infinite; }
+@keyframes o3d-dots { from { background-position: 0 50%, 0 0; } to { background-position: 33px 50%, 0 0; } }
+@media (prefers-reduced-motion: reduce) { .o3d-bubble.is-typing { animation: none; } }
 .office-loading {
   position: absolute; inset: 0; display: grid; place-items: center;
   font-family: var(--o-pixel); font-size: 20px; color: var(--o-muted); background: var(--o-stage);
@@ -369,6 +408,17 @@
 .office-chat small { display: block; font-size: 11px; color: var(--o-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .office-logo { color: inherit; cursor: pointer; }
+/* Brand as on the Party Agent site: "Agent" in the accent colour (lighter here for the dark bar). */
+.office-brand { font-family: var(--o-pixel); font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.office-brand em { font-style: normal; color: #ff9f6e; }
+.office-org { margin-left: 4px; padding: 3px 8px; border-radius: 999px; font: 700 11px var(--o-body); color: #d9d4ff; background: #ffffff1a; }
+/* The 2D / 3D switch: a pill like the site's view switch, the active look in ink. */
+.office-look { display: inline-flex; align-items: center; padding: 3px; gap: 2px; border-radius: 999px; background: #fff7ee; box-shadow: 0 2px 0 #1c1940; }
+.office-look button { min-width: 44px; height: 28px; padding: 0 12px; border-radius: 999px; font: 600 14px var(--o-pixel); color: #5e5878; cursor: pointer; transition: background-color .2s, color .2s, scale .15s; }
+.office-look button:active { scale: .96; }
+.office-look button:hover:not(:disabled):not([aria-checked='true']) { color: #332c4a; }
+.office-look button[aria-checked='true'] { background: #332c4a; color: #fff7ee; }
+.office-look button:disabled { opacity: .45; cursor: not-allowed; }
 
 .office-bell {
   position: relative; display: inline-grid; place-items: center; width: 34px; height: 30px; cursor: pointer;
@@ -449,6 +499,15 @@
 .settings-warn { margin-top: 12px; display: flex; align-items: center; gap: 12px; justify-content: space-between; padding: 8px 10px; font-size: 12px; background: #fef3c7; color: #6b4e16; border: 2px solid var(--o-line); border-radius: 6px; }
 .settings-error { margin-top: 8px; font-size: 12px; color: var(--o-coral); }
 .settings-actions { margin-top: 14px; display: flex; gap: 8px; }
+.settings-looks { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.settings-looks button {
+  display: grid; gap: 4px; text-align: left; padding: 12px 14px; border: 2px solid var(--o-soft-line); border-radius: 8px;
+  background: var(--o-panel); color: var(--o-ink); cursor: pointer;
+}
+.settings-looks button strong { font-size: 14px; }
+.settings-looks button small { font-size: 12px; color: var(--o-muted); line-height: 1.5; }
+.settings-looks button.is-active { border-color: var(--o-accent); background: var(--o-ok-bg); }
+.settings-looks button:disabled { opacity: 0.55; cursor: not-allowed; }
 .settings-directory > div { max-width: none !important; padding: 0 !important; }
 @media (max-width: 900px) {
   .settings-body { flex-direction: column; overflow-y: auto; }
@@ -1444,6 +1503,7 @@ button.dock-pill:hover { border-color: var(--o-line); }
   .office-roster { max-height: none !important; overflow: visible; }
   .office-appbar { gap: 8px; padding: 8px 10px; }
   .office-logo { font-size: 0; gap: 0; }
+  .office-brand, .office-org { display: none; }
   .office-nav { margin-left: 0; }
   .office-health { font-size: 0 !important; gap: 0 !important; padding: 6px !important; }
   .office-me span { display: none; }

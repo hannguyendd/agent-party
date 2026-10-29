@@ -18,7 +18,7 @@ const OfficeView = lazy(() => import('./office/OfficeView'))
 
 /** Side-column tab on the Office screen. */
 export type SideTab = 'agents' | 'chats' | 'approvals'
-export type SettingsSection = 'agents' | 'mesh' | 'notifications' | 'computer'
+export type SettingsSection = 'agents' | 'mesh' | 'notifications' | 'look' | 'computer'
 
 /** Three screens: the Office, where all daily work happens; History, every past conversation in full; and
  *  Settings for configuration. `conv` opens that conversation. */
@@ -48,7 +48,7 @@ export default function App() {
   // The tab title and icon count what waits: unread notifications, or pending approvals if more.
   const unread = state.notifications.filter((n) => !n.read).length
   const pendingCount = Object.values(state.approvals).filter((a) => a.status === 'pending').length
-  useTabBadge(org ? `${org} Office` : 'Agent Mesh', Math.max(unread, pendingCount))
+  useTabBadge(org ? `${org} Office · Party Agent` : 'Party Agent', Math.max(unread, pendingCount))
   const onSetupSaved = (s: SetupState) => {
     if (!setup?.configured) setJustJoined(true)
     setSetup(s)

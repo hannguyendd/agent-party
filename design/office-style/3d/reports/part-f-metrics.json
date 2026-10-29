@@ -1,0 +1,343 @@
+{
+  "models": 138,
+  "newModels": [
+    "workstation-desk",
+    "workstation-desk-compact",
+    "monitor-compact",
+    "keyboard-compact",
+    "mouse-compact",
+    "spine-left",
+    "spine-middle",
+    "spine-bench",
+    "meeting-table",
+    "meeting-chair-mint",
+    "meeting-chair-lavender",
+    "office-chair-lavender",
+    "rug-meeting-corner"
+  ],
+  "uncoveredBefore": 169,
+  "uncoveredAfter": 137,
+  "allowed": 137,
+  "wallDecor": 46,
+  "deskItems": {
+    "D1": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D2": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D3": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D4": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D5": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D6": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D7": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D8": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D9": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D10": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D11": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D12": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D13": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D14": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D15": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D16": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "M1": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "M2": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "MGR": [
+      "mug",
+      "desk-cactus"
+    ],
+    "HR": [
+      "mug",
+      "desk-cactus",
+      "document-tray"
+    ]
+  },
+  "staticTriangles": 165607,
+  "characterTriangles": 47180,
+  "sceneTriangles": 212787,
+  "longestBareWall": 0,
+  "sharedMapChanges": 34,
+  "stations": [
+    {
+      "id": "D1",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D2",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D3",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D4",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D5",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D6",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D7",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D8",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D9",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D10",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D11",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D12",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D13",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D14",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D15",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "D16",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "M1",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "M2",
+      "desk": "workstation-desk",
+      "monitor": "monitor-dual",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 1.4
+    },
+    {
+      "id": "MGR",
+      "desk": "workstation-desk-compact",
+      "monitor": "monitor-compact",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 0.92,
+      "depth": 1.4,
+      "exception": "MGR front approach is only one blocked tile wide; compact desk and single display."
+    },
+    {
+      "id": "HR",
+      "desk": "reception-desk",
+      "monitor": "monitor-compact",
+      "monitorDistance": 1.2,
+      "nearEdge": 0.55,
+      "width": 1.8,
+      "depth": 0.9,
+      "exception": "HR right-end entry gap forces a left-biased reception desk; display stays on the seat axis."
+    }
+  ],
+  "map": {
+    "revision": "f",
+    "changedPixels": 52574,
+    "raisedMeetingTiles": "x=48..50, y=29..32",
+    "paletteColors": 32,
+    "frozen": {
+      "collision.png": "bbf25bc5530ebc134632108df4538439121abea48c8db3eea7ba0fcaefc3a3f4",
+      "collision@16x.png": "6abfaad831ca12bbbc594a7a5694b07b91bfb68bc7398145f5aa59c76d1d8e9e",
+      "seats.json": "cb4b631d346f487d680ae9c870df8205ebc0a402798a79a62c72c7922b96a1fd"
+    },
+    "unrelatedPixels": "unchanged",
+    "collisionOverlay": "Frozen by owner instruction; intentionally not recomposited against the edited plate."
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "models": 138,
+  "newModels": [
+    "document-tray",
+    "notebook",
+    "book-stack",
+    "pen-cup",
+    "headphones",
+    "desk-lamp",
+    "phone-stand",
+    "sticky-notes",
+    "snack-box",
+    "desk-cactus",
+    "tissue-box",
+    "microwave",
+    "kettle",
+    "toaster",
+    "fruit-bowl",
+    "cup-rack",
+    "paper-towels",
+    "filing-cabinet",
+    "storage-cube",
+    "archive-boxes",
+    "recycle-bin",
+    "water-dispenser",
+    "coat-rack",
+    "shoe-rack",
+    "bean-bag",
+    "floor-palm",
+    "printer-stand",
+    "counter-wide",
+    "counter-compact",
+    "desk-apron",
+    "desk-wing",
+    "desk-return",
+    "guest-chair",
+    "lounge-table",
+    "wall-clock",
+    "wall-shelf",
+    "corkboard",
+    "framed-poster",
+    "wall-tv",
+    "hanging-planter",
+    "company-sign",
+    "calendar",
+    "wall-whiteboard",
+    "sun-patch",
+    "sun-patch-edge",
+    "cable-cover",
+    "rug-meeting",
+    "floor-sticker",
+    "window-wall",
+    "wall-half",
+    "door-glass-double",
+    "door-glass",
+    "floor-manager",
+    "workstation-desk",
+    "workstation-desk-compact",
+    "monitor-compact",
+    "keyboard-compact",
+    "mouse-compact",
+    "spine-left",
+    "spine-middle",
+    "spine-bench",
+    "meeting-table",
+    "meeting-chair-mint",
+    "meeting-chair-lavender",
+    "office-chair-lavender",
+    "rug-meeting-corner"
+  ],
+  "uncoveredBefore": 169,
+  "uncoveredAfter": 137,
+  "allowed": 137,
+  "wallDecor": 46,
+  "deskItems": {
+    "D1": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D2": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D3": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D4": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D5": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D6": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D7": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D8": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D9": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D10": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D11": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D12": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D13": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D14": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D15": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "D16": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "M1": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "M2": [
+      "mug",
+      "notebook",
+      "desk-cactus",
+      "pen-cup"
+    ],
+    "MGR": [
+      "mug",
+      "desk-cactus"
+    ],
+    "HR": [
+      "mug",
+      "desk-cactus",
+      "document-tray"
+    ]
+  },
+  "staticTriangles": 165607,
+  "characterTriangles": 47180,
+  "sceneTriangles": 212787,
+  "longestBareWall": 0,
+  "sharedMapChanges": 34
+}

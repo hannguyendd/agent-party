@@ -10,7 +10,7 @@ export const notificationsSupported = () => typeof window !== 'undefined' && 'No
 export async function enableNotifications(): Promise<NotificationPermission> {
   if (!notificationsSupported()) return 'denied'
   const p = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission
-  if (p === 'granted') new Notification('Agent Mesh', { body: "Notifications are on. You'll be pinged when someone assigns you work." })
+  if (p === 'granted') new Notification('Party Agent', { body: "Notifications are on. You'll be pinged when someone assigns you work." })
   return p
 }
 

@@ -1,0 +1,101 @@
+{
+  "kenney": {
+    "objects": 1856,
+    "walls": 202,
+    "seatChairs": 20,
+    "wallDecor": 20,
+    "allowedEmpty": 67,
+    "staticTriangles": 106917,
+    "pairGaps": [
+      {
+        "pair": [
+          "D1",
+          "D2"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D3",
+          "D4"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D5",
+          "D6"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D7",
+          "D8"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D9",
+          "D13"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D10",
+          "D14"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D11",
+          "D15"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "D12",
+          "D16"
+        ],
+        "gap": 0
+      },
+      {
+        "pair": [
+          "M1",
+          "M2"
+        ],
+        "gap": 0
+      }
+    ],
+    "bankStats": [
+      {
+        "bank": "left",
+        "tiles": 102,
+        "moduleWidth": 2.125,
+        "maxAdjacentGap": 0,
+        "maxEmptyDesktopRun": 1.1912499928474425
+      },
+      {
+        "bank": "bottom",
+        "tiles": 80,
+        "moduleWidth": 2.2222222222222223,
+        "maxAdjacentGap": 0,
+        "maxEmptyDesktopRun": 1.191249992847446
+      },
+      {
+        "bank": "middle",
+        "tiles": 28,
+        "moduleWidth": 2,
+        "maxAdjacentGap": 0,
+        "maxEmptyDesktopRun": 1.1912499928474425
+      }
+    ],
+    "characterTriangles": 43896,
+    "sceneTriangles": 150813,
+    "models": 101
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "baseline": {
+    "objects": 1868,
+    "walls": 202,
+    "seatChairs": 20,
+    "wallDecor": 20,
+    "allowedEmpty": 122,
+    "staticTriangles": 149097,
+    "characterTriangles": 47180,
+    "sceneTriangles": 196277,
+    "models": 138
+  },
+  "kaykit": {
+    "objects": 1868,
+    "walls": 202,
+    "seatChairs": 20,
+    "wallDecor": 20,
+    "allowedEmpty": 122,
+    "staticTriangles": 142335,
+    "characterTriangles": 47180,
+    "sceneTriangles": 189515,
+    "models": 138
+  },
+  "kenney": {
+    "objects": 1868,
+    "walls": 202,
+    "seatChairs": 20,
+    "wallDecor": 20,
+    "allowedEmpty": 122,
+    "staticTriangles": 111259,
+    "characterTriangles": 47180,
+    "sceneTriangles": 158439,
+    "models": 138
+  }
+}

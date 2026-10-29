@@ -139,5 +139,6 @@
     "berserker": "office/characters48/berserker.png",
     "slime": "office/characters48/slime.png",
     "dragon": "office/characters48/dragon.png"
-  }
+  },
+  "models3d": "office/3d/models3d.json"
 }

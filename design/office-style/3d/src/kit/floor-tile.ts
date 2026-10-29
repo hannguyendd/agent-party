@@ -1,0 +1,2 @@
+import * as T from 'three';import {Model} from '../primitives';
+export function create(){const m=new Model('floor-tile');const g=new T.BoxGeometry(1,.06,1);const n=m.mesh(g,'seam',[0,-.03,0],m.root,'flat-slab');const uv=n.getMesh()!.listPrimitives()[0].getAttribute('TEXCOORD_0')!;const p=g.getAttribute('position'),normal=g.getAttribute('normal');for(let i=0;i<p.count;i++)if(normal.getY(i)>.5)uv.setElement(i,[(.5+(p.getX(i)+.5)*31)/256,(.5+(p.getZ(i)+.5)*31)/256]);m.root.setExtras({floorAtlasCell:[0,0],grainDirection:'z',top:0});return m;}

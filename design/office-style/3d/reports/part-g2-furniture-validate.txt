@@ -1,0 +1,6 @@
+PASS kenney: 85 GLBs, all triangle budgets, embedded shared palette, axes/origin; 20/20 seat chairs at 0.85; 20 desktops at 1.26; monitors 1.9–2.3 tiles (HR approved 1.4 exception); <=3 desk items; 20 sparse nonrepeating wall decorations; 155177/500000 scene triangles.
+PASS negative checks: moved chairs, distant/off-axis/reversed monitors, excess clutter, wrong desk support, walkable obstacles and low wall decor are rejected.
+BLOCKED characters: 16 read-only files do not yet meet ×1.7 height 2.2–2.55 / width <=1.6.
+PASS rooms: perimeter 5.1, frosted room 4.35, original wall/window footprints, unchanged flat floor/rug/mat/sun-patch sizes.
+PASS frozen shared map: background.png, foreground.png, collision.png, collision@16x.png and seats.json byte-identical to finished Part F.
+PASS Kenney default, raw models3d.json synchronized; no spine/connector; all nine facing pairs touch within 0.05.

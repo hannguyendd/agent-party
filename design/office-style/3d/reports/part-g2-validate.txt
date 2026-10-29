@@ -1,0 +1,9 @@
+PASS kenney: 101 GLBs, all triangle budgets; furniture/kit embedded shared palette and origin; 20/20 seat chairs at 0.85; 20 desktops at 1.26; monitors 1.9–2.3 tiles (HR approved 1.4 exception); <=3 desk items; 20 sparse nonrepeating wall decorations; 150813/500000 scene triangles.
+PASS negative checks: moved chairs, distant/off-axis/reversed monitors, excess clutter, wrong desk support, walkable obstacles and low wall decor are rejected.
+PASS characters: 16 read-only ids, node tree, 8 clips, height 2.2–2.55 / width <=1.6.
+PASS rooms: perimeter 5.1, frosted room 4.35, original wall/window footprints, unchanged flat floor/rug/mat/sun-patch sizes.
+PASS frozen shared map: background.png, foreground.png, collision.png, collision@16x.png and seats.json byte-identical to finished Part F.
+PASS doors: both actual leaf heights >=3.6; original hinge nodes and 0.6s clips.
+PASS Kenney default, raw models3d.json synchronized; no spine/connector; all nine facing pairs touch within 0.05.
+PASS G3: adjacent row desks touch <=0.05; 210 blocked bank tiles fully covered; no empty desktop run >1.5; one shared item per gap. Row-gap and bare-run negative checks pass.
+PASS asset cleanup: only layout-referenced props/kit GLBs remain; no variants or KayKit directories.

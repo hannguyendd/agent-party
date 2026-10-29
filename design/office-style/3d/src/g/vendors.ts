@@ -1,0 +1,49 @@
+import {mkdir,readFile,writeFile,copyFile,readdir,unlink} from 'node:fs/promises';import {join,dirname} from 'node:path';import {NodeIO} from '@gltf-transform/core';import {PNG} from 'pngjs';import *as T from 'three';import {Model,keys,colors,out} from '../primitives';import {smallItems} from '../props/extended';import {dSmallItems} from '../props/part-d';import {fSmallIds} from '../props/part-f';import {vendorMaps,packRoots,licenses} from './vendor-map';import {bounds} from './scale';
+const small=new Set([...smallItems,...dSmallItems,...fSmallIds]);
+function extract(d:any){const triangles=[];let min=new T.Vector3(Infinity,Infinity,Infinity),max=new T.Vector3(-Infinity,-Infinity,-Infinity);const textures=new Map();for(const t of d.getRoot().listTextures())if(t.getImage())try{textures.set(t,PNG.sync.read(Buffer.from(t.getImage())));}catch{}
+for(const n of d.getRoot().listNodes())if(n.getMesh()){const mat=new T.Matrix4().fromArray(n.getWorldMatrix()),nm=new T.Matrix3().getNormalMatrix(mat);for(const p of n.getMesh().listPrimitives()){const a=p.getAttribute('POSITION'),nor=p.getAttribute('NORMAL'),uv=p.getAttribute('TEXCOORD_0'),idx=p.getIndices(),material=p.getMaterial(),factor=material?.getBaseColorFactor()||[.8,.8,.8,1],image=textures.get(material?.getBaseColorTexture());const count=idx?.getCount()??a.getCount();for(let j=0;j<count;j+=3){const verts=[],normals=[];let u=0,v=0;for(let k=0;k<3;k++){const i=idx?idx.getScalar(j+k):j+k,q=new T.Vector3().fromArray(a.getElement(i,[])).applyMatrix4(mat);verts.push(q);min.min(q);max.max(q);normals.push(nor?new T.Vector3().fromArray(nor.getElement(i,[])).applyMatrix3(nm).normalize():new T.Vector3(0,1,0));if(uv){const t=uv.getElement(i,[]);u+=t[0]/3;v+=t[1]/3;}}
+let rgb=[factor[0],factor[1],factor[2]];if(image){const x=Math.max(0,Math.min(image.width-1,Math.floor(u*image.width))),y=Math.max(0,Math.min(image.height-1,Math.floor(v*image.height))),i=(y*image.width+x)*4;rgb=[image.data[i]/255,image.data[i+1]/255,image.data[i+2]/255];}triangles.push({verts,normals,rgb,material:material?.getName()||'',up:normals.reduce((s,n)=>s+n.y,0)/3});}}}
+return {triangles,min,max};}
+function seatPlane(data:any){const bins=new Map();const h=data.max.y-data.min.y;for(const t of data.triangles)if(t.up>.85){const y=t.verts.reduce((s,v)=>s+v.y,0)/3,f=(y-data.min.y)/h;if(f<.25||f>.75)continue;const area=new T.Vector3().subVectors(t.verts[1],t.verts[0]).cross(new T.Vector3().subVectors(t.verts[2],t.verts[0])).length()/2,key=Math.round(y/h*500);const bin=bins.get(key)||{area:0,y:0};bin.y+=y*area;bin.area+=area;bins.set(key,bin);}const best=[...bins.values()].sort((a,b)=>b.area-a.area)[0];return best?best.y/best.area:data.min.y+h*.5;}
+function paletteKey(id:string,t:any,relativeY:number){const name=t.material.toLowerCase(),[r,g,b]=t.rgb,bright=Math.max(r,g,b),sat=bright-Math.min(r,g,b),plant=/plant|palm|cactus/.test(id),chair=/chair|sofa|stool|bench/.test(id)&&!id.startsWith('spine'),table=/desk|table|counter/.test(id)&&!id.includes('lamp')&&!id.includes('plant');
+if(plant){if(name.includes('plant')||g>r*1.06&&g>b*.92)return 'leaf';return 'cream';}
+if(chair){if(relativeY<.29||name.includes('metal'))return 'aluminium';return id.includes('lavender')||id==='guest-chair'?'lavender':'mint';}
+if(id.includes('monitor'))return name.includes('metaldark')||bright<.35?'dark':'screen';
+if(id.includes('keyboard'))return name.includes('dark')?'dark':'frame';if(id.includes('mouse'))return 'white';
+if(id.startsWith('spine'))return name.includes('dark')?'aluminium':relativeY>.9?'desktop':'cream';
+if(table){if(relativeY<.78)return 'aluminium';return 'desktop';}
+if(id.includes('book')&&!id.includes('shelf'))return ['mint','lavender','coral'][Math.floor(Math.abs(t.verts[0].x)*19)%3];
+if(name.includes('glass'))return 'screen';if(name.includes('metal'))return name.includes('dark')?'dark':'aluminium';if(name.includes('wood'))return 'wood';if(name.includes('carpet'))return 'lavender';if(name.includes('plant')||g>r*1.15&&g>b*1.05)return 'leaf';if(bright<.25)return 'dark';if(sat<.12)return bright>.7?'white':'aluminium';if(r>g&&g>b)return 'wood';return 'mint';}
+export async function convert(pack:string,id:string,source:string,target:any,path:string,seatTarget=.7,outputFolder='../3d-variants/'+pack+'/props'){const raw=await new NodeIO().read(path),data=extract(raw);if(pack==='kenney'&&id==='monitor-dual'){const width=data.max.x-data.min.x;const original=data.triangles;data.triangles=[];for(const side of [-1,1])for(const t of original)data.triangles.push({...t,verts:t.verts.map(v=>v.clone().add(new T.Vector3(side*width*.55,0,0)))});data.min.x-=width*.55;data.max.x+=width*.55;}
+const budget=small.has(id)?300:1500;if(data.triangles.length>budget)return {fallback:true,reason:`Source ${data.triangles.length} triangles exceeds ${budget}; own model retained.`};
+const m=new Model(id),size=data.max.clone().sub(data.min),targetSize=new T.Vector3(...target.max).sub(new T.Vector3(...target.min)),isChair=/chair/.test(id)&&!id.includes('armchair'),sourceSeat=isChair?seatPlane(data):null;
+const sy=(y:number)=>sourceSeat!==null?(y<=sourceSeat?target.min[1]+(y-data.min.y)/(sourceSeat-data.min.y)*(seatTarget-target.min[1]):seatTarget+(y-sourceSeat)/(data.max.y-sourceSeat)*(target.max[1]-seatTarget)):target.min[1]+(y-data.min.y)/size.y*targetSize.y;
+const groups=new Map();for(const t of data.triangles){const ry=(t.verts.reduce((s,v)=>s+v.y,0)/3-data.min.y)/size.y,key=paletteKey(id,t,ry),arr=groups.get(key)||[];for(let i=0;i<3;i++){const v=t.verts[i],normal=t.normals[i],p=[target.min[0]+(v.x-data.min.x)/size.x*targetSize.x,sy(v.y),target.min[2]+(v.z-data.min.z)/size.z*targetSize.z];arr.push({p,n:new T.Vector3(normal.x/Math.max(targetSize.x/size.x,.0001),normal.y/Math.max(targetSize.y/size.y,.0001),normal.z/Math.max(targetSize.z/size.z,.0001)).normalize().toArray()});}groups.set(key,arr);}
+for(const [key,verts] of groups){const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(verts.flatMap(v=>v.p),3));geo.setAttribute('normal',new T.Float32BufferAttribute(verts.flatMap(v=>v.n),3));m.mesh(geo,key,[0,0,0],m.root,'vendor-'+key);}
+m.root.setExtras({sourcePack:pack,sourceModel:source,license:'CC0',contract:'Y-up/front+Z/floor footprint centre',seatHeight:isChair?seatTarget:undefined});await m.save(outputFolder);return {fallback:false,triangles:data.triangles.length,sourceSeat,targetSeat:isChair?seatTarget:undefined,bounds:bounds(m.d)};
+}
+export async function buildVendors(metadata:any,models3d:any,layout:any,propIds:string[]){
+const results={},catalogPath='src/g/vendor-catalog.json';let previous={};try{previous=JSON.parse(await readFile(catalogPath,'utf8'));}catch{}const catalog={};
+for(const pack of ['kaykit','kenney']){
+const vendor='vendor/'+pack,rawAllowed=process.env.OFFICE_G_VENDOR_ONLY!=='1',rawLicense=rawAllowed&&await Bun.file(licenses[pack]).exists(),licensePath=rawLicense?licenses[pack]:vendor+'/LICENSE',license=await readFile(licensePath,'utf8');
+if(!/Creative Commons Zero, CC0/.test(license))throw Error('STOP: bundled '+pack+' license is not CC0');
+await mkdir(vendor+'/models',{recursive:true});if(rawLicense)await copyFile(licensePath,vendor+'/LICENSE');
+const dest=out+'../3d-variants/'+pack+'/';await mkdir(dest+'props',{recursive:true});const used=new Set<string>(),coverage={pack,license:'CC0',licenseFile:vendor+'/LICENSE',covered:{},fallback:{}};
+for(const id of propIds){
+await copyFile(out+'props/'+id+'.glb',dest+'props/'+id+'.glb');const source=vendorMaps[pack][id];if(!source){coverage.fallback[id]='Not covered by this pack; own ×1.4 model retained.';continue;}
+const ext=pack==='kaykit'?'.gltf':'.glb',raw=join(packRoots[pack],source+ext),copy=join(vendor,'models',source+ext),hasRaw=rawAllowed&&await Bun.file(raw).exists();
+if(hasRaw){await copyFile(raw,copy);if(ext==='.gltf'){const json=JSON.parse(await readFile(raw,'utf8'));for(const resource of [...(json.buffers||[]),...(json.images||[])])if(resource.uri&&!resource.uri.startsWith('data:')){const uri=decodeURIComponent(resource.uri);await mkdir(dirname(join(vendor,'models',uri)),{recursive:true});await copyFile(join(dirname(raw),uri),join(vendor,'models',uri));}}}
+else if(!await Bun.file(copy).exists()){
+const receipt=previous[pack];if(receipt?.mapping?.[id]===source&&receipt.fallback?.[id]){coverage.fallback[id]=receipt.fallback[id];continue;}
+throw Error('Missing licensed source '+pack+'/'+source+'; supply the official archive in vendor-src/'+pack+'/ before adding this mapping.');}
+const result=await convert(pack,id,source,metadata[id],copy);
+if(result.fallback)coverage.fallback[id]=result.reason;
+else {coverage.covered[id]={sourceModel:source,...result};used.add(source+ext);if(ext==='.gltf'){const json=JSON.parse(await readFile(copy,'utf8'));for(const r of [...(json.buffers||[]),...(json.images||[])])if(r.uri&&!r.uri.startsWith('data:'))used.add(decodeURIComponent(r.uri));}}
+}
+for(const f of await readdir(vendor+'/models'))if(!used.has(f))await unlink(vendor+'/models/'+f);
+const descriptor={...models3d,layout:`office/3d-variants/${pack}/layout3d.json`,props:Object.fromEntries(propIds.map(id=>[id,`office/3d-variants/${pack}/props/${id}.glb`]))};
+await writeFile(dest+'layout3d.json',JSON.stringify({...layout,variant:pack},null,2)+'\n');await writeFile(dest+'models3d.json',JSON.stringify(descriptor,null,2)+'\n');await writeFile('reports/part-g-'+pack+'-coverage.json',JSON.stringify(coverage,null,2)+'\n');
+catalog[pack]={mapping:vendorMaps[pack],fallback:coverage.fallback,sourceFiles:[...used].sort(),license:'CC0'};results[pack]=coverage;console.log(pack+': '+Object.keys(coverage.covered).length+' converted ids; '+Object.keys(coverage.fallback).length+' own-model fallbacks.');
+}
+await writeFile(catalogPath,JSON.stringify(catalog,null,2)+'\n');return results;
+}

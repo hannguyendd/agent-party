@@ -1,0 +1,29 @@
+[
+  {
+    "seat": "MGR",
+    "deskDistance": 3.05,
+    "reason": "nearest forward desk position wholly on blocked tiles"
+  },
+  {
+    "model": "round-table",
+    "desired": [
+      46.5,
+      10.5
+    ],
+    "actual": [
+      45.5,
+      10.5
+    ]
+  },
+  {
+    "model": "plant-large",
+    "desired": [
+      11.5,
+      9.5
+    ],
+    "actual": [
+      11.5,
+      11.5
+    ]
+  }
+]

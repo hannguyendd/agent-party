@@ -1,0 +1,112 @@
+{
+  "groups": [
+    {
+      "id": "left",
+      "axis": "z",
+      "x0": 9,
+      "x1": 15,
+      "z0": 7,
+      "z1": 24,
+      "split": 12,
+      "rows": [
+        [
+          "D1",
+          "D3",
+          "D5",
+          "D7"
+        ],
+        [
+          "D2",
+          "D4",
+          "D6",
+          "D8"
+        ]
+      ],
+      "cuts": [
+        7,
+        11.5,
+        15.5,
+        19.5,
+        24
+      ],
+      "n": 8,
+      "moduleWidth": 2.125
+    },
+    {
+      "id": "bottom",
+      "axis": "x",
+      "x0": 16,
+      "x1": 36,
+      "z0": 26,
+      "z1": 30,
+      "split": 28,
+      "rows": [
+        [
+          "D9",
+          "D10",
+          "D11",
+          "D12"
+        ],
+        [
+          "D13",
+          "D14",
+          "D15",
+          "D16"
+        ]
+      ],
+      "cuts": [
+        16,
+        21,
+        26,
+        31,
+        36
+      ],
+      "n": 9,
+      "moduleWidth": 2.2222222222222223
+    },
+    {
+      "id": "middle",
+      "axis": "z",
+      "x0": 24,
+      "x1": 31,
+      "z0": 12,
+      "z1": 16,
+      "split": 27.5,
+      "rows": [
+        [
+          "M1"
+        ],
+        [
+          "M2"
+        ]
+      ],
+      "cuts": [
+        12,
+        16
+      ],
+      "n": 2,
+      "moduleWidth": 2
+    }
+  ],
+  "models": [
+    "desk-row-d1",
+    "desk-row-d3",
+    "desk-row-d5",
+    "desk-row-d7",
+    "desk-row-d2",
+    "desk-row-d4",
+    "desk-row-d6",
+    "desk-row-d8",
+    "desk-row-d9",
+    "desk-row-d10",
+    "desk-row-d11",
+    "desk-row-d12",
+    "desk-row-d13",
+    "desk-row-d14",
+    "desk-row-d15",
+    "desk-row-d16",
+    "desk-row-m1",
+    "desk-row-m2"
+  ],
+  "uniqueLegs": 66
+}

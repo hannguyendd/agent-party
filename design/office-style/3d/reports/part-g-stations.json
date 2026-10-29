@@ -1,0 +1,242 @@
+[
+  {
+    "id": "D1",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D2",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D3",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D4",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D5",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D6",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D7",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D8",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D9",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D10",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D11",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D12",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D13",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D14",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D15",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "D16",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      0.8877551387568818
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "M1",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "M2",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk",
+    "deskScale": [
+      1,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 3
+  },
+  {
+    "id": "MGR",
+    "monitorDistance": 1.65,
+    "desk": "workstation-desk-compact",
+    "deskScale": [
+      0.776,
+      1,
+      1
+    ],
+    "deskTop": 1.04,
+    "items": 1
+  },
+  {
+    "id": "HR",
+    "monitorDistance": 1.4,
+    "desk": "reception-desk",
+    "deskScale": [
+      1,
+      1,
+      0.7928571488581547
+    ],
+    "deskTop": 1.04,
+    "items": 2
+  }
+]

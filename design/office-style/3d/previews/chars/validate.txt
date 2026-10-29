@@ -1,0 +1,150 @@
+{
+  "characters": {
+    "dev-hoodie": {
+      "height": 2.5200000447185102,
+      "width": 1.5194117852619717,
+      "depth": 1.4452941502843586,
+      "triangles": 2456,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3529553257055338,
+      "seatY": 0.9
+    },
+    "designer": {
+      "height": 2.5200000447185102,
+      "width": 1.371176438672202,
+      "depth": 1.3341175828661238,
+      "triangles": 2456,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3530400044923285,
+      "seatY": 0.9
+    },
+    "lead": {
+      "height": 2.5199999516970157,
+      "width": 1.489090945039477,
+      "depth": 1.4509090866361347,
+      "triangles": 2408,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3568875245037566,
+      "seatY": 0.9
+    },
+    "shiba": {
+      "height": 2.5200000169940466,
+      "width": 1.6637143237250194,
+      "depth": 1.66295211655753,
+      "triangles": 2448,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.376658717208934,
+      "seatY": 0.9
+    },
+    "cat": {
+      "height": 2.519999964777029,
+      "width": 1.6637143237250194,
+      "depth": 1.6637143237250194,
+      "triangles": 2368,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.387154613575124,
+      "seatY": 0.9
+    },
+    "penguin": {
+      "height": 2.519999925631174,
+      "width": 1.6650000000000003,
+      "depth": 1.6637143237250194,
+      "triangles": 1952,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.40925756081748,
+      "seatY": 0.9
+    },
+    "alien": {
+      "height": 2.519999931858072,
+      "width": 1.6224028638431007,
+      "depth": 1.4872131688254222,
+      "triangles": 2088,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3663121836440484,
+      "seatY": 0.9
+    },
+    "robot": {
+      "height": 2.520000006130764,
+      "width": 1.6637143237250194,
+      "depth": 1.3200000056198666,
+      "triangles": 1768,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3624542015680434,
+      "seatY": 0.9
+    },
+    "mage": {
+      "height": 2.5200000061307635,
+      "width": 1.6637143237250194,
+      "depth": 1.6637143237250194,
+      "triangles": 1848,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.377831114102189,
+      "seatY": 0.9
+    },
+    "knight": {
+      "height": 2.520000068553083,
+      "width": 1.6637143145288742,
+      "depth": 1.649454474449158,
+      "triangles": 2032,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3808782805372615,
+      "seatY": 0.9
+    },
+    "ranger": {
+      "height": 2.519999961908863,
+      "width": 1.6637143237250194,
+      "depth": 1.6580866660390583,
+      "triangles": 2056,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.366831360662898,
+      "seatY": 0.9
+    },
+    "healer": {
+      "height": 2.5199999358073004,
+      "width": 1.6637143237250194,
+      "depth": 1.665,
+      "triangles": 2248,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3914393019218148,
+      "seatY": 0.9
+    },
+    "rogue": {
+      "height": 2.5199999987738475,
+      "width": 1.6637142953702384,
+      "depth": 1.6298571825027466,
+      "triangles": 2008,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3690094101119616,
+      "seatY": 0.9
+    },
+    "berserker": {
+      "height": 2.5199999931880406,
+      "width": 1.6251905219895502,
+      "depth": 1.6637143237250194,
+      "triangles": 2288,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3837184114692713,
+      "seatY": 0.9
+    },
+    "slime": {
+      "height": 2.5200000473740816,
+      "width": 1.6637143237250194,
+      "depth": 1.606441574437278,
+      "triangles": 1736,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.4169952859286938,
+      "seatY": 0.9
+    },
+    "dragon": {
+      "height": 2.5199999358073004,
+      "width": 1.6224454059771132,
+      "depth": 1.6637143237250194,
+      "triangles": 2008,
+      "typingHandY": 1.3346890904530075,
+      "typingMittenY": 1.3928506114893853,
+      "seatY": 0.9
+    }
+  },
+  "errors": [],
+  "silhouetteGaps": []
+}

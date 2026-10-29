@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type Phaser from 'phaser'
 import { api, type OfficeAgent, type OfficeTarget } from '../api'
 import type { LiveState } from '../useLiveState'
 import type { SideTab, View } from '../App'
 import { errMsg } from '../components/format'
-import type { OfficeScene, PeerClick, SceneCallbacks, SceneData } from './OfficeScene'
+import type { MountedRenderer, OfficeRenderer, PeerClick, SceneCallbacks, SceneData } from './renderer'
+import { themePicks, useOfficeTheme, webglAvailable } from './theme'
 import { Icon } from './Icon'
 import { AppBar } from './AppBar'
 import { AgentCard } from './AgentCard'
@@ -47,47 +47,48 @@ const sampleAgents: OfficeAgent[] = [
 ].map(([id, name, skin, at]) => ({ agent_id: `preview/${id}`, owner: 'preview', name, skin, at, steered: false, activity: null }) as OfficeAgent)
 
 function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
-  data: SceneData; callbacks: SceneCallbacks; sceneRef: React.RefObject<OfficeScene | null>
+  data: SceneData; callbacks: SceneCallbacks; sceneRef: React.RefObject<OfficeRenderer | null>
   onReady: () => void; onError: (message: string) => void
 }) {
   const host = useRef<HTMLDivElement>(null)
   const latest = useRef({ data, callbacks, onReady, onError })
   useEffect(() => { latest.current = { data, callbacks, onReady, onError } })
+  // The look this browser picked (Settings); 3D falls back to 2D when WebGL is missing or the 3D art fails to load.
+  const theme = useOfficeTheme()
+  // A failure is remembered for the pick it happened under; picking a look again (dock switch or Settings) retries 3D.
+  const picks = themePicks()
+  const [failedPick, setFailedPick] = useState(-1)
+  const look = theme === '3d' && failedPick !== picks && webglAvailable() ? '3d' : '2d'
+  // Switching looks: the new map fades in once ready; meanwhile a loading pill (with progress for 3D) covers it.
+  const key = `${look}:${picks}`
+  const [readyKey, setReadyKey] = useState<string | null>(null)
+  const [progress, setProgress] = useState({ key: '', p: 0 })
+  const switching = readyKey !== null && readyKey !== key
   useEffect(() => {
     let disposed = false
-    let game: Phaser.Game | undefined
-    let observer: ResizeObserver | undefined
-    void Promise.all([import('phaser'), import('./OfficeScene')]).then(([{ default: Phaser }, { OfficeScene }]) => {
+    let mounted: MountedRenderer | undefined
+    const load = look === '3d' ? import('./mountThree').then(m => m.mountThree) : import('./mountPhaser').then(m => m.mountPhaser)
+    void load.then(mount => {
       if (disposed || !host.current) return
-      const scene = new OfficeScene()
-      sceneRef.current = scene
-      scene.setSceneData(latest.current.data)
-      scene.callbacks = latest.current.callbacks
-      scene.onReady = () => latest.current.onReady()
-      game = new Phaser.Game({
-        type: Phaser.AUTO, parent: host.current, width: host.current.clientWidth, height: host.current.clientHeight,
-        backgroundColor: '#e6ddd8', pixelArt: true, roundPixels: true, antialias: false,
-        scene: [scene], render: { pixelArt: true, antialias: false, roundPixels: true },
-        // We size the canvas ourselves from the host (ResizeObserver below); RESIZE mode kept the old size when
-        // only the host changed (e.g. widening the side column).
-        scale: { mode: Phaser.Scale.NONE },
-        input: { keyboard: { target: host.current } },
-        audio: { noAudio: true },
+      mounted = mount({
+        host: host.current, data: latest.current.data, callbacks: latest.current.callbacks,
+        onReady: () => { setReadyKey(key); latest.current.onReady() },
+        onProgress: p => setProgress({ key, p }),
+        onError: message => { latest.current.onError(`3D office: ${message} Showing the 2D office instead.`); setFailedPick(picks) },
       })
-      observer = new ResizeObserver(() => {
-        const w = host.current?.clientWidth, h = host.current?.clientHeight
-        if (w && h && game && (game.scale.width !== w || game.scale.height !== h)) game.scale.resize(w, h)
-      })
-      observer.observe(host.current)
-    }).catch(e => latest.current.onError(errMsg(e)))
-    return () => { disposed = true; observer?.disconnect(); if (sceneRef.current) sceneRef.current.callbacks = null; sceneRef.current = null; game?.destroy(true) }
-  }, [sceneRef])
+      sceneRef.current = mounted.renderer
+    }).catch(e => {
+      if (look === '3d') setFailedPick(picks)
+      latest.current.onError(errMsg(e))
+    })
+    return () => { disposed = true; sceneRef.current = null; mounted?.destroy() }
+  }, [sceneRef, look, picks, key])
   useEffect(() => { sceneRef.current?.setSceneData(data) }, [data, sceneRef])
   useEffect(() => { if (sceneRef.current) sceneRef.current.callbacks = callbacks }, [callbacks, sceneRef])
   // Map keys work wherever the focus is (after clicking an agent in the side column, a button…), except while
   // typing: the map takes the focus and gets the key that moved it there.
   useEffect(() => {
-    const MAP_KEYS = new Set(['w', 'a', 's', 'd', 'e', 'h', 'f', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'])
+    const MAP_KEYS = new Set(['w', 'a', 's', 'd', 'e', 'h', 'f', '[', ']', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'])
     let lastG = 0
     const onKey = (e: KeyboardEvent) => {
       const el = host.current
@@ -110,7 +111,16 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
-  return <div ref={host} className="office-canvas" tabIndex={0} role="region" aria-label="Office. Select your agent, then use WASD or arrow keys, or click the floor to walk. H returns to desk, F follows, Escape deselects." />
+  return <>
+    <div ref={host} className={`office-canvas${switching ? ' is-switching' : ''}`} tabIndex={0} role="region" aria-label="Office. Select your agent, then use WASD or arrow keys, or click the floor to walk. H returns to desk, F follows, Escape deselects." />
+    {switching && (
+      <div className="office-switching" role="status">
+        <span className="office-switching-dots" aria-hidden="true" />
+        {look === '3d' ? 'Building the 3D office' : 'Drawing the 2D office'}
+        {look === '3d' && <span className="office-switching-bar"><i style={{ width: `${Math.round((progress.key === key ? progress.p : 0) * 100)}%` }} /></span>}
+      </div>
+    )}
+  </>
 }
 
 export default function OfficeView({ state, view, go, clearError, openConv, setOpenConv }: {
@@ -148,7 +158,8 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
     return () => clearTimeout(t)
   }, [notice])
   const [ready, setReady] = useState(false)
-  const sceneRef = useRef<OfficeScene | null>(null)
+  const sceneRef = useRef<OfficeRenderer | null>(null)
+  const theme = useOfficeTheme()
   const agents = isPreview ? demo : office?.agents ?? EMPTY_AGENTS
   const me = isPreview ? 'preview' : office?.owner ?? state.node?.owner ?? ''
   const desks = isPreview ? demoDesks : office?.desks ?? EMPTY_DESKS
@@ -355,6 +366,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
         onNotification={n => go(notificationTarget(n))}
         onZoom={f => sceneRef.current?.zoomBy(f)}
         onFit={() => sceneRef.current?.fitCamera()}
+        onRotate={theme === '3d' ? s => sceneRef.current?.rotate?.(s) : undefined}
       />
       </div>
 
@@ -433,7 +445,7 @@ export default function OfficeView({ state, view, go, clearError, openConv, setO
           })}</div>
           {pickingDesk && deskPill && side === 'agents' && (
             <DeskPicker anchor={deskPill} me={me} desks={desks} busy={busy}
-              deskIds={office?.desk_ids?.length ? office.desk_ids : ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2','MGR']}
+              deskIds={office?.desk_ids?.length ? office.desk_ids : ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2','MGR','HR']}
               onPick={id => callbacks.onDeskPick(id)} onClose={() => setPickingDesk(false)} />
           )}
           {looks && mine.some(a => a.agent_id === looks.agentId) && (() => {
