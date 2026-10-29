@@ -9,7 +9,8 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 - `index.html`: markup only; `style.css`: all styles; `app.js`: the page around the demo, in five parts with a
   comment each (`stars`, `pageLayout`, `welcome`, `mapControls`, `officeLife`). The page has two layers:
   - the **intro** (`#intro`): logo, the name "Party Agent" dropping in letter by letter, **Come in**, a parade of
-    all 16 characters (one speed so nobody overtakes; uneven starts make chatting pairs, a trio and gaps). Come in (click anywhere or any key) shrinks the name to the middle and turns it into the
+    all 16 characters in three lanes at three depths (the middle lane walks the other way), in pairs and alone,
+    some saying a short line in a bubble now and then. Come in (click anywhere or any key) shrinks the name to the middle and turns it into the
     loader (`.intro.loading`); when the office is ready the letters fly off (`.intro.done`) and the intro hides.
     `#office` in the URL skips the welcome and goes straight to loading.
   - the **office**: header (brand, the "you can play" invitation until you walk in, GitHub, Star with a live count

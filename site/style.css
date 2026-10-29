@@ -237,16 +237,21 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
 .intro .go:hover .arrow { translate: 3px 0; }
 .intro .press { font-size: 14px; color: var(--ink-soft); animation: ipulse 2s ease-in-out infinite; }
 @keyframes ipulse { 50% { opacity: .55; } }
-.floor { position: relative; height: 130px; overflow: hidden; transition: opacity .4s; }
+.floor { position: relative; height: 150px; overflow-x: clip; overflow-y: visible; transition: opacity .4s; }
 .intro.loading .floor { opacity: 0; }
 .floor::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: calc(26px + env(safe-area-inset-bottom, 0px)); background: #F3CBA9; box-shadow: 0 -4px 0 #E9B892; }
-.walker { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 0; width: 64px; height: 96px; animation: cross 30s linear infinite; /* one speed so nobody overtakes; uneven starts make pairs, a trio and gaps */ animation-delay: var(--delay, 0s); }
+/* three lanes at three depths: the back ones are smaller and paler, the middle lane walks the other way; one speed
+   per lane, so walkers only ever pass each other at different depths */
+.walker { position: absolute; bottom: calc(20px + var(--lane, 0) * 14px + env(safe-area-inset-bottom, 0px)); left: 0; width: 64px; height: 96px; scale: calc(1 - var(--lane, 0) * .12); transform-origin: 50% 100%; z-index: calc(3 - var(--lane, 0)); animation: cross var(--dur, 30s) linear infinite; animation-delay: var(--delay, 0s); }
+.walker[style*="--lane:2"] { filter: saturate(.85) brightness(1.03); opacity: .9; }
+.walker.left { animation-name: cross-left; }
+.walker.left i { transform: none; }
+@keyframes cross-left { from { translate: calc(100vw + 80px) 0; } to { translate: -80px 0; } }
 .walker i { position: absolute; inset: 0; background-size: 400% 500%; background-position-y: 25%; image-rendering: pixelated; transform: scaleX(-1); animation: legs .55s steps(4) infinite; }
 .walker.hop i { animation: legs .55s steps(4) infinite, hop .55s ease-in-out infinite; }
 @keyframes hop { 50% { translate: 0 -4px; } }
-/* in each pair one of them is chatting: typing dots now and then */
-.walker .talk { position: absolute; left: 50%; bottom: 100%; translate: -50% -2px; background: #fff; border-radius: 8px; padding: 4px 6px; box-shadow: 0 0 0 1.5px var(--ink), 0 2px 0 rgba(51, 44, 74, .2); opacity: 0; animation: chat 6s ease-in-out infinite; animation-delay: var(--t, 0s); }
-.walker .talk::before { content: ""; display: block; width: 18px; height: 5px; background: url(office/ui/typing.png) 0 0 / 54px 5px; image-rendering: pixelated; animation: dots .9s steps(3) infinite; }
+/* some of them say something now and then */
+.walker .talk { position: absolute; left: 50%; bottom: calc(100% + 2px); translate: -50% 0; scale: calc(1 / (1 - var(--lane, 0) * .12)); transform-origin: 50% 100%; white-space: nowrap; background: #fff; color: var(--ink); font: 700 12.5px/1.2 var(--body); border-radius: 9px; padding: 5px 9px; box-shadow: 0 0 0 1.5px var(--ink), 0 2px 0 rgba(51, 44, 74, .2); opacity: 0; animation: chat 7s ease-in-out infinite; animation-delay: var(--t, 0s); }
 @keyframes chat { 0%, 35%, 100% { opacity: 0; } 42%, 88% { opacity: 1; } }
 @keyframes cross { from { translate: -80px 0; } to { translate: calc(100vw + 80px) 0; } }
 @keyframes legs { from { background-position-x: 0; } to { background-position-x: 133.333%; } }
@@ -255,7 +260,8 @@ kbd { font: 700 11px var(--body); color: var(--ink); background: var(--paper); b
   .intro .logo, .intro .press, .walker, .walker i, .intro .line.fresh { animation: none; }
   .word span, .intro.loading .word span { animation: none; opacity: 1; translate: 0 0; }
   .walker { translate: calc(var(--i) * 6vw + 2vw) 0; }
-  .walker .talk, .walker .talk::before, .walker.hop i { animation: none; }
+  .walker .talk, .walker.hop i { animation: none; }
+  .walker .talk { opacity: 1; }
   .intro, .intro.done .word span, .intro .enter, .word, .intro .line, .intro .logo { transition: none; }
 }
 

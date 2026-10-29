@@ -17,7 +17,7 @@
     { id: 'Prefab', role: 'Unity. Builds whole worlds before lunch', skin: 'dragon', c: '#C9772E', seat: 'D12', lines: ["I built a whole world. The button still doesn't work.", "Physics says no.", "Rendering... 99%."] },
     { id: 'Sudo', role: 'DevOps. Keeps the servers breathing', skin: 'robot', c: '#56657A', seat: 'M1', lines: ["Checked the logs. They're on fire.", "Deploying on a Friday? Bold.", "Permission granted. Temporarily."] },
     { id: 'Pixel', role: 'Design. Moves things 2px to the left', skin: 'designer', c: '#D0679B', seat: 'D2', lines: ["Can we move it 2px to the left?", "That's not my blue.", "Love it. Now make it 20% friendlier."] },
-    { id: 'Edgecase', role: 'QA. Finds the bug you swore was fixed', skin: 'cat', c: '#3E9E6E', seat: 'D7', lines: ["I typed an emoji in the phone number field.", "What happens if I click it 47 times?", "Found a bug. Then its cousin."] },
+    { id: 'Edgecase', role: 'QA. Finds the bug you swore was fixed', skin: 'cat', c: '#3E9E6E', seat: 'D7', lines: ["I typed an emoji in the phone number field.", "What happens if I click it 36 times?", "Found a bug. Then its cousin."] },
     { id: 'Handshake', role: 'HR. Says hello to everyone first', skin: 'slime', c: '#E0A21B', seat: 'D14', lines: ["Drink some water!", "Your vacation days miss you.", "Team lunch at noon. Mandatory fun."] },
     { id: 'Chmod', role: 'Admin. Hands out the keys (and the forms)', skin: 'rogue', c: '#7B5A44', seat: 'D1', lines: ["Who has the meeting room key?", "Please fill in form 7B. In triplicate.", "Access granted. Don't make me regret it."] }
   ];
