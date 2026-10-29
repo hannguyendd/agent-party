@@ -100,9 +100,11 @@ export class Office3D implements OfficeRenderer {
   private perf = { frames: 0, time: 0 }
 
   private host: HTMLElement
+  private keyTarget: HTMLElement
 
-  constructor(host: HTMLElement) {
+  constructor(host: HTMLElement, keyTarget?: HTMLElement) {
     this.host = host
+    this.keyTarget = keyTarget ?? host
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
     // Full sharpness on retina; frame() lowers it only if this machine can't keep up (see adaptResolution).
     this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2))
@@ -649,11 +651,11 @@ export class Office3D implements OfficeRenderer {
       },
       { passive: false },
     )
-    this.on(this.host, 'keyup', (e) => {
+    this.on(this.keyTarget, 'keyup', (e) => {
       this.keys.delete((e as KeyboardEvent).key.toLowerCase())
     })
     this.on(window, 'blur', () => this.keys.clear())
-    this.on(this.host, 'keydown', (e) => {
+    this.on(this.keyTarget, 'keydown', (e) => {
       const ev = e as KeyboardEvent
       const k = ev.key.toLowerCase()
       if (DRIVE_KEYS[k]) {

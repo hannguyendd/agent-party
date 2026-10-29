@@ -4,8 +4,8 @@
 import { Office3D } from './three/Office3D'
 import type { MountOptions, MountedRenderer } from './renderer'
 
-export function mountThree({ host, data, callbacks, onReady, onError, onProgress }: MountOptions): MountedRenderer {
-  const office = new Office3D(host)
+export function mountThree({ host, keyTarget, data, callbacks, onReady, onError, onProgress }: MountOptions): MountedRenderer {
+  const office = new Office3D(host, keyTarget)
   office.callbacks = callbacks
   office.onReady = onReady
   office.onError = onError ?? null

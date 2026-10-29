@@ -200,8 +200,12 @@
 }
 .office-canvas { width: 100%; height: 100%; outline: none; }
 .office-canvas canvas { display: block; image-rendering: pixelated; }
-.office-canvas canvas { transition: opacity .35s ease; }
-.office-canvas.is-switching canvas { opacity: 0; }
+.office-canvas { position: relative; }
+/* One layer per look; while switching, the old one blurs under the loading pill and the new one fades in. */
+.office-layer { position: absolute; inset: 0; transition: opacity .35s ease, filter .3s ease; }
+.office-layer.is-entering { opacity: 0; pointer-events: none; }
+.office-layer.is-leaving { filter: blur(6px) saturate(.85); opacity: .85; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .office-layer { transition: none; } }
 /* Switching looks: a loading pill in the middle of the map, like the site's 3D loader. */
 .office-switching {
   position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 4; display: flex; align-items: center; gap: 10px;

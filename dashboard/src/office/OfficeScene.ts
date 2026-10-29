@@ -129,6 +129,8 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
   /** Device pixels per CSS pixel the game draws at (set by mountPhaser): overlays and screen positions divide it
    *  out so they keep their CSS size while the map itself is drawn at the screen's full resolution. */
   dpr = 1
+  /** The element that gets focus on a click so map keys reach the game (set by mountPhaser). */
+  keyTarget: HTMLElement | null = null
 
   constructor() {
     super({ key: 'office', physics: { default: 'arcade', arcade: { debug: false } } })
@@ -957,7 +959,7 @@ export class OfficeScene extends Phaser.Scene implements OfficeRenderer {
     this.input.mouse?.disableContextMenu()
     this.input.on('pointerdown', (p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
       // Phaser cancels the mousedown default, so the canvas host never gets focus by itself; keys need it.
-      ;(this.game.canvas.parentElement as HTMLElement | null)?.focus({ preventScroll: true })
+      ;(this.keyTarget ?? (this.game.canvas.parentElement as HTMLElement | null))?.focus({ preventScroll: true })
       if (over.length) return
       const cam = this.cameras.main
       this.drag = {

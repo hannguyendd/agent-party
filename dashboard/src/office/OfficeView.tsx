@@ -64,15 +64,35 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
   const [readyKey, setReadyKey] = useState<string | null>(null)
   const [progress, setProgress] = useState({ key: '', p: 0 })
   const switching = readyKey !== null && readyKey !== key
+  // Each look draws into its own layer. Switching keeps the old layer, blurred and inert, under the loading pill
+  // until the new one is ready; then the new layer fades in and the old one is destroyed.
+  const leaving = useRef<{ layer: HTMLDivElement; mounted: () => MountedRenderer | undefined }[]>([])
+  const dropLeaving = useCallback(() => {
+    for (const l of leaving.current) {
+      l.mounted()?.destroy()
+      l.layer.remove()
+    }
+    leaving.current = []
+  }, [])
   useEffect(() => {
+    const frame = host.current
+    if (!frame) return
     let disposed = false
     let mounted: MountedRenderer | undefined
+    const layer = document.createElement('div')
+    layer.className = leaving.current.length ? 'office-layer is-entering' : 'office-layer'
+    frame.appendChild(layer)
     const load = look === '3d' ? import('./mountThree').then(m => m.mountThree) : import('./mountPhaser').then(m => m.mountPhaser)
     void load.then(mount => {
-      if (disposed || !host.current) return
+      if (disposed) return
       mounted = mount({
-        host: host.current, data: latest.current.data, callbacks: latest.current.callbacks,
-        onReady: () => { setReadyKey(key); latest.current.onReady() },
+        host: layer, keyTarget: frame, data: latest.current.data, callbacks: latest.current.callbacks,
+        onReady: () => {
+          layer.classList.remove('is-entering')
+          dropLeaving()
+          setReadyKey(key)
+          latest.current.onReady()
+        },
         onProgress: p => setProgress({ key, p }),
         onError: message => { latest.current.onError(`3D office: ${message} Showing the 2D office instead.`); setFailedPick(picks) },
       })
@@ -81,8 +101,17 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
       if (look === '3d') setFailedPick(picks)
       latest.current.onError(errMsg(e))
     })
-    return () => { disposed = true; sceneRef.current = null; mounted?.destroy() }
-  }, [sceneRef, look, picks, key])
+    return () => {
+      disposed = true
+      sceneRef.current = null
+      if (mounted) mounted.renderer.callbacks = null // the old look stops reporting clicks while it fades out
+      layer.classList.remove('is-entering')
+      layer.classList.add('is-leaving')
+      leaving.current.push({ layer, mounted: () => mounted })
+    }
+  }, [sceneRef, look, picks, key, dropLeaving])
+  // Leaving the Office: nothing is waiting for a new look, so drop the old layers now (runs after the cleanup above).
+  useEffect(() => dropLeaving, [dropLeaving])
   useEffect(() => { sceneRef.current?.setSceneData(data) }, [data, sceneRef])
   useEffect(() => { if (sceneRef.current) sceneRef.current.callbacks = callbacks }, [callbacks, sceneRef])
   // Map keys work wherever the focus is (after clicking an agent in the side column, a button…), except while
@@ -112,7 +141,7 @@ function OfficeCanvas({ data, callbacks, sceneRef, onReady, onError }: {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
   return <>
-    <div ref={host} className={`office-canvas${switching ? ' is-switching' : ''}`} tabIndex={0} role="region" aria-label="Office. Select your agent, then use WASD or arrow keys, or click the floor to walk. H returns to desk, F follows, Escape deselects." />
+    <div ref={host} className="office-canvas" tabIndex={0} role="region" aria-label="Office. Select your agent, then use WASD or arrow keys, or click the floor to walk. H returns to desk, F follows, Escape deselects." />
     {switching && (
       <div className="office-switching" role="status">
         <span className="office-switching-dots" aria-hidden="true" />

@@ -65,7 +65,10 @@ export interface MountedRenderer {
 }
 
 export interface MountOptions {
+  /** The element the look draws into (fills it). */
   host: HTMLElement
+  /** Where map keys arrive and what takes focus on a click (the map's frame; defaults to host). */
+  keyTarget?: HTMLElement
   data: SceneData
   callbacks: SceneCallbacks
   onReady: () => void
