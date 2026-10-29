@@ -58,3 +58,37 @@ def test_uninstall_refused_in_a_repo_checkout(tmp_path):
     with TestClient(app) as c:
         assert c.post("/api/service/uninstall", json={"keep_data": True}).status_code == 409
         assert "claude" in c.get("/api/setup").json()
+
+
+def test_windows_sign_in_task_quotes_its_paths(monkeypatch, tmp_path):
+    """The task's loop goes in encoded: a path with a space or a quote can't break the outer command."""
+    import base64
+    import re
+
+    from agentfleet_node import service
+
+    calls: list[str] = []
+    monkeypatch.setattr(service, "SYSTEM", "windows")
+    monkeypatch.setattr(service, "HOME", tmp_path / "it's here")
+    monkeypatch.setattr(service, "LOG", tmp_path / "it's here" / "node.log")
+    monkeypatch.setattr(service, "_exe", lambda: r"C:\Users\Hai Anh\.local\bin\agentfleet-node.exe")
+    monkeypatch.setattr(service, "running", lambda: True)
+    monkeypatch.setattr(service, "_ps", lambda cmd: calls.append(cmd) or True)
+    assert service.set_autostart(True)
+    task = calls[-1]
+    arg = re.search(r"-Argument '((?:[^']|'')*)' ", task).group(1).replace("''", "'")
+    loop = base64.b64decode(arg.split("-EncodedCommand ")[1]).decode("utf-16-le")
+    assert loop.startswith(r"while ($true) { & 'C:\Users\Hai Anh\.local\bin\agentfleet-node.exe' serve *>> '")
+    assert "it''s here" in loop and "Start-ScheduledTask" not in task  # already running: next sign-in only
+
+
+def test_dashboard_types_do_not_come_from_the_registry():
+    """Windows reads .js's type from the registry; some machines say text/plain there and the dashboard goes blank."""
+    import mimetypes
+
+    from agentfleet_node.app import pin_dashboard_types
+
+    mimetypes.add_type("text/plain", ".js")  # what such a registry gives
+    pin_dashboard_types()
+    assert mimetypes.guess_type("index-abc.js")[0] == "text/javascript"
+    assert mimetypes.guess_type("desk.glb")[0] == "model/gltf-binary"

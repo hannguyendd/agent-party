@@ -7,6 +7,7 @@ office server) installs the package and calls `agentfleet-node start`; the dashb
 A repo checkout (`make up`) is not managed here.
 """
 
+import base64
 import json
 import os
 import platform
@@ -92,6 +93,11 @@ def _exe() -> str:
 
 def _run(*args: str) -> bool:
     return subprocess.run(list(args), capture_output=True).returncode == 0
+
+
+def _ps_str(text: str) -> str:
+    """A PowerShell single-quoted string literal (a quote inside is doubled)."""
+    return "'" + text.replace("'", "''") + "'"
 
 
 def _ps(command: str) -> bool:
@@ -253,16 +259,18 @@ def set_autostart(on: bool) -> bool:
         if not already:
             _run("systemctl", "--user", "start", LINUX_UNIT.name)
     else:
-        # Hidden PowerShell loop: restarts the node if it stops, until the task is stopped.
-        loop = f"while ($true) {{ & '{exe}' serve *>> '{LOG}'; Start-Sleep 3 }}"
-        cmd = (f"$a = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -WindowStyle Hidden -Command \"{loop}\"' "
-               f"-WorkingDirectory '{HOME}'; "
+        # Hidden PowerShell loop: restarts the node if it stops, until the task is stopped. Passed encoded, so the
+        # paths in it need no second layer of quoting inside the task's argument string.
+        loop = f"while ($true) {{ & {_ps_str(exe)} serve *>> {_ps_str(str(LOG))}; Start-Sleep 3 }}"
+        arg = "-NoProfile -WindowStyle Hidden -EncodedCommand " + base64.b64encode(loop.encode("utf-16-le")).decode()
+        cmd = (f"$a = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument {_ps_str(arg)} "
+               f"-WorkingDirectory {_ps_str(str(HOME))}; "
                f"$t = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME; "
                f"$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0; "
                f"Register-ScheduledTask -TaskName {WIN_TASK} -Action $a -Trigger $t -Settings $s -Force | Out-Null"
                + ("" if already else f"; Start-ScheduledTask -TaskName {WIN_TASK}"))
         for k, v in env.items():
-            _ps(f"[Environment]::SetEnvironmentVariable('{k}', '{v}', 'User')")
+            _ps(f"[Environment]::SetEnvironmentVariable({_ps_str(k)}, {_ps_str(v)}, 'User')")
         if not _ps(cmd):
             return False
     return _wait(True)

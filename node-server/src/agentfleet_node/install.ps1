@@ -6,6 +6,8 @@
 # $env:AGENTMESH_AUTOSTART='off' skips start-at-sign-in; $env:AGENTMESH_NO_OPEN=1 skips the browser;
 # $env:AGENTMESH_UPDATE=1 (the in-app Update) keeps the current choice.
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'   # Windows PowerShell's progress bar makes Invoke-WebRequest many times slower
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12   # GitHub / astral.sh
 $Server = '__SERVER__'      # the office server this script came from (host:port; '' for the GitHub copy)
 $Office = '__HOST__'        # prefilled as "Office server" in the setup form
 $Wheel = '__WHEEL__'
@@ -22,6 +24,15 @@ $Port = 9100
 function Say($m) { Write-Host "==> $m" -ForegroundColor Cyan }
 function Warn($m) { Write-Host "!!  $m" -ForegroundColor Yellow }
 function Die($m) { Write-Host "xx  $m" -ForegroundColor Red; throw $m }
+# Runs a program quietly and returns its exit code, showing its output only when it fails. Windows PowerShell 5.1
+# turns a program's stderr into errors (when redirected, as in the in-app Update) and 'Stop' makes them fatal, though
+# uv and friends write ordinary progress there.
+function Native([scriptblock]$Run) {
+  $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+  try { $out = & $Run 2>&1; $code = $LASTEXITCODE } finally { $ErrorActionPreference = $prev }
+  if ($code) { $out | ForEach-Object { Write-Host "    $_" } }
+  $code
+}
 
 Say "Installing $Title on this machine"
 if (-not $Wheel) { Die "The server has no node package yet. Ask your admin to run 'make server' again (it builds or downloads it)." }
@@ -49,7 +60,15 @@ if (-not $Got -and $GitHub) {
   try { Invoke-WebRequest "$GitHub/$Wheel" -OutFile $WheelPath -UseBasicParsing; $Got = $true } catch {}
 }
 if (-not $Got) { Die "Could not download the node package. Check this computer can open $(if ($Base) { $Base } else { $GitHub }) in a browser; if not, ask IT to allow it." }
-uv tool install --force --reinstall --python 3.12 $WheelPath | Out-Null
+if (-not $env:AGENTMESH_UPDATE) {
+  # Windows locks a running program's files: stop the node (and the sign-in task that restarts it) before replacing it.
+  try { Stop-ScheduledTask -TaskName AgentMeshNode -ErrorAction SilentlyContinue } catch {}
+  Get-Process agentfleet-node -ErrorAction SilentlyContinue | Stop-Process -Force
+  Start-Sleep -Seconds 1
+}
+if (Native { uv tool install --force --reinstall --python 3.12 $WheelPath }) {
+  Die "Could not install the node package (see above). If the node is still running, run 'agentfleet-node stop', then run this again."
+}
 $Node = (Get-Command agentfleet-node -ErrorAction SilentlyContinue).Source
 if (-not $Node) { $Node = Join-Path $Bin 'agentfleet-node.exe' }
 if (-not (Test-Path $Node)) { Die 'agentfleet-node was not installed' }
@@ -88,13 +107,18 @@ if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
 }
 
 # 5. Run it. Starting at sign-in is your choice (off unless you say yes); `agentfleet-node` shows a menu any time.
-uv tool update-shell 2>$null | Out-Null   # puts the tool folder on PATH for new terminals
+Native { uv tool update-shell } | Out-Null   # puts the tool folder on PATH for new terminals ("already in PATH" is fine)
 # Runs now and at every sign-in: online/offline is chosen in the app. $env:AGENTMESH_AUTOSTART='off' skips it.
 $Auto = $env:AGENTMESH_AUTOSTART
 if (-not $env:AGENTMESH_UPDATE -and -not $Auto) { $Auto = 'on' }
-if ($Auto -eq 'on') { & $Node autostart on | Out-Null }
-elseif ($Auto -eq 'off') { & $Node autostart off | Out-Null; & $Node restart | Out-Null }   # a "no" also undoes an earlier install's
-else { & $Node restart | Out-Null }
+if ($Auto -eq 'on') {
+  if (Native { & $Node autostart on }) {   # e.g. scheduled tasks blocked by IT policy: still run it for today
+    Warn 'Could not set it to start at sign-in; starting it now instead (use the Office shortcut after a restart).'
+    Native { & $Node start } | Out-Null
+  }
+}
+elseif ($Auto -eq 'off') { Native { & $Node autostart off } | Out-Null; Native { & $Node restart } | Out-Null }   # a "no" also undoes an earlier install's
+else { Native { & $Node restart } | Out-Null }
 
 $Ready = $false
 for ($i = 0; $i -lt 40; $i++) {
