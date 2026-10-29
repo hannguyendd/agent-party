@@ -148,7 +148,7 @@ Open the **Office shortcut** or http://127.0.0.1:9100 (bookmark it). Nothing els
 - **Keyboard**: ⌘K / Ctrl+K searches agents, chats and actions. `N` notifications, `M` message the selected agent,
   `G` then `O` / `H` / `S` for Office / History / Settings, `?` lists them. WASD / arrows walk the selected agent
   whenever you're not typing.
-- **Permissions** (agent card): *Read only* / *Can edit files* / *Full access*; "Ask me before it contacts others".
+- **Permissions** (agent card): *Read only* / *Can edit files* / *Autopilot* (edits and runs any command without asking); "Ask me before it contacts others".
 - **Claude usage** (agent card): how much of your Claude plan's 5-hour and weekly limits is used.
 
 ### Going offline / online
