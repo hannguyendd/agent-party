@@ -108,8 +108,9 @@ export function NotificationBell({ state, onOpen, onApprovals }: { state: LiveSt
 function QuickDecision({ state, n }: { state: LiveState; n: AppNotification }) {
   const [busy, setBusy] = useState(false)
   if (n.kind !== 'approval' && n.kind !== 'assignment') return null
-  const pending = Object.values(state.approvals).find((a) => a.conversation_id === n.conversation_id && a.status === 'pending')
-  if (!pending) return null
+  // Only the approval this row is about: older rows in the same chat must not offer to decide a newer one.
+  const pending = n.approval_id ? state.approvals[n.approval_id] : undefined
+  if (pending?.status !== 'pending') return null
   const assignment = n.kind === 'assignment'
   const decide = (allow: boolean) => {
     setBusy(true)

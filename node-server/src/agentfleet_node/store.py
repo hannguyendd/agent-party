@@ -262,8 +262,9 @@ class Store:
     # notifications (the bell)
 
     def add_notification(self, kind: str, title: str, body: str = "", conversation_id: str | None = None,
-                         agent_id: str | None = None) -> Notification:
-        n = Notification(kind=kind, title=title[:200], body=body, conversation_id=conversation_id, agent_id=agent_id)
+                         agent_id: str | None = None, approval_id: str | None = None) -> Notification:
+        n = Notification(kind=kind, title=title[:200], body=body, conversation_id=conversation_id, agent_id=agent_id,
+                         approval_id=approval_id)
         with self.db.session() as s:
             s.add(n)
             s.commit()

@@ -25,6 +25,7 @@ class NotificationService:
         self.bus = bus
         self._status: dict[str, str] = {}
         self._approvals: set[str] = set()
+        self._approval_notes: dict[str, str] = {}  # pending approval id -> its notification id
         self._recaps: dict[str, str] = {}
         self._task: asyncio.Task | None = None
 
@@ -50,18 +51,26 @@ class NotificationService:
         t = ev.get("type")
         if t == "approval":
             a = ev["approval"]
-            if a["status"] != "pending" or a["id"] in self._approvals:
+            if a["status"] != "pending":
+                # Decided (by the owner or by new permissions): its row no longer needs the owner. A timed-out one
+                # stays unread: the owner missed it.
+                note = self._approval_notes.pop(a["id"], None)
+                if note and a["status"] != "timed_out":
+                    self.store.mark_notifications_read([note])
+                return
+            if a["id"] in self._approvals:
                 return
             self._approvals.add(a["id"])
             conv = self.store.get_conversation(a["conversation_id"])
             agent = conv.agent_id if conv else ""
             inp = a.get("tool_input") or {}
             if a["tool_name"] == "Assignment":
-                self._add("assignment", f"{inp.get('from', 'Someone')} wants to assign work to {agent}", inp.get("task", ""), conv)
+                n = self._add("assignment", f"{inp.get('from', 'Someone')} wants to assign work to {agent}", inp.get("task", ""), conv, a["id"])
             elif a["tool_name"] in CONTACT_TOOLS:
-                self._add("approval", f"{agent} wants to message {inp.get('to', 'another agent')}", inp.get("text", ""), conv)
+                n = self._add("approval", f"{agent} wants to message {inp.get('to', 'another agent')}", inp.get("text", ""), conv, a["id"])
             else:
-                self._add("approval", f"{agent} wants to use {a['tool_name']}", "", conv)
+                n = self._add("approval", f"{agent} wants to use {a['tool_name']}", "", conv, a["id"])
+            self._approval_notes[a["id"]] = n.id
         elif t == "conversation":
             c = ev["conversation"]
             before = self._status.get(c["id"])
@@ -96,6 +105,6 @@ class NotificationService:
                 elif r["status"] == "error":
                     self._add("error", "A recap could not be written", "", self.store.get_conversation(r["conversation_id"]))
 
-    def _add(self, kind: str, title: str, body: str, conv) -> None:
-        self.store.add_notification(kind, title, (body or "").strip()[:200], conv.id if conv else None,
-                                    conv.agent_id if conv else None)
+    def _add(self, kind: str, title: str, body: str, conv, approval_id: str | None = None):
+        return self.store.add_notification(kind, title, (body or "").strip()[:200], conv.id if conv else None,
+                                           conv.agent_id if conv else None, approval_id)
