@@ -210,6 +210,8 @@ real-stack smoke in `node-server/CLAUDE.md`.
 
 ## 13. Known gaps
 
+Short version; the full, maintained list is in [HOW-IT-WORKS.md](HOW-IT-WORKS.md#known-gaps).
+
 - The sender's identity isn't verified by the mesh; the world server trusts the owner name a node claims.
 - Outbound calls block for the whole remote turn; long turns through the relay may hit limits.
 - No large-file upload via the hub, no standalone MCP adapter, no message paging.
