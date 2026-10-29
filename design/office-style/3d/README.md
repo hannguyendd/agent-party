@@ -13,3 +13,9 @@ Build computes candidates in memory but ships/registers **only layout-referenced
 All five shared map files are hash-frozen; no exporter is invoked. No app/server source, shared manifest, docs or other worktree is modified. No commit is made. REPORT.md, FILES.md and previews/index.html describe the current output.
 
 Preserve character GLB materials and embedded textures as authored. Do not replace them with the furniture palette in a runtime loader; character UV/material style is owned by the character agent. Furniture/kit retain the strict shared-palette contract.
+
+## Part G3 — continuous desk banks
+
+`bun run build` generates continuous desktop banks with 38 visual 2.0–2.25-tile modules, faint seams and 66 unique shared corner legs. Eighteen station-owned GLBs batch the modules without adding seams at station ownership boundaries. HR/MGR, all chair roots, the ×1.7 heights and monitor distances remain unchanged. `src/props/continuous-desks.ts` builds the desktop/support adaptation; remaining furniture stays Kenney CC0.
+
+Validation checks adjacent rows touch, full coverage of 210 blocked bank tiles, maximum 1.5-tile empty lateral desktop runs and at most one shared item per gap. `bun src/chars-validate.ts` independently checks the unchanged character inputs. New previews: `previews/g3/`; report: `REPORT.md`; frozen-input SHA proof: `reports/part-g3-proof.json`.

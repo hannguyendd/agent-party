@@ -1,6 +1,6 @@
-# G2 inventory · Kenney ×1.7
+# Part G3 inventory
 
-Character files are referenced read-only. Ignored raw archives/node_modules are excluded; no 3d-variants or KayKit runtime assets remain.
+Characters are referenced read-only. Raw archives/dependencies excluded.
 
 - `dashboard/public/office/3d/characters/alien.glb`
 - `dashboard/public/office/3d/characters/berserker.glb`
@@ -46,6 +46,24 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `dashboard/public/office/3d/props/counter.glb`
 - `dashboard/public/office/3d/props/desk-cactus.glb`
 - `dashboard/public/office/3d/props/desk-plant.glb`
+- `dashboard/public/office/3d/props/desk-row-d1.glb`
+- `dashboard/public/office/3d/props/desk-row-d10.glb`
+- `dashboard/public/office/3d/props/desk-row-d11.glb`
+- `dashboard/public/office/3d/props/desk-row-d12.glb`
+- `dashboard/public/office/3d/props/desk-row-d13.glb`
+- `dashboard/public/office/3d/props/desk-row-d14.glb`
+- `dashboard/public/office/3d/props/desk-row-d15.glb`
+- `dashboard/public/office/3d/props/desk-row-d16.glb`
+- `dashboard/public/office/3d/props/desk-row-d2.glb`
+- `dashboard/public/office/3d/props/desk-row-d3.glb`
+- `dashboard/public/office/3d/props/desk-row-d4.glb`
+- `dashboard/public/office/3d/props/desk-row-d5.glb`
+- `dashboard/public/office/3d/props/desk-row-d6.glb`
+- `dashboard/public/office/3d/props/desk-row-d7.glb`
+- `dashboard/public/office/3d/props/desk-row-d8.glb`
+- `dashboard/public/office/3d/props/desk-row-d9.glb`
+- `dashboard/public/office/3d/props/desk-row-m1.glb`
+- `dashboard/public/office/3d/props/desk-row-m2.glb`
 - `dashboard/public/office/3d/props/door-mat.glb`
 - `dashboard/public/office/3d/props/floor-lamp.glb`
 - `dashboard/public/office/3d/props/floor-palm.glb`
@@ -72,7 +90,6 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `dashboard/public/office/3d/props/office-chair.glb`
 - `dashboard/public/office/3d/props/paper-towels.glb`
 - `dashboard/public/office/3d/props/pc-tower.glb`
-- `dashboard/public/office/3d/props/plant-large.glb`
 - `dashboard/public/office/3d/props/plant-small.glb`
 - `dashboard/public/office/3d/props/reception-desk.glb`
 - `dashboard/public/office/3d/props/round-table.glb`
@@ -90,7 +107,6 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `dashboard/public/office/3d/props/wall-shelf.glb`
 - `dashboard/public/office/3d/props/water-bottle.glb`
 - `dashboard/public/office/3d/props/workstation-desk-compact.glb`
-- `dashboard/public/office/3d/props/workstation-desk.glb`
 - `design/office-style/3d/.gitignore`
 - `design/office-style/3d/FILES.md`
 - `design/office-style/3d/README.md`
@@ -219,9 +235,6 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `design/office-style/3d/previews/coffee-machine-turntable.png`
 - `design/office-style/3d/previews/coffee-table-turntable.png`
 - `design/office-style/3d/previews/company-sign-turntable.png`
-- `design/office-style/3d/previews/compare-3way.png`
-- `design/office-style/3d/previews/compare-left-bank-closeup-3way.png`
-- `design/office-style/3d/previews/compare-pantry-closeup-3way.png`
 - `design/office-style/3d/previews/corkboard-turntable.png`
 - `design/office-style/3d/previews/counter-compact-turntable.png`
 - `design/office-style/3d/previews/counter-turntable.png`
@@ -272,6 +285,16 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `design/office-style/3d/previews/g2/m1-m2-closeup.png`
 - `design/office-style/3d/previews/g2/manager-room-closeup.png`
 - `design/office-style/3d/previews/g2/pantry-closeup.png`
+- `design/office-style/3d/previews/g3/bottom-bench-closeup.png`
+- `design/office-style/3d/previews/g3/entrance-person-closeup.png`
+- `design/office-style/3d/previews/g3/full-office-000.png`
+- `design/office-style/3d/previews/g3/full-office-090.png`
+- `design/office-style/3d/previews/g3/full-office-180.png`
+- `design/office-style/3d/previews/g3/full-office-270.png`
+- `design/office-style/3d/previews/g3/left-bank-closeup.png`
+- `design/office-style/3d/previews/g3/m1-m2-closeup.png`
+- `design/office-style/3d/previews/g3/manager-room-closeup.png`
+- `design/office-style/3d/previews/g3/pantry-closeup.png`
 - `design/office-style/3d/previews/gaming-chair-turntable.png`
 - `design/office-style/3d/previews/glass-post-turntable.png`
 - `design/office-style/3d/previews/glass-wall-turntable.png`
@@ -323,21 +346,6 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `design/office-style/3d/previews/office-chair-turntable.png`
 - `design/office-style/3d/previews/pantry-closeup.png`
 - `design/office-style/3d/previews/paper-towels-turntable.png`
-- `design/office-style/3d/previews/part-g/baseline/bottom-bench-closeup.png`
-- `design/office-style/3d/previews/part-g/baseline/full-office-000.png`
-- `design/office-style/3d/previews/part-g/baseline/left-bank-closeup.png`
-- `design/office-style/3d/previews/part-g/baseline/manager-room-closeup.png`
-- `design/office-style/3d/previews/part-g/baseline/pantry-closeup.png`
-- `design/office-style/3d/previews/part-g/kaykit/bottom-bench-closeup.png`
-- `design/office-style/3d/previews/part-g/kaykit/full-office-000.png`
-- `design/office-style/3d/previews/part-g/kaykit/left-bank-closeup.png`
-- `design/office-style/3d/previews/part-g/kaykit/manager-room-closeup.png`
-- `design/office-style/3d/previews/part-g/kaykit/pantry-closeup.png`
-- `design/office-style/3d/previews/part-g/kenney/bottom-bench-closeup.png`
-- `design/office-style/3d/previews/part-g/kenney/full-office-000.png`
-- `design/office-style/3d/previews/part-g/kenney/left-bank-closeup.png`
-- `design/office-style/3d/previews/part-g/kenney/manager-room-closeup.png`
-- `design/office-style/3d/previews/part-g/kenney/pantry-closeup.png`
 - `design/office-style/3d/previews/pc-tower-turntable.png`
 - `design/office-style/3d/previews/pen-cup-turntable.png`
 - `design/office-style/3d/previews/penguin-turntable.png`
@@ -517,6 +525,14 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `design/office-style/3d/reports/part-g2-stations.json`
 - `design/office-style/3d/reports/part-g2-validate-working.txt`
 - `design/office-style/3d/reports/part-g2-validate.txt`
+- `design/office-style/3d/reports/part-g3-before-layout.json`
+- `design/office-style/3d/reports/part-g3-build.txt`
+- `design/office-style/3d/reports/part-g3-chars-validate.txt`
+- `design/office-style/3d/reports/part-g3-desks.json`
+- `design/office-style/3d/reports/part-g3-input-hashes.json`
+- `design/office-style/3d/reports/part-g3-preview.txt`
+- `design/office-style/3d/reports/part-g3-proof.json`
+- `design/office-style/3d/reports/part-g3-validate.txt`
 - `design/office-style/3d/reports/report-abc.md`
 - `design/office-style/3d/reports/report-d-before-e.md`
 - `design/office-style/3d/reports/report-e-before-characters.md`
@@ -574,6 +590,8 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `design/office-style/3d/src/g2/scale.ts`
 - `design/office-style/3d/src/g2/validate.ts`
 - `design/office-style/3d/src/g2/vendors.ts`
+- `design/office-style/3d/src/g3/check.ts`
+- `design/office-style/3d/src/g3/report.ts`
 - `design/office-style/3d/src/kit/air-conditioner.ts`
 - `design/office-style/3d/src/kit/door-glass-double.ts`
 - `design/office-style/3d/src/kit/door-glass.ts`
@@ -627,6 +645,7 @@ Character files are referenced read-only. Ignored raw archives/node_modules are 
 - `design/office-style/3d/src/props/coffee-machine.ts`
 - `design/office-style/3d/src/props/coffee-table.ts`
 - `design/office-style/3d/src/props/company-sign.ts`
+- `design/office-style/3d/src/props/continuous-desks.ts`
 - `design/office-style/3d/src/props/corkboard.ts`
 - `design/office-style/3d/src/props/counter-compact.ts`
 - `design/office-style/3d/src/props/counter-wide.ts`

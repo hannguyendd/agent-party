@@ -75,24 +75,6 @@
         ]
       }
     },
-    "workstation-desk": {
-      "sourceModel": "desk",
-      "fallback": false,
-      "triangles": 198,
-      "sourceSeat": null,
-      "bounds": {
-        "min": [
-          -1.5299999713897705,
-          0,
-          -1.1899999380111694
-        ],
-        "max": [
-          1.5299999713897705,
-          1.2599999904632568,
-          1.1899999380111694
-        ]
-      }
-    },
     "workstation-desk-compact": {
       "sourceModel": "desk",
       "fallback": false,
@@ -456,24 +438,6 @@
         ]
       }
     },
-    "plant-large": {
-      "sourceModel": "pottedPlant",
-      "fallback": false,
-      "triangles": 60,
-      "sourceSeat": null,
-      "bounds": {
-        "min": [
-          -0.9507061243057251,
-          0,
-          -0.9614386558532715
-        ],
-        "max": [
-          0.9507061243057251,
-          2.8988451957702637,
-          0.9614386558532715
-        ]
-      }
-    },
     "plant-small": {
       "sourceModel": "plantSmall2",
       "fallback": false,
@@ -677,6 +641,24 @@
     "sun-patch": "Kenney does not cover this id; own ×1.7 model.",
     "sun-patch-edge": "Kenney does not cover this id; own ×1.7 model.",
     "cable-cover": "Kenney does not cover this id; own ×1.7 model.",
-    "floor-sticker": "Kenney does not cover this id; own ×1.7 model."
+    "floor-sticker": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d1": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d3": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d5": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d7": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d2": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d4": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d6": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d8": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d9": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d10": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d11": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d12": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d13": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d14": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d15": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-d16": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-m1": "Kenney does not cover this id; own ×1.7 model.",
+    "desk-row-m2": "Kenney does not cover this id; own ×1.7 model."
   }
 }

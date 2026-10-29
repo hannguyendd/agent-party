@@ -1,7 +1,7 @@
 import * as T from 'three';import {vertexAlpha} from '../primitives';
 import {mountIds,flatDIds} from '../props/part-d';
 export const flatIds=new Set(['floor-tile','floor-manager','door-mat','rug-lavender','rug-mint','rug-meeting-corner','card-mat','ludo-mat',...flatDIds]);
-export const surfaceIds=new Set(['desk','desk-long','workstation-desk','workstation-desk-compact','reception-desk','meeting-table']);
+export const surfaceIds=new Set(['desk','desk-long','workstation-desk','workstation-desk-compact','reception-desk','meeting-table',...['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','M1','M2'].map(s=>'desk-row-'+s.toLowerCase())]);
 export const perimeterIds=new Set(['wall-straight','wall-blind','wall-column','wall-corner','wall-door','wall-half','window-wall','door-glass-double']);
 export const glassIds=new Set(['glass-wall','glass-post','door-glass']);
 export function bounds(d:any){const box=new T.Box3();for(const n of d.getRoot().listNodes())if(n.getMesh())for(const p of n.getMesh().listPrimitives()){const a=p.getAttribute('POSITION'),matrix=new T.Matrix4().fromArray(n.getWorldMatrix());for(let i=0;i<a.getCount();i++)box.expandByPoint(new T.Vector3().fromArray(a.getElement(i,[])).applyMatrix4(matrix));}return {min:box.min.toArray(),max:box.max.toArray()};}

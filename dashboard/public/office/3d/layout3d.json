@@ -144,13 +144,6 @@
       ]
     },
     {
-      "model": "plant-large",
-      "x": 11.5,
-      "z": 11.5,
-      "rot": 0,
-      "walkable": false
-    },
-    {
       "model": "plant-small",
       "x": 27.5,
       "z": 11.5,
@@ -11469,15 +11462,16 @@
       "station": "D1"
     },
     {
-      "model": "workstation-desk",
-      "x": 10.81,
-      "z": 9.5,
-      "rot": 270,
+      "model": "desk-row-d1",
+      "x": 10.525000000372529,
+      "z": 9.25,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D1",
       "station": "D1",
       "role": "station-desk",
-      "desktopY": 1.26
+      "desktopY": 1.26,
+      "bank": "left"
     },
     {
       "model": "monitor-dual",
@@ -11578,15 +11572,16 @@
       "station": "D2"
     },
     {
-      "model": "workstation-desk",
-      "x": 13.19,
-      "z": 9.5,
-      "rot": 90,
+      "model": "desk-row-d2",
+      "x": 13.5,
+      "z": 9.25,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D2",
       "station": "D2",
       "role": "station-desk",
-      "desktopY": 1.26
+      "desktopY": 1.26,
+      "bank": "left"
     },
     {
       "model": "monitor-dual",
@@ -11687,15 +11682,16 @@
       "station": "D3"
     },
     {
-      "model": "workstation-desk",
-      "x": 10.81,
-      "z": 13.5,
-      "rot": 270,
+      "model": "desk-row-d3",
+      "x": 10.525000000372529,
+      "z": 13.525000000372529,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D3",
       "station": "D3",
       "role": "station-desk",
-      "desktopY": 1.26
+      "desktopY": 1.26,
+      "bank": "left"
     },
     {
       "model": "monitor-dual",
@@ -11796,15 +11792,16 @@
       "station": "D4"
     },
     {
-      "model": "workstation-desk",
-      "x": 13.19,
-      "z": 13.5,
-      "rot": 90,
+      "model": "desk-row-d4",
+      "x": 13.5,
+      "z": 13.525000000372529,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D4",
       "station": "D4",
       "role": "station-desk",
-      "desktopY": 1.26
+      "desktopY": 1.26,
+      "bank": "left"
     },
     {
       "model": "monitor-dual",
@@ -11905,15 +11902,16 @@
       "station": "D5"
     },
     {
-      "model": "workstation-desk",
-      "x": 10.81,
+      "model": "desk-row-d5",
+      "x": 10.525000000372529,
       "z": 17.5,
-      "rot": 270,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D5",
       "station": "D5",
       "role": "station-desk",
-      "desktopY": 1.26
+      "desktopY": 1.26,
+      "bank": "left"
     },
     {
       "model": "monitor-dual",
@@ -12014,15 +12012,16 @@
       "station": "D6"
     },
     {
-      "model": "workstation-desk",
-      "x": 13.19,
+      "model": "desk-row-d6",
+      "x": 13.5,
       "z": 17.5,
-      "rot": 90,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D6",
       "station": "D6",
       "role": "station-desk",
-      "desktopY": 1.26
+      "desktopY": 1.26,
+      "bank": "left"
     },
     {
       "model": "monitor-dual",
@@ -12123,15 +12122,16 @@
       "station": "D7"
     },
     {
-      "model": "workstation-desk",
-      "x": 10.81,
-      "z": 21.5,
-      "rot": 270,
+      "model": "desk-row-d7",
+      "x": 10.525000000372529,
+      "z": 21.75,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D7",
       "station": "D7",
       "role": "station-desk",
-      "desktopY": 1.26
+      "desktopY": 1.26,
+      "bank": "left"
     },
     {
       "model": "monitor-dual",
@@ -12232,15 +12232,16 @@
       "station": "D8"
     },
     {
-      "model": "workstation-desk",
-      "x": 13.19,
-      "z": 21.5,
-      "rot": 90,
+      "model": "desk-row-d8",
+      "x": 13.5,
+      "z": 21.75,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D8",
       "station": "D8",
       "role": "station-desk",
-      "desktopY": 1.26
+      "desktopY": 1.26,
+      "bank": "left"
     },
     {
       "model": "monitor-dual",
@@ -12341,20 +12342,16 @@
       "station": "D9"
     },
     {
-      "model": "workstation-desk",
+      "model": "desk-row-d9",
       "x": 18.5,
-      "z": 27.1,
-      "rot": 180,
+      "z": 27.02500000037253,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D9",
       "station": "D9",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        1,
-        1,
-        0.7563025604053036
-      ]
+      "bank": "bottom"
     },
     {
       "model": "monitor-dual",
@@ -12460,20 +12457,16 @@
       "station": "D10"
     },
     {
-      "model": "workstation-desk",
+      "model": "desk-row-d10",
       "x": 23.5,
-      "z": 27.1,
-      "rot": 180,
+      "z": 27.02500000037253,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D10",
       "station": "D10",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        1,
-        1,
-        0.7563025604053036
-      ]
+      "bank": "bottom"
     },
     {
       "model": "monitor-dual",
@@ -12579,20 +12572,16 @@
       "station": "D11"
     },
     {
-      "model": "workstation-desk",
+      "model": "desk-row-d11",
       "x": 28.5,
-      "z": 27.1,
-      "rot": 180,
+      "z": 27.02500000037253,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D11",
       "station": "D11",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        1,
-        1,
-        0.7563025604053036
-      ]
+      "bank": "bottom"
     },
     {
       "model": "monitor-dual",
@@ -12698,20 +12687,16 @@
       "station": "D12"
     },
     {
-      "model": "workstation-desk",
+      "model": "desk-row-d12",
       "x": 33.5,
-      "z": 27.1,
-      "rot": 180,
+      "z": 27.02500000037253,
+      "rot": 0,
       "walkable": false,
       "id": "desk-D12",
       "station": "D12",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        1,
-        1,
-        0.7563025604053036
-      ]
+      "bank": "bottom"
     },
     {
       "model": "monitor-dual",
@@ -12817,20 +12802,16 @@
       "station": "D13"
     },
     {
-      "model": "workstation-desk",
+      "model": "desk-row-d13",
       "x": 18.5,
-      "z": 28.9,
+      "z": 29,
       "rot": 0,
       "walkable": false,
       "id": "desk-D13",
       "station": "D13",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        1,
-        1,
-        0.7563025604053036
-      ]
+      "bank": "bottom"
     },
     {
       "model": "monitor-dual",
@@ -12936,20 +12917,16 @@
       "station": "D14"
     },
     {
-      "model": "workstation-desk",
+      "model": "desk-row-d14",
       "x": 23.5,
-      "z": 28.9,
+      "z": 29,
       "rot": 0,
       "walkable": false,
       "id": "desk-D14",
       "station": "D14",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        1,
-        1,
-        0.7563025604053036
-      ]
+      "bank": "bottom"
     },
     {
       "model": "monitor-dual",
@@ -13055,20 +13032,16 @@
       "station": "D15"
     },
     {
-      "model": "workstation-desk",
+      "model": "desk-row-d15",
       "x": 28.5,
-      "z": 28.9,
+      "z": 29,
       "rot": 0,
       "walkable": false,
       "id": "desk-D15",
       "station": "D15",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        1,
-        1,
-        0.7563025604053036
-      ]
+      "bank": "bottom"
     },
     {
       "model": "monitor-dual",
@@ -13174,20 +13147,16 @@
       "station": "D16"
     },
     {
-      "model": "workstation-desk",
+      "model": "desk-row-d16",
       "x": 33.5,
-      "z": 28.9,
+      "z": 29,
       "rot": 0,
       "walkable": false,
       "id": "desk-D16",
       "station": "D16",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        1,
-        1,
-        0.7563025604053036
-      ]
+      "bank": "bottom"
     },
     {
       "model": "monitor-dual",
@@ -13293,20 +13262,16 @@
       "station": "M1"
     },
     {
-      "model": "workstation-desk",
-      "x": 26.31,
-      "z": 14.5,
-      "rot": 270,
+      "model": "desk-row-m1",
+      "x": 25.77500000037253,
+      "z": 14,
+      "rot": 0,
       "walkable": false,
       "id": "desk-M1",
       "station": "M1",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        0.98,
-        1,
-        1
-      ]
+      "bank": "middle"
     },
     {
       "model": "monitor-dual",
@@ -13407,20 +13372,16 @@
       "station": "M2"
     },
     {
-      "model": "workstation-desk",
-      "x": 28.69,
-      "z": 14.5,
-      "rot": 90,
+      "model": "desk-row-m2",
+      "x": 29.25,
+      "z": 14,
+      "rot": 0,
       "walkable": false,
       "id": "desk-M2",
       "station": "M2",
       "role": "station-desk",
       "desktopY": 1.26,
-      "scale": [
-        0.98,
-        1,
-        1
-      ]
+      "bank": "middle"
     },
     {
       "model": "monitor-dual",
@@ -14104,6 +14065,246 @@
       "facing": "east",
       "y": 2.85,
       "wallId": "east-wall-straight-54.5-31.5"
+    },
+    {
+      "model": "desk-cactus",
+      "x": 10.6,
+      "z": 11.5,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "left",
+      "sharedGap": [
+        "D1",
+        "D3"
+      ],
+      "support": "desk-D1",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 10.6,
+      "z": 15.5,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "left",
+      "sharedGap": [
+        "D3",
+        "D5"
+      ],
+      "support": "desk-D3",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 10.6,
+      "z": 19.5,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "left",
+      "sharedGap": [
+        "D5",
+        "D7"
+      ],
+      "support": "desk-D5",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 13.4,
+      "z": 11.5,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "left",
+      "sharedGap": [
+        "D2",
+        "D4"
+      ],
+      "support": "desk-D2",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 13.4,
+      "z": 15.5,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "left",
+      "sharedGap": [
+        "D4",
+        "D6"
+      ],
+      "support": "desk-D4",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 13.4,
+      "z": 19.5,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "left",
+      "sharedGap": [
+        "D6",
+        "D8"
+      ],
+      "support": "desk-D6",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 21,
+      "z": 27.6,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "bottom",
+      "sharedGap": [
+        "D9",
+        "D10"
+      ],
+      "support": "desk-D9",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 26,
+      "z": 27.6,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "bottom",
+      "sharedGap": [
+        "D10",
+        "D11"
+      ],
+      "support": "desk-D10",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 31,
+      "z": 27.6,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "bottom",
+      "sharedGap": [
+        "D11",
+        "D12"
+      ],
+      "support": "desk-D11",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 21,
+      "z": 28.4,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "bottom",
+      "sharedGap": [
+        "D13",
+        "D14"
+      ],
+      "support": "desk-D13",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 26,
+      "z": 28.4,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "bottom",
+      "sharedGap": [
+        "D14",
+        "D15"
+      ],
+      "support": "desk-D14",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
+    },
+    {
+      "model": "desk-cactus",
+      "x": 31,
+      "z": 28.4,
+      "rot": 0,
+      "y": 1.26,
+      "walkable": false,
+      "role": "shared-desk-item",
+      "bank": "bottom",
+      "sharedGap": [
+        "D15",
+        "D16"
+      ],
+      "support": "desk-D15",
+      "scale": [
+        0.7,
+        1,
+        0.7
+      ]
     }
   ],
   "walls": [
@@ -16036,9 +16237,10 @@
     },
     "foldingFurniture": "Built but unplaced; see REQUESTS-3D.md",
     "workstations": "Monitors at 1.2 tiles on each seat axis. Deep blocked padding is a low shared spine.",
-    "partG2": "Kenney default; nominal ×1.7, seat 0.85 / desk 1.26. Facing desktops meet without a spine; HR monitor exception is 1.4 tiles. Characters read-only."
+    "partG2": "Kenney default; nominal ×1.7, seat 0.85 / desk 1.26. Facing desktops meet without a spine; HR monitor exception is 1.4 tiles. Characters read-only.",
+    "partG3": "Continuous desk banks; real ~2.0–2.25 tile module seams, unique shared corner legs. HR/MGR unchanged."
   },
-  "revision": "g2",
+  "revision": "g3",
   "facingPairs": [
     [
       "D1",
@@ -16076,5 +16278,94 @@
       "M1",
       "M2"
     ]
+  ],
+  "deskBanks": [
+    {
+      "id": "left",
+      "axis": "z",
+      "x0": 9,
+      "x1": 15,
+      "z0": 7,
+      "z1": 24,
+      "split": 12,
+      "rows": [
+        [
+          "D1",
+          "D3",
+          "D5",
+          "D7"
+        ],
+        [
+          "D2",
+          "D4",
+          "D6",
+          "D8"
+        ]
+      ],
+      "cuts": [
+        7,
+        11.5,
+        15.5,
+        19.5,
+        24
+      ],
+      "n": 8,
+      "moduleWidth": 2.125
+    },
+    {
+      "id": "bottom",
+      "axis": "x",
+      "x0": 16,
+      "x1": 36,
+      "z0": 26,
+      "z1": 30,
+      "split": 28,
+      "rows": [
+        [
+          "D9",
+          "D10",
+          "D11",
+          "D12"
+        ],
+        [
+          "D13",
+          "D14",
+          "D15",
+          "D16"
+        ]
+      ],
+      "cuts": [
+        16,
+        21,
+        26,
+        31,
+        36
+      ],
+      "n": 9,
+      "moduleWidth": 2.2222222222222223
+    },
+    {
+      "id": "middle",
+      "axis": "z",
+      "x0": 24,
+      "x1": 31,
+      "z0": 12,
+      "z1": 16,
+      "split": 27.5,
+      "rows": [
+        [
+          "M1"
+        ],
+        [
+          "M2"
+        ]
+      ],
+      "cuts": [
+        12,
+        16
+      ],
+      "n": 2,
+      "moduleWidth": 2
+    }
   ]
 }

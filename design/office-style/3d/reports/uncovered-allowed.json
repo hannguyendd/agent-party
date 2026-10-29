@@ -176,64 +176,6 @@
     "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
   },
   {
-    "id": "g2-padding-9",
-    "tiles": [
-      [
-        24,
-        12
-      ],
-      [
-        25,
-        12
-      ],
-      [
-        24,
-        13
-      ],
-      [
-        26,
-        12
-      ],
-      [
-        24,
-        14
-      ],
-      [
-        27,
-        12
-      ],
-      [
-        24,
-        15
-      ],
-      [
-        28,
-        12
-      ],
-      [
-        29,
-        12
-      ],
-      [
-        30,
-        12
-      ],
-      [
-        30,
-        13
-      ],
-      [
-        30,
-        14
-      ],
-      [
-        30,
-        15
-      ]
-    ],
-    "reason": "Frozen 2D furniture/shadow padding around the fitted larger furniture; deliberately empty after decluttering."
-  },
-  {
     "id": "g2-padding-10",
     "tiles": [
       [

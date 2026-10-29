@@ -1,80 +1,77 @@
-# Office 3D — Part G2 · Kenney ×1.7
+# Office 3D — Part G3 · Continuous desk rows
 
-The owner changed the requested factor from ×1.8 to **×1.7**. Kenney is now the sole default furniture set. No shared map, app/server source, shared manifest or docs were changed; no commit was made. Character source and GLBs remain read-only and owned by the separate character agent.
+Kenney remains the default furniture set at the unchanged ×1.7 contract: seat 0.85, desktop/items 1.26, perimeter 5.1. Characters, all shared map files, HR and MGR station objects are unchanged. No commit made.
 
-## Current status
+## Continuous banks
 
-Full validation passes, including the external character contract.
+The left bank covers x=9..14 / rows 7..23; bottom bench x=16..35 / rows 26..29; M1/M2 x=24..30 / rows 12..15. All **210 blocked bank tiles** have a complete desktop above them. Facing back edges and neighbouring station surfaces touch without connectors or spines.
 
-## Scale contract
+There are **38 visual modules**, 2.0–2.25 tiles wide, with faint inset seams. They are batched into 18 station-owned GLBs for independent equipment ownership; station batching boundaries add no visible seam. 66 unique corner legs are emitted once across each bank, including the facing shared edge. Desktop slabs and shared support geometry are purpose-built adaptations: unmodified native Kenney desks would retain doubled legs/pedestals at the joins. The rest of the Kenney furniture remains converted from the bundled CC0 sources.
 
-| Field | G2 ×1.7 |
-|---|---:|
-| Seat top | 0.85 |
-| Desktop / desktop items | 1.26 |
-| Perimeter walls | 5.1 |
-| Door openings | 3.7 (validated ≥3.6) |
-| Frosted room | 4.35 |
-| Deep wall decor bottom | ≥2.85 |
-| Standard monitor distance | 2.1 (validated 1.9–2.3) |
-| HR monitor distance | 1.4, owner-approved exception |
-| Read-only character height / width | 2.2–2.55 / ≤1.6 |
-| Seat-chair span | ≤1.5 |
+Standard monitors remain 2.1 tiles from their seat axis, facing the sitter; HR retains its approved 1.4 exception. Each workstation keeps ≤3 personal items. Twelve inter-seat gaps receive exactly one shared cactus each; no new printers. Ground fillers inside desk banks are removed. Uncovered allowed-padding clusters are regenerated with bank tiles removed.
 
-Floor tiles, rugs, mats and sunlight retain their original size. Furniture uses original 1.0 recipes scaled once to ×1.7, then horizontal fitting only where frozen blocked tiles or a supporting desk require it. MGR’s one-tile approach and HR’s right entry still impose narrow equipment footprints; HR’s reception top remains left-biased.
+| Bank | Covered tiles | Module width | Maximum row gap | Longest empty desktop run |
+|---|---:|---:|---:|---:|
+| left | 102 | 2.125 | 0.000000 | 1.191 |
+| bottom | 80 | 2.222 | 0.000000 | 1.191 |
+| middle | 28 | 2.000 | 0.000000 | 1.191 |
 
-## Facing desks touch
+## Models / triangles
 
-No spine, cabinet strip, return, apron or connector is instanced between the nine facing pairs. Each pair’s back edges meet at the bank midpoint. Bottom-pair depths are shrunk to 1.8 tiles to fit the four blocked rows.
+The 18 station surface models replace the former paired workstation-desk instances. HR reception-desk and MGR compact desk remain unchanged.
 
-| Pair | Back-edge gap |
-|---|---:|
-| D1 / D2 | 0.000000 |
-| D3 / D4 | 0.000000 |
-| D5 / D6 | 0.000000 |
-| D7 / D8 | 0.000000 |
-| D9 / D13 | 0.000000 |
-| D10 / D14 | 0.000000 |
-| D11 / D15 | 0.000000 |
-| D12 / D16 | 0.000000 |
-| M1 / M2 | 0.000000 |
+- desk-row-d1: 108 triangles
+- desk-row-d3: 72 triangles
+- desk-row-d5: 48 triangles
+- desk-row-d7: 108 triangles
+- desk-row-d2: 72 triangles
+- desk-row-d4: 48 triangles
+- desk-row-d6: 36 triangles
+- desk-row-d8: 72 triangles
+- desk-row-d9: 108 triangles
+- desk-row-d10: 84 triangles
+- desk-row-d11: 84 triangles
+- desk-row-d12: 108 triangles
+- desk-row-d13: 72 triangles
+- desk-row-d14: 60 triangles
+- desk-row-d15: 60 triangles
+- desk-row-d16: 72 triangles
+- desk-row-m1: 96 triangles
+- desk-row-m2: 60 triangles
 
-All standard monitors remain on their sitter axis and own desktop, facing the sitter, at 2.1 tiles. HR stays at the explicitly approved 1.4 exception. Each station retains keyboard/mouse and at most three side items; towers are under the same desk.
-
-## Cleaned assets
-
-- Deleted dashboard/public/office/3d-variants/ entirely.
-- Deleted vendor/kaykit/ and vendor-src/kaykit/ entirely.
-- Pruned unreferenced shipped GLBs: **50 props + 3 kit pieces** from the Part G library. Only 57 props and 12 kit ids remain registered; all 16 character ids remain read-only.
-- Pruned unused Kenney source models; vendor/kenney/ keeps only active source GLBs and its original bundled CC0 LICENSE. Raw Kenney ZIP is ignored; unpacked unused raw files are removed. Authoring recipes/history are retained, not shipped.
-- 36 active ids use converted Kenney geometry; 21 unsupported/over-budget ids use our own models. models3d.json is synchronized with manifest-models3d.json.models3d and points directly at the default props.
+Total scene: **150813 / 500,000 triangles**. Allowed-empty blocked padding: 67 tiles.
 
 ## Validation
 
+New checks use actual mesh top bounds: adjacent row gaps ≤0.05, full tile-area coverage, no empty lateral desktop run >1.5, ≤1 shared item per gap. Negative row-gap and removed-shared-item mutations must fail. Existing blocked-footprint, facing-pair, monitor ownership, chair, palette and triangle checks remain enabled.
+
 ```text
-PASS kenney: 85 GLBs, all triangle budgets; furniture/kit embedded shared palette and origin; 20/20 seat chairs at 0.85; 20 desktops at 1.26; monitors 1.9–2.3 tiles (HR approved 1.4 exception); <=3 desk items; 20 sparse nonrepeating wall decorations; 151893/500000 scene triangles.
+PASS kenney: 101 GLBs, all triangle budgets; furniture/kit embedded shared palette and origin; 20/20 seat chairs at 0.85; 20 desktops at 1.26; monitors 1.9–2.3 tiles (HR approved 1.4 exception); <=3 desk items; 20 sparse nonrepeating wall decorations; 150813/500000 scene triangles.
 PASS negative checks: moved chairs, distant/off-axis/reversed monitors, excess clutter, wrong desk support, walkable obstacles and low wall decor are rejected.
 PASS characters: 16 read-only ids, node tree, 8 clips, height 2.2–2.55 / width <=1.6.
 PASS rooms: perimeter 5.1, frosted room 4.35, original wall/window footprints, unchanged flat floor/rug/mat/sun-patch sizes.
 PASS frozen shared map: background.png, foreground.png, collision.png, collision@16x.png and seats.json byte-identical to finished Part F.
 PASS doors: both actual leaf heights >=3.6; original hinge nodes and 0.6s clips.
 PASS Kenney default, raw models3d.json synchronized; no spine/connector; all nine facing pairs touch within 0.05.
+PASS G3: adjacent row desks touch <=0.05; 210 blocked bank tiles fully covered; no empty desktop run >1.5; one shared item per gap. Row-gap and bare-run negative checks pass.
 PASS asset cleanup: only layout-referenced props/kit GLBs remain; no variants or KayKit directories.
 ```
 
-Current scene triangles (with current read-only character inputs): 151893. Empty blocked padding tiles: 80. Checks reject changed seat centres, off-axis/distant/reversed monitors, too much clutter, wrong support, walkable overlaps, low decor, desktop gaps >0.05 and spine/connectors.
+Independent chars-validate: see reports/part-g3-chars-validate.txt. SHA-256 checks prove character source/GLBs and map inputs unchanged during G3. No character generation is called.
 
-## Preview paths
+## Previews
 
-- previews/g2/full-office-000.png
-- previews/g2/full-office-090.png
-- previews/g2/full-office-180.png
-- previews/g2/full-office-270.png
-- previews/g2/left-bank-closeup.png
-- previews/g2/bottom-bench-closeup.png
-- previews/g2/m1-m2-closeup.png
-- previews/g2/pantry-closeup.png
-- previews/g2/manager-room-closeup.png
-- previews/g2/entrance-person-closeup.png
+- previews/g3/full-office-000.png
+- previews/g3/full-office-090.png
+- previews/g3/full-office-180.png
+- previews/g3/full-office-270.png
+- previews/g3/left-bank-closeup.png
+- previews/g3/bottom-bench-closeup.png
+- previews/g3/m1-m2-closeup.png
+- previews/g3/pantry-closeup.png
+- previews/g3/manager-room-closeup.png
+- previews/g3/entrance-person-closeup.png
 
-Entry points: bun run build / validate / preview inside this package. For independent furniture checks while character input is pending: bun src/g2/validate.ts --furniture-only. Full validate intentionally exits nonzero until character inputs meet the agreed contract. No character generation is invoked. Character GLB textures/materials are preserved as authored by the character agent; furniture palette/UV checks are not imposed on them.
+## Contract exceptions
+
+Only the existing owner-approved HR monitor distance (1.4) and seat-chair placement exceptions remain. No new collision exceptions. The desktop module geometry is a custom adaptation for shared supports, rather than an untouched Kenney desk.
