@@ -66,6 +66,36 @@
   }
 
   // ---------------------------------------------------------------------------------------------------------------
+  // The welcome parade: groups walk one floor line at one speed. Groups are spaced by their real width (a group of n
+  // is 64 + 46 * (n - 1) px) so they never touch; on a narrow screen the groups that don't fit stay home. The
+  // talkers take turns: each shows its line for ~3 s of a 12 s cycle, offset so only one bubble is up at a time.
+  function parade() {
+    var floor = document.querySelector('.floor'), groups = [].slice.call(floor.querySelectorAll('.group'));
+    var SPEED = 42, EDGE = 260, GAP = 90; // px per second; off-screen margin each side; least space between groups
+    function arrange() {
+      var travel = floor.clientWidth + 2 * EDGE, used = 0, shown = [];
+      groups.forEach(function (g) {
+        var w = 64 + 46 * (g.querySelectorAll('i').length - 1);
+        if (used + w + GAP <= travel) { shown.push({ g: g, w: w }); used += w + GAP; }
+        g.hidden = true;
+      });
+      var slack = (travel - used) / Math.max(1, shown.length), dur = travel / SPEED, pos = 0, talker = 0;
+      shown.forEach(function (it) {
+        var g = it.g;
+        g.hidden = false;
+        g.style.setProperty('--dur', dur.toFixed(2) + 's');
+        g.style.setProperty('--delay', (-pos / SPEED).toFixed(2) + 's');
+        if (reduce) g.style.translate = (pos - EDGE) + 'px 0';
+        if (g.hasAttribute('data-talks')) g.style.setProperty('--t', (-3 * talker++) + 's');
+        pos += it.w + GAP + slack;
+      });
+    }
+    arrange();
+    var queued = 0;
+    addEventListener('resize', function () { clearTimeout(queued); queued = setTimeout(arrange, 150); });
+  }
+
+  // ---------------------------------------------------------------------------------------------------------------
   // Intro -> loader -> office. The office loads behind the welcome screen from the start. "Come in" (a click or any
   // key) shrinks the name into the loader; the office shows once it is ready and the letters had a moment.
   function welcome(layout) {
@@ -344,6 +374,7 @@
 
   // ---------------------------------------------------------------------------------------------------------------
   stars();
+  parade();
   var page = welcome(pageLayout());
   AgentParty.start().then(function (office) {
     var view = office.view($('office'));
