@@ -17,12 +17,7 @@ for d in map characters characters48 ui; do cp -R "dashboard/public/office/$d" "
 SRC_3D=${OFFICE_3D_DIR:-dashboard/public/office/3d}
 if [ -f "$SRC_3D/layout3d.json" ]; then
   mkdir -p "$OUT/office/3d"
-  cp -R "$SRC_3D/layout3d.json" "$SRC_3D/props" "$SRC_3D/kit" "$SRC_3D/characters" "$OUT/office/3d/"
-  # Which folder each model is in, so the page loads each one once without guessing.
-  ( cd "$OUT/office/3d" && printf '{"props": [%s], "kit": [%s], "characters": [%s]}\n' \
-      "$(ls props | sed -n 's/\.glb$//p' | sed 's/.*/"&"/' | paste -sd, -)" \
-      "$(ls kit | sed -n 's/\.glb$//p' | sed 's/.*/"&"/' | paste -sd, -)" \
-      "$(ls characters | sed -n 's/\.glb$//p' | sed 's/.*/"&"/' | paste -sd, -)" > models.json )
+  cp -R "$SRC_3D/layout3d.json" "$SRC_3D/models3d.json" "$SRC_3D/props" "$SRC_3D/kit" "$SRC_3D/characters" "$OUT/office/3d/"
   echo "with the 3D office from $SRC_3D"
 else
   echo "no 3D office yet: the 3D switch tilts the 2D map"

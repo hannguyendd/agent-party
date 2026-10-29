@@ -276,7 +276,10 @@
     });
     addEventListener('resize', apply2d);
 
-    page.onReveal(function () { setTimeout(build3d, 1500); }); // so the 3D switch is instant later
+    // Build the 3D office in the background once the office shows, so the switch is instant later. The characters
+    // weigh ~18 MB, so only on a computer and when the browser isn't saving data; elsewhere it loads on first use.
+    var saveData = navigator.connection && navigator.connection.saveData;
+    if (!saveData && matchMedia('(min-width: 901px) and (pointer: fine)').matches) page.onReveal(function () { setTimeout(build3d, 1500); });
     setMode(store.get(VIEW_KEY) === '3d' ? '3d' : '2d');
   }
 

@@ -21,7 +21,7 @@ product: nothing here talks to a node, the mesh or the world server, and every a
   character (`You`) spawns at the door on the first WASD key or floor click; `E` says hi to the agent in reach.
   `mapView` draws the map and sprites with DOM elements. `addView()` lets another renderer follow the same sim.
 - `office3d.js`: the real 3D view (ES module, three.js r160 from jsDelivr through the import map in `index.html`),
-  loaded on first use of the 3D switch. It reads `office/3d/layout3d.json` and `models.json`, instances every
+  loaded on first use of the 3D switch. It reads `office/3d/models3d.json` and `layout3d.json`, instances every
   repeated model (floor tiles, walls, desk sets), lowers the walls on the camera's side, and gives each simulated
   agent its 3D character with the clips `walk / type / sit-idle / talk / idle / wave`; name tags and typing dots
   are DOM labels projected from the 3D positions. Clicking the floor walks you there. The camera orbits the office
@@ -51,11 +51,13 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 - **The map always fits between the chip bar and the bottom bar**: `pageLayout()` in `app.js` sizes the left
   column from the height (ResizeObserver on the main area and both bars); CSS (`.mapfit`, container units) does
   the rest. Don't size the map anywhere else.
-- **3D needs the 3D office art.** `scripts/build-site.sh` copies `dashboard/public/office/3d` when it exists and
-  writes `office/3d/models.json` (which folder each model is in). Without it, or if WebGL or a model fails, the
-  3D switch falls back to tilting the 2D map (`setTilt`). So the page works before and after the 3D art lands; when
-  it is merged into `develop`, Pages republishes with real 3D by itself. The asset contract (1 unit = 1 tile,
-  front = +Z, clip names) is in `design/office-style/3d/README.md`; if it changes, update `office3d.js`.
+- **3D uses the Office's 3D art** (`dashboard/public/office/3d`, copied by `scripts/build-site.sh`; ADR 0004).
+  The camera (35 degrees, start turn -0.42) and the wall cut-away match the dashboard's 3D Office
+  (`dashboard/src/office/three/`). If WebGL or the art fails, the 3D switch tilts the 2D map instead. The asset
+  contract is in `design/office-style/3d/README.md` (1 unit = 1 tile across, heights x1.7, front = +Z, placements
+  may carry `scale`, characters keep their own materials); if it changes, update `office3d.js`.
+- **The 3D characters are heavy** (~1.4 MB each, ~18 MB for the 13 skins the page uses). The background build runs
+  only on a computer (`pointer: fine`, wider than 900px) without Save-Data; phones load 3D on first use.
 - Models load 6 at a time with one retry (a burst of 100+ requests resets simple local servers).
 - **Links**: Play now goes to the README's `#install`; GitHub and Star to the repo. If the repo moves, change
   `REPO` in `app.js` and the links in `index.html` (and the URL in `.github/workflows/pages.yml`, the README and here).
@@ -65,7 +67,7 @@ product: nothing here talks to a node, the mesh or the world server, and every a
 
 ```sh
 make site                  # assembles dist/site like the workflow does and serves it at http://localhost:8090
-OFFICE_3D_DIR=../internal-agent-fleet-3d/dashboard/public/office/3d make site   # with 3D art from another worktree
+OFFICE_3D_DIR=<other worktree>/dashboard/public/office/3d make site               # with 3D art from another worktree
 ```
 
 Check desktop and phone width: the intro, Come in, walking with WASD and saying hi with E, 2D/3D (with and
@@ -75,20 +77,3 @@ Publishing is automatic: a push to `develop` that touches `site/`, `dashboard/pu
 `scripts/build-site.sh` runs `.github/workflows/pages.yml`. One-time repo setup (an admin): **Settings → Pages →
 Source: GitHub Actions**, then put the Pages URL in the repo's About website. Re-run by hand with
 `gh workflow run pages.yml --ref develop`.
-
-## When the 3D art is final (to do)
-
-The 3D view is built and tested against the work-in-progress art in the `internal-agent-fleet-3d` worktree
-(commit `b886b9b`, with uncommitted model edits at the time). When that art is final and merged into `develop`:
-
-1. Preview first: `OFFICE_3D_DIR=../internal-agent-fleet-3d/dashboard/public/office/3d make site`, or just
-   `make site` once it is on `develop`.
-2. Check the contract `office3d.js` relies on still holds (`design/office-style/3d/README.md`): 1 unit = 1 tile,
-   front = +Z, origins on the floor; folders `props/`, `kit/`, `characters/`; `layout3d.json` with `objects`
-   (`model, x, z, rot, y`) and `walls` (`facing` = north / south / east / west); clip names `idle, walk, sit, type,
-   sit-idle, talk, wave`. If any of these change, update `FACE`, `FACING`, `clipFor()` or the loaders.
-3. Every skin used in `office.js` (`AGENTS` and `PLAYER`, which is `alien`) needs a 3D character; a missing one
-   falls back to the first that loaded.
-4. Look at: seated agents sitting on their chairs (not floating or sunk), the walls dropping on the camera side at
-   all four rotations, held mugs staying hidden, no 404s in the console, and the frame rate on a laptop.
-5. Merge: Pages republishes on its own because `dashboard/public/office/` changed.

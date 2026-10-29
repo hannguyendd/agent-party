@@ -1,13 +1,17 @@
 // The 3D view of the demo office: the pastel "toy diorama" from dashboard/public/office/3d (copied to office/3d by
 // scripts/build-site.sh), driven by the same simulation as the 2D map. Loaded on demand when 3D is switched on.
-// Asset contract (design/office-style/3d/README.md): 1 unit = 1 tile, Y up, model front = +Z, origin on the floor,
-// layout3d.json places every object and wall; characters carry the clips idle, walk, sit, type, sit-idle, talk, wave.
+// Asset contract (design/office-style/3d/README.md): 1 unit = 1 tile across the floor, heights x1.7 (walls 5.1,
+// characters about 2.4), Y up, model front = +Z, origin on the floor. models3d.json names every file; layout3d.json
+// places objects and walls (an optional scale [x, 1, z] must be applied); characters carry the clips idle, walk, sit,
+// type, sit-idle, talk, wave, away and keep their own materials. Camera and cut-away match the dashboard's 3D Office.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const BASE = 'office/3d/';
-const EL = 0.86;            // camera elevation (about 49 degrees), as in the approved prototype
-const AZ = -0.26;           // start with a slight turn so walls and desks show depth; the visitor can rotate from there
+const EL = 0.62;            // camera elevation (about 35 degrees, low enough to see faces), as in the dashboard
+const AZ = -0.42;           // start with a slight turn so walls and desks show depth; the visitor can rotate from there
+const WALL_H = 5.1;         // wall height, for framing the room
+const CUT_AWAY = 0.6;       // lower a wall whose outside faces the camera this much (as in the dashboard)
 const FACE = { down: 0, right: Math.PI / 2, up: Math.PI, left: -Math.PI / 2 };
 
 const css = `
@@ -22,7 +26,6 @@ const css = `
 .ap3 canvas.grabbing { cursor: grabbing; }
 `;
 
-function modelUrl(name, dirs) { return BASE + dirs[name] + '/' + name + '.glb'; }
 
 // fetch + JSON with two retries (static hosts sometimes drop a request in a burst).
 async function fetchJson(url) {
@@ -63,7 +66,8 @@ function instance(gltfScene, placements) {
     const im = new THREE.InstancedMesh(node.geometry, node.material, placements.length);
     placements.forEach((p, i) => {
       q.setFromAxisAngle(up, (p.rot || 0) * Math.PI / 180);
-      place.compose(new THREE.Vector3(p.x, p.y || 0, p.z), q, new THREE.Vector3(1, p.sy || 1, 1));
+      const sc = p.scale || [1, 1, 1];
+      place.compose(new THREE.Vector3(p.x, p.y || 0, p.z), q, new THREE.Vector3(sc[0], sc[1], sc[2]));
       im.setMatrixAt(i, place.clone().multiply(node.matrixWorld));
     });
     im.castShadow = true; im.receiveShadow = true;
@@ -116,21 +120,20 @@ export async function mount(host, office, opts) {
   scene.add(sun, sun.target);
 
   // ---- load the layout and every model it names ----
-  const layout = await fetchJson(BASE + 'layout3d.json');
+  // models3d.json maps every model id to its file (paths relative to the site root).
+  const files = await fetchJson(BASE + 'models3d.json');
+  const layout = await fetchJson(files.layout || BASE + 'layout3d.json');
   const loader = new GLTFLoader();
-  const dirs = {};
+  const paths = Object.assign({}, files.props, files.kit);
   const want = new Set(layout.objects.map((o) => o.model).concat(layout.walls.map((w) => w.model)));
-  // Furniture lives in props/, walls and floors in kit/; models.json (written by scripts/build-site.sh) says which.
-  const index = await fetchJson(BASE + 'models.json');
-  ['props', 'kit'].forEach((d) => (index[d] || []).forEach((n) => { if (!dirs[n]) dirs[n] = d; }));
-  const names = [...want].filter((n) => dirs[n] || console.warn('3D model missing:', n));
-  const skinsAll = [...new Set(sim.all.map((a) => a.skin))];
+  const names = [...want].filter((n) => paths[n] || console.warn('3D model missing:', n));
+  const skins = [...new Set(sim.all.map((a) => a.skin))];
   let done = 0;
-  const total = names.length + skinsAll.length;
+  const total = names.length + skins.length;
   const tick = () => { done++; if (opts.onProgress) opts.onProgress(done, total); };
-  tick(); done = 0;
+  if (opts.onProgress) opts.onProgress(0, total);
   const loaded = {};
-  (await loadAll(loader, names.map((n) => modelUrl(n, dirs)), tick)).forEach((g, i) => { if (g) loaded[names[i]] = g; });
+  (await loadAll(loader, names.map((n) => paths[n]), tick)).forEach((g, i) => { if (g) loaded[names[i]] = g; });
 
   const byModel = {};
   layout.objects.forEach((o) => { (byModel[o.model] = byModel[o.model] || []).push(o); });
@@ -149,16 +152,15 @@ export async function mount(host, office, opts) {
     const cx = Math.sin(az), cz = Math.cos(az);
     Object.keys(FACING).forEach((f) => {
       const dot = FACING[f][0] * cx + FACING[f][1] * cz;
-      const want = dot > 0.2 ? 0.22 : 1, g = wallGroups[f];
+      const want = dot > CUT_AWAY ? 0.22 : 1, g = wallGroups[f];
       g.scale.y += (want - g.scale.y) * step;
     });
   }
   cutaway(1);
 
   // ---- characters, one per simulated agent, plus the visitor ----
-  const skins = [...new Set(sim.all.map((a) => a.skin))];
   const charGltf = {};
-  (await loadAll(loader, skins.map((s) => BASE + 'characters/' + s + '.glb'), tick)).forEach((g, i) => { if (g) charGltf[skins[i]] = g; });
+  (await loadAll(loader, skins.map((s) => files.characters[s] || BASE + 'characters/' + s + '.glb'), tick)).forEach((g, i) => { if (g) charGltf[skins[i]] = g; });
   const anyChar = Object.values(charGltf)[0];
   if (!anyChar) throw new Error('no 3D characters loaded');
   const actors = sim.all.map((a) => {
@@ -194,7 +196,7 @@ export async function mount(host, office, opts) {
 
   // ---- fit the whole office in the frame ----
   const corners = [];
-  for (const x of [0, 56]) for (const y of [0, 2.5]) for (const z of [0, 36]) corners.push(new THREE.Vector3(x, y, z));
+  for (const x of [0, 56]) for (const y of [0, WALL_H]) for (const z of [0, 36]) corners.push(new THREE.Vector3(x, y, z));
   // size: the canvas size in px, measured on resize only (reading layout every frame is costly).
   const size = { w: 1, h: 1 };
   function resize() {
