@@ -6,8 +6,7 @@ version and date (or, when the section is missing, lists the release's `feat` / 
 
 Format: `## Unreleased` or `## vX.Y.Z (YYYY-MM-DD)`, then `### New` / `### Fixed` / `### Changed`, then `- ` lines.
 
-## Unreleased
-
+## v0.3.2 (2026-10-29)
 ### Fixed
 - "What's new" now opens by itself the first time too (it stayed quiet if you skipped a version).
 - The version sits beside the logo, top left, instead of among the buttons.
