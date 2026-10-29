@@ -68,20 +68,12 @@
   // ---------------------------------------------------------------------------------------------------------------
   // The welcome parade: groups walk one floor line at one speed. Groups are spaced by their real width (a group of n
   // is 64 + 46 * (n - 1) px) so they never touch; on a narrow screen the groups that don't fit stay home. Every
-  // group talks: a new line every ~1.1 s from a shuffled pool, at most two bubbles up, never on neighbouring groups.
-  var PARADE_LINES = [
-    'Coffee?', 'Is it Friday yet?', 'Move it 2px left.', 'It works on my machine.', 'Ship it!', 'LGTM',
-    'Who approved this? Oh. Me.', 'Not a bug. Undefined behaviour.', 'I centred a div today.', 'App Store review, day 3.',
-    'Rendering... 99%.', 'Deploying on a Friday? Bold.', "That's not my blue.", 'What if I click it 36 times?',
-    'Drink some water!', 'Form 7B. In triplicate.', 'Standup? Never heard of it.', 'Can we make it pop?',
-    'Have you tried turning it off and on?', 'Checked the logs. On fire.', 'Merge conflict again?', 'Who touched prod?',
-    'git push --force? Brave.', "It's a feature.", 'Tabs or spaces?', 'Just one more commit.', 'Lunch is a sprint.',
-    'Who wrote this? Oh. Me, last week.', 'Works in staging.', 'Can you hop on a quick call?', 'Per my last message...',
-    'Let me rebase real quick.', 'Cache it. Then cache the cache.', 'The tests pass. Locally.', 'One more meeting and I quit.',
-    'Did someone say pizza?', '404: motivation not found.', 'I asked an agent. It asked another agent.',
-    'Ticket says "small change".', 'Dark mode or no mode.', 'The build is green! Screenshot it!', 'Reply-all? Never again.',
-    'My agent fixed it while I slept.', 'Who has the HDMI dongle?', 'Estimate: two days. Reality: two weeks.',
-    'Is the Wi-Fi down or is it me?', 'Snack drawer is empty. Again.', 'Ping me after lunch.', 'Commit message: "fix".',
+  // group talks: a new line every ~1.1 s, in the voice of one of its members (that agent's lines in office.js),
+  // never on neighbouring groups.
+  // Characters in the parade without an agent in the office (office.js AGENTS) share these lines.
+  var EXTRA_LINES = [
+    'Coffee?', 'Is it Friday yet?', 'Ship it!', 'LGTM', 'Standup? Never heard of it.', 'Just one more commit.',
+    'One more meeting and I quit.', 'Let me rebase real quick.', 'Who wrote this? Oh. Me, last week.',
   ];
   function parade() {
     var floor = document.querySelector('.floor'), groups = [].slice.call(floor.querySelectorAll('.group'));
@@ -109,10 +101,17 @@
     addEventListener('resize', function () { clearTimeout(queued); queued = setTimeout(arrange, 150); });
 
     // Bubbles: groups take turns in a stride that skips neighbours; each line stays up 3 s, a new one every 1.1 s.
-    var pool = [], turn = 0;
-    function nextLine() {
-      if (!pool.length) pool = PARADE_LINES.slice().sort(function () { return Math.random() - 0.5; });
-      return pool.pop();
+    var bySkin = {}, turn = 0;
+    AgentParty.agents.forEach(function (a) { bySkin[a.skin] = a.lines; });
+    // Each skin cycles through its own lines in a shuffled order.
+    var queues = {};
+    function lineFor(group) {
+      var skins = [].map.call(group.querySelectorAll('i'), function (i) { return i.getAttribute('data-skin'); });
+      var skin = skins[Math.floor(Math.random() * skins.length)];
+      if (!queues[skin] || !queues[skin].length) {
+        queues[skin] = (bySkin[skin] || EXTRA_LINES).slice().sort(function () { return Math.random() - 0.5; });
+      }
+      return queues[skin].pop();
     }
     function speak() {
       var intro = document.getElementById('intro');
@@ -120,7 +119,7 @@
       var n = shown.length, stride = n > 4 ? 3 : 2, it = shown[(turn * stride) % n];
       turn++;
       var talk = it.g.querySelector('.talk');
-      talk.textContent = nextLine();
+      talk.textContent = lineFor(it.g);
       talk.classList.add('on');
       setTimeout(function () { talk.classList.remove('on'); }, 3000);
     }
